@@ -12,6 +12,7 @@ try {
   await client.query(readFileSync(new URL('./schema.sql',import.meta.url),'utf8'));
   await client.query("INSERT INTO app_schema_migrations(name) VALUES('initial_schema')");
  }
+ await client.query(readFileSync(new URL('./migrations/004-member-profiles.sql',import.meta.url),'utf8'));
  await client.query('COMMIT');
  console.log('Database schema ready');
 } catch(err){await client.query('ROLLBACK');throw err} finally {await client.end()}
