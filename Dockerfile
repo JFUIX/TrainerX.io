@@ -3,6 +3,7 @@ WORKDIR /app
 COPY package.json ./
 RUN npm install --omit=dev
 COPY server.mjs init-db.mjs schema.sql ./
+COPY migrations ./migrations
 COPY public ./public
 USER node
 EXPOSE 3000
