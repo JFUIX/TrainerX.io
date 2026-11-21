@@ -71,7 +71,7 @@ app.get('/gate-qr',auth,async(req,res)=>{if(!staff(req.user))return res.sendStat
 // Public phone-camera check-in. The rotating signed QR identifies the gym, not the member.
 app.post('/public-checkin',rateLimit({windowMs:60000,limit:12}),async(req,res)=>{
  const {gate,code}=req.body||{};
- if(typeof gate!=='string'||gate.length>200||typeof code!=='string'||!/^\\d{4}$/.test(code))return res.status(400).json({error:'Enter your four-digit attendance code'});
+ if(typeof gate!=='string'||gate.length>200||typeof code!=='string'||!/^\d{4}$/.test(code))return res.status(400).json({error:'Enter your four-digit attendance code'});
  const parts=gate.split('.');
  if(parts.length!==3||!/^[0-9a-f-]{36}$/i.test(parts[0])||!/^[0-9]{8,12}$/.test(parts[1])||!/^[0-9a-f]{64}$/.test(parts[2]))return res.status(403).json({error:'Invalid QR code. Scan the gym entrance again.'});
  const expected=gateSign(parts[0]+'.'+parts[1]);
