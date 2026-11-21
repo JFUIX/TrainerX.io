@@ -8,3 +8,5 @@ ALTER TABLE member_profiles ADD COLUMN IF NOT EXISTS membership_months integer C
 ALTER TABLE member_profiles ADD COLUMN IF NOT EXISTS emergency_name text;
 ALTER TABLE member_profiles ADD COLUMN IF NOT EXISTS emergency_phone text;
 ALTER TABLE member_profiles ADD COLUMN IF NOT EXISTS staff_notes text;
+
+ALTER TABLE memberships ADD COLUMN IF NOT EXISTS total_price numeric(12,2) CHECK(total_price >= 0);
