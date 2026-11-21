@@ -67,7 +67,7 @@ app.post('/fees',auth,async(req,res)=>{if(!staff(req.user))return res.sendStatus
 
 const gateSecret=createHash('sha256').update('trainerx-gate-v1:'+String(process.env.BOOTSTRAP_TOKEN||'')).digest();
 const gateSign=v=>createHmac('sha256',gateSecret).update(v).digest('hex');
-app.get('/gate-qr',auth,async(req,res)=>{if(!staff(req.user))return res.sendStatus(403);const expires=Math.floor(Date.now()/60000)+1;const payload=req.user.gym_id+'.'+expires;const code=payload+'.'+gateSign(payload);const url=req.protocol+'://'+req.get('host')+'/checkin?gate='+encodeURIComponent(code);res.set('Cache-Control','no-store').json({qr:await QRCode.toDataURL(url,{width:320,margin:2}),expires_at:new Date(expires*60000).toISOString()})});
+app.get('/gate-qr',auth,async(req,res)=>{if(!staff(req.user))return res.sendStatus(403);const expires=Math.floor(Date.now()/60000)+1;const payload=req.user.gym_id+'.'+expires;const code=payload+'.'+gateSign(payload);const url=req.protocol+'://'+req.get('host')+'/checkin.html?gate='+encodeURIComponent(code);res.set('Cache-Control','no-store').json({qr:await QRCode.toDataURL(url,{width:320,margin:2}),expires_at:new Date(expires*60000).toISOString()})});
 // Public phone-camera check-in. The rotating signed QR identifies the gym, not the member.
 app.post('/public-checkin',rateLimit({windowMs:60000,limit:12}),async(req,res)=>{
  const {gate,code}=req.body||{};
