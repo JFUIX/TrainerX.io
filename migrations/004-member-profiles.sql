@@ -4,3 +4,7 @@ CREATE SEQUENCE IF NOT EXISTS member_number_seq;
 
 ALTER TABLE member_profiles ADD COLUMN IF NOT EXISTS trainer_id uuid REFERENCES users(id);
 ALTER TABLE member_profiles ADD COLUMN IF NOT EXISTS membership_months integer CHECK(membership_months BETWEEN 1 AND 120);
+
+ALTER TABLE member_profiles ADD COLUMN IF NOT EXISTS emergency_name text;
+ALTER TABLE member_profiles ADD COLUMN IF NOT EXISTS emergency_phone text;
+ALTER TABLE member_profiles ADD COLUMN IF NOT EXISTS staff_notes text;
