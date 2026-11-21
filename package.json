@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node server.mjs",
+    "reset:once": "node reset-once.mjs",
     "test": "node --test tests/static.test.mjs"
   },
   "dependencies": {
