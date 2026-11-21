@@ -6,7 +6,7 @@ import QRCode from 'qrcode';
 import {rateLimit} from 'express-rate-limit';
 import {randomBytes,scryptSync,timingSafeEqual,createHash,createHmac} from 'node:crypto';
 const app=express(); app.disable('x-powered-by'); app.use(express.json({limit:'16kb'}));
-const db=new pg.Pool({host:'db',user:'trainerx',database:'trainerx',password:process.env.DB_PASSWORD});
+const db=new pg.Pool(process.env.DATABASE_URL ? {connectionString:process.env.DATABASE_URL} : {host:'db',user:'trainerx',database:'trainerx',password:process.env.DB_PASSWORD});
 const hash=t=>createHash('sha256').update(t).digest('hex');
 const passwordHash=p=>{const salt=randomBytes(16).toString('hex');return salt+':'+scryptSync(p,salt,64).toString('hex')};
 const verify=(p,h)=>{const [salt,key]=h.split(':');return timingSafeEqual(Buffer.from(key,'hex'),scryptSync(p,salt,64))};
