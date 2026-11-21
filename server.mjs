@@ -29,6 +29,7 @@ app.post('/members/register',auth,async(req,res)=>{if(!['owner','reception'].inc
 app.get('/trainers',auth,async(req,res)=>{if(!['owner','reception'].includes(req.user.role))return res.sendStatus(403);const r=await db.query("SELECT id,email FROM users WHERE gym_id=$1 AND role='trainer' AND active ORDER BY email",[req.user.gym_id]);res.json(r.rows)});
 app.get('/users',auth,async(req,res)=>{if(req.user.role!=='owner')return res.sendStatus(403);res.json((await db.query('SELECT id,email,role,active FROM users WHERE gym_id=$1',[req.user.gym_id])).rows)});
 
+app.get(['/admin','/gym'],(req,res)=>res.sendFile(path.join(path.dirname(fileURLToPath(import.meta.url)),'public','index.html')));
 app.use(express.static(path.join(path.dirname(fileURLToPath(import.meta.url)),'public'),{index:'index.html'}));
 const staff=(u)=>['owner','reception'].includes(u.role);
 app.get('/plans',auth,async(req,res)=>{if(!req.user.gym_id)return res.sendStatus(403);res.json((await db.query('SELECT id,name,months,price FROM plans WHERE gym_id=$1 ORDER BY months',[req.user.gym_id])).rows)});
