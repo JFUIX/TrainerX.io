@@ -19,3 +19,17 @@ CREATE INDEX IF NOT EXISTS fee_payments_billing_month_idx ON fee_payments(gym_id
 
 ALTER TABLE member_profiles ADD COLUMN IF NOT EXISTS attendance_code char(4);
 CREATE UNIQUE INDEX IF NOT EXISTS member_profiles_gym_attendance_code_idx ON member_profiles(gym_id,attendance_code) WHERE attendance_code IS NOT NULL;
+
+-- Assign unique four-digit codes to members registered before code-based check-in.
+WITH missing AS (
+ SELECT user_id,gym_id,row_number() OVER(PARTITION BY gym_id ORDER BY membership_no,user_id) AS rn
+ FROM member_profiles WHERE attendance_code IS NULL
+), available AS (
+ SELECT g.id AS gym_id,lpad(n::text,4,'0') AS code,
+ row_number() OVER(PARTITION BY g.id ORDER BY n) AS rn
+ FROM gyms g CROSS JOIN generate_series(0,9999) n
+ WHERE NOT EXISTS (SELECT 1 FROM member_profiles mp WHERE mp.gym_id=g.id AND mp.attendance_code=lpad(n::text,4,'0'))
+)
+UPDATE member_profiles mp SET attendance_code=a.code
+FROM missing m JOIN available a ON a.gym_id=m.gym_id AND a.rn=m.rn
+WHERE mp.user_id=m.user_id;
