@@ -37,3 +37,7 @@ WHERE mp.user_id=m.user_id;
 -- Gym branding for the entrance kiosk and management workspace.
 ALTER TABLE gyms ADD COLUMN IF NOT EXISTS brand_color varchar(7) NOT NULL DEFAULT '#C3FF53';
 ALTER TABLE gyms ADD COLUMN IF NOT EXISTS logo_url text;
+
+-- Uploaded gym logos are stored durably in PostgreSQL, not on ephemeral app disks.
+ALTER TABLE gyms ADD COLUMN IF NOT EXISTS logo_bytes bytea;
+ALTER TABLE gyms ADD COLUMN IF NOT EXISTS logo_mime varchar(20);
