@@ -1,0 +1,11 @@
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE TABLE gyms (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), name text NOT NULL, currency char(3) NOT NULL DEFAULT 'PKR', active boolean NOT NULL DEFAULT true);
+CREATE TABLE users (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), gym_id uuid REFERENCES gyms, email text UNIQUE NOT NULL, password_hash text NOT NULL, role text NOT NULL CHECK(role IN ('superadmin','owner','reception','trainer','member')), CHECK ((role='superadmin')=(gym_id IS NULL)), active boolean NOT NULL DEFAULT true);
+CREATE TABLE sessions (token_hash text PRIMARY KEY, user_id uuid NOT NULL REFERENCES users ON DELETE CASCADE, expires_at timestamptz NOT NULL);
+CREATE INDEX ON sessions(expires_at);
+CREATE TABLE plans (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), gym_id uuid NOT NULL REFERENCES gyms, name text NOT NULL, months integer NOT NULL CHECK(months>0), price numeric(12,2) NOT NULL CHECK(price>=0), UNIQUE(gym_id,id));
+CREATE TABLE memberships (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), gym_id uuid NOT NULL REFERENCES gyms, member_id uuid NOT NULL REFERENCES users, plan_id uuid NOT NULL, starts_on date NOT NULL, ends_on date NOT NULL CHECK(ends_on>=starts_on), FOREIGN KEY(gym_id,plan_id) REFERENCES plans(gym_id,id));
+CREATE TABLE attendance (gym_id uuid NOT NULL REFERENCES gyms, member_id uuid NOT NULL REFERENCES users, attended_on date NOT NULL, checked_at timestamptz NOT NULL DEFAULT now(), PRIMARY KEY(gym_id,member_id,attended_on));
+ALTER TABLE users ADD UNIQUE(gym_id,id);
+ALTER TABLE memberships ADD FOREIGN KEY(gym_id,member_id) REFERENCES users(gym_id,id);
+ALTER TABLE attendance ADD FOREIGN KEY(gym_id,member_id) REFERENCES users(gym_id,id);
