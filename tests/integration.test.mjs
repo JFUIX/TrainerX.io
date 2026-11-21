@@ -1,0 +1,27 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+const base='http://127.0.0.1:3000';
+const request=async(path,method='GET',body,token)=>{const r=await fetch(base+path,{method,headers:{'content-type':'application/json',...(token?{'authorization':'Bearer '+token}:{})},body:body?JSON.stringify(body):undefined});let data=null;try{data=await r.json()}catch{}return {status:r.status,data}};
+test('health and role-isolated membership and payment journey',async()=>{
+ assert.equal((await request('/health')).status,200);
+ const email='root-'+Date.now()+'@example.test',password='secure-password-123';
+ assert.equal((await request('/bootstrap','POST',{email,password,token:process.env.BOOTSTRAP_TOKEN})).status,201);
+ const admin=await request('/login','POST',{email,password});assert.equal(admin.status,200);assert.ok(admin.data.token);
+ const ownerEmail='owner-'+Date.now()+'@example.test';
+ const gym=await request('/gyms','POST',{name:'Integration Gym',currency:'PKR',email:ownerEmail,password},admin.data.token);assert.equal(gym.status,201);
+ const owner=await request('/login','POST',{email:ownerEmail,password});assert.equal(owner.status,200);
+ const plan=await request('/plans','POST',{name:'Monthly',months:1,price:2500},owner.data.token);assert.equal(plan.status,201);
+ const memberEmail='member-'+Date.now()+'@example.test';
+ const member=await request('/users','POST',{email:memberEmail,password,role:'member'},owner.data.token);assert.equal(member.status,201);
+ const today=new Date().toISOString().slice(0,10);
+ const membership=await request('/memberships','POST',{member_id:member.data.id,plan_id:plan.data.id,starts_on:today},owner.data.token);assert.equal(membership.status,201);
+ const payment=await request('/fees','POST',{membership_id:membership.data.id,amount:1000,method:'cash'},owner.data.token);assert.equal(payment.status,201);
+ const receipt=await request('/fees/'+payment.data.id+'/receipt','GET',null,owner.data.token);assert.equal(receipt.status,200);assert.equal(receipt.data.member,memberEmail);
+ const memberLogin=await request('/login','POST',{email:memberEmail,password});assert.equal(memberLogin.status,200);
+ const forbidden=await request('/fees','GET',null,memberLogin.data.token);assert.equal(forbidden.status,403);
+ const qr=await request('/gate-qr','GET',null,owner.data.token);assert.equal(qr.status,200);assert.match(qr.data.qr,/^data:image\/png;base64,/);
+ const workout=await request('/workouts','POST',{member_id:member.data.id,title:'Full Body',exercises:[{name:'Push-up',sets:'3',reps:'10'}]},owner.data.token);assert.equal(workout.status,201);
+ const memberWorkouts=await request('/workouts','GET',null,memberLogin.data.token);assert.equal(memberWorkouts.status,200);assert.equal(memberWorkouts.data.length,1);
+ assert.ok(gym.data.id);
+ const denied=await request('/members','GET',null,admin.data.token);assert.equal(denied.status,403);
+});
