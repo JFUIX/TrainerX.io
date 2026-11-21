@@ -8,7 +8,7 @@
 <script>
 let gateTimer=null,scannerStream=null;let token=sessionStorage.getItem('tx-token')||'',me=null,view='';
 const $=s=>document.querySelector(s),safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-async function api(url,method='GET',body){const r=await fetch(url,{method,headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},body:body?JSON.stringify(body):undefined});if(!r.ok){let e;try{e=await r.json()}catch{}throw Error(e?.error||'Request failed ('+r.status+')')}return r.status===204?null:r.json()}
+async function api(url,method='GET',body){const r=await fetch(url,{method,headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},body:body?JSON.stringify(body):undefined});if(!r.ok){let e;try{e=await r.json()}catch{}throw Error(e?.error||'Request failed ('+r.status+')')}if(r.status===204)return null;const raw=await r.text();if(!raw)return null;try{return JSON.parse(raw)}catch{return {message:raw}}}
 function notice(msg,error=false){$('#notice').textContent=msg;$('#notice').className=error?'error':'success'}
 function formData(form){return Object.fromEntries(new FormData(form))}
 function form(fields,id,button){return '<form id="'+id+'" class="card form">'+fields.map(f=>'<label>'+f[1]+'<input name="'+f[0]+'" type="'+(f[2]||'text')+'" '+(f[3]||'required')+'></label>').join('')+'<button class="primary" type="submit">'+button+'</button></form>'}
