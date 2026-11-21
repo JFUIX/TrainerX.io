@@ -1,0 +1,22 @@
+import express from 'express';
+import pg from 'pg';
+import {rateLimit} from 'express-rate-limit';
+import {randomBytes,scryptSync,timingSafeEqual,createHash} from 'node:crypto';
+const app=express(); app.disable('x-powered-by'); app.use(express.json({limit:'16kb'}));
+const db=new pg.Pool({host:'db',user:'trainerx',database:'trainerx',password:process.env.DB_PASSWORD});
+const hash=t=>createHash('sha256').update(t).digest('hex');
+const passwordHash=p=>{const salt=randomBytes(16).toString('hex');return salt+':'+scryptSync(p,salt,64).toString('hex')};
+const verify=(p,h)=>{const [salt,key]=h.split(':');return timingSafeEqual(Buffer.from(key,'hex'),scryptSync(p,salt,64))};
+const valid=(email,password)=>typeof email==='string'&&email.length<=254&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)&&typeof password==='string'&&password.length>=12&&password.length<=128;
+const limiter=rateLimit({windowMs:600000,limit:20});
+app.get('/health',async(req,res)=>{await db.query('SELECT 1');res.json({ok:true})});
+app.post('/bootstrap',limiter,async(req,res)=>{const {email,password,token}=req.body||{};if(!valid(email,password)||typeof token!=='string'||!process.env.BOOTSTRAP_TOKEN||!timingSafeEqual(Buffer.from(hash(token)),Buffer.from(hash(process.env.BOOTSTRAP_TOKEN))))return res.sendStatus(403);const c=await db.connect();try{await c.query('BEGIN');await c.query('SELECT pg_advisory_xact_lock(123456)');const r=await c.query("SELECT 1 FROM users WHERE role='superadmin'");if(r.rowCount){await c.query('ROLLBACK');return res.sendStatus(409)}await c.query("INSERT INTO users(email,password_hash,role) VALUES($1,$2,'superadmin')",[email.toLowerCase(),passwordHash(password)]);await c.query('COMMIT');res.sendStatus(201)}catch(e){await c.query('ROLLBACK');throw e}finally{c.release()}});
+app.post('/login',limiter,async(req,res)=>{const {email,password}=req.body||{};if(!valid(email,password))return res.sendStatus(400);const r=await db.query('SELECT * FROM users WHERE email=$1 AND active',[email.toLowerCase()]);const u=r.rows[0];if(!u||!verify(password,u.password_hash))return res.sendStatus(401);const token=randomBytes(32).toString('hex');await db.query("INSERT INTO sessions VALUES($1,$2,now()+interval '12 hours')",[hash(token),u.id]);res.set('Cache-Control','no-store').json({token,role:u.role})});
+async function auth(req,res,next){const t=req.headers.authorization?.match(/^Bearer ([a-f0-9]{64})$/)?.[1];if(!t)return res.sendStatus(401);const r=await db.query('SELECT u.id,u.gym_id,u.role,u.email FROM sessions s JOIN users u ON u.id=s.user_id LEFT JOIN gyms g ON g.id=u.gym_id WHERE s.token_hash=$1 AND s.expires_at>now() AND u.active AND (u.gym_id IS NULL OR g.active)',[hash(t)]);if(!r.rowCount)return res.sendStatus(401);req.user=r.rows[0];req.token=t;next()}
+app.get('/me',auth,(req,res)=>res.json(req.user));
+app.post('/logout',auth,async(req,res)=>{await db.query('DELETE FROM sessions WHERE token_hash=$1',[hash(req.token)]);res.sendStatus(204)});
+app.post('/gyms',auth,async(req,res)=>{if(req.user.role!=='superadmin')return res.sendStatus(403);const {name,currency='PKR',email,password}=req.body||{};if(typeof name!=='string'||!name.trim()||name.length>120||!/^[A-Z]{3}$/.test(currency)||!valid(email,password))return res.sendStatus(400);const c=await db.connect();try{await c.query('BEGIN');const g=(await c.query('INSERT INTO gyms(name,currency) VALUES($1,$2) RETURNING id,name,currency',[name,currency])).rows[0];await c.query("INSERT INTO users(gym_id,email,password_hash,role) VALUES($1,$2,$3,'owner')",[g.id,email.toLowerCase(),passwordHash(password)]);await c.query('COMMIT');res.status(201).json(g)}catch(e){await c.query('ROLLBACK');throw e}finally{c.release()}});
+app.post('/users',auth,async(req,res)=>{if(req.user.role!=='owner')return res.sendStatus(403);const {email,password,role}=req.body||{};if(!valid(email,password)||!['reception','trainer','member'].includes(role))return res.sendStatus(400);const r=await db.query('INSERT INTO users(gym_id,email,password_hash,role) VALUES($1,$2,$3,$4) RETURNING id,email,role',[req.user.gym_id,email.toLowerCase(),passwordHash(password),role]);res.status(201).json(r.rows[0])});
+app.get('/users',auth,async(req,res)=>{if(req.user.role!=='owner')return res.sendStatus(403);res.json((await db.query('SELECT id,email,role,active FROM users WHERE gym_id=$1',[req.user.gym_id])).rows)});
+app.use((err,req,res,next)=>{console.error(err.code||'request error');res.sendStatus(err.code==='23505'?409:500)});
+app.listen(3000,'0.0.0.0');
