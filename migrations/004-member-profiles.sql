@@ -33,3 +33,7 @@ WITH missing AS (
 UPDATE member_profiles mp SET attendance_code=a.code
 FROM missing m JOIN available a ON a.gym_id=m.gym_id AND a.rn=m.rn
 WHERE mp.user_id=m.user_id;
+
+-- Gym branding for the entrance kiosk and management workspace.
+ALTER TABLE gyms ADD COLUMN IF NOT EXISTS brand_color varchar(7) NOT NULL DEFAULT '#C3FF53';
+ALTER TABLE gyms ADD COLUMN IF NOT EXISTS logo_url text;
