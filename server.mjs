@@ -107,7 +107,6 @@ for(const [kind,table,column] of [['workouts','workout_plans','exercises'],['die
 app.use((err,req,res,next)=>{console.error(err.code||'request error');res.sendStatus(err.code==='23505'?409:500)});
 const port=Number(process.env.PORT)||3000;
 app.listen(port,'0.0.0.0',()=>console.log('TrainerX HTTP server listening on port '+port));
-).test(logo_url)||/[<>"'\\\\]/.test(logo_url))))return res.status(400).json({error:'Use a valid hex color and HTTPS logo URL'});const r=await db.query('UPDATE gyms SET brand_color=$1,logo_url=$2 WHERE id=$3 RETURNING name,brand_color,logo_url',[brand_color,logo_url||null,req.user.gym_id]);res.json(r.rows[0])});
 app.get('/gate-qr',auth,async(req,res)=>{if(!staff(req.user))return res.sendStatus(403);const expires=Math.floor(Date.now()/60000)+1;const payload=req.user.gym_id+'.'+expires;const code=payload+'.'+gateSign(payload);const url=req.protocol+'://'+req.get('host')+'/checkin.html?gate='+encodeURIComponent(code);const gym=await db.query('SELECT name,brand_color,logo_url FROM gyms WHERE id=$1',[req.user.gym_id]);res.set('Cache-Control','no-store').json({qr:await QRCode.toDataURL(url,{width:420,margin:2}),expires_at:new Date(expires*60000).toISOString(),gym:gym.rows[0]||null})});
 // Public phone-camera check-in. The rotating signed QR identifies the gym, not the member.
 app.post('/public-checkin',rateLimit({windowMs:60000,limit:12}),async(req,res)=>{
