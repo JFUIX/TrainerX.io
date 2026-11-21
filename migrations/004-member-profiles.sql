@@ -16,3 +16,6 @@ ALTER TABLE fee_payments ADD COLUMN IF NOT EXISTS billing_month date;
 ALTER TABLE fee_payments DROP CONSTRAINT IF EXISTS fee_payments_method_check;
 ALTER TABLE fee_payments ADD CONSTRAINT fee_payments_method_check CHECK (method IN ('cash','bank_transfer','online_payment','upi','other'));
 CREATE INDEX IF NOT EXISTS fee_payments_billing_month_idx ON fee_payments(gym_id,membership_id,billing_month);
+
+ALTER TABLE member_profiles ADD COLUMN IF NOT EXISTS attendance_code char(4);
+CREATE UNIQUE INDEX IF NOT EXISTS member_profiles_gym_attendance_code_idx ON member_profiles(gym_id,attendance_code) WHERE attendance_code IS NOT NULL;
