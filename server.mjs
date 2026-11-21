@@ -12,7 +12,8 @@ const passwordHash=p=>{const salt=randomBytes(16).toString('hex');return salt+':
 const verify=(p,h)=>{const [salt,key]=h.split(':');return timingSafeEqual(Buffer.from(key,'hex'),scryptSync(p,salt,64))};
 const valid=(email,password)=>typeof email==='string'&&email.length<=254&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)&&typeof password==='string'&&password.length>=12&&password.length<=128;
 const limiter=rateLimit({windowMs:600000,limit:20});
-app.get('/health',async(req,res)=>{await db.query('SELECT 1');res.json({ok:true})});
+app.get('/health',(req,res)=>res.json({ok:true}));
+app.get('/ready',async(req,res,next)=>{try{await db.query('SELECT 1');res.json({ok:true,database:'connected'})}catch(err){next(err)}});
 app.get('/setup-status',async(req,res)=>{const r=await db.query("SELECT 1 FROM users WHERE role='superadmin' LIMIT 1");res.set('Cache-Control','no-store').json({setupRequired:!r.rowCount})});
 app.post('/bootstrap',limiter,async(req,res)=>{const {email,password,token}=req.body||{};if(!valid(email,password)||typeof token!=='string'||!process.env.BOOTSTRAP_TOKEN||!timingSafeEqual(Buffer.from(hash(token)),Buffer.from(hash(process.env.BOOTSTRAP_TOKEN))))return res.sendStatus(403);const c=await db.connect();try{await c.query('BEGIN');await c.query('SELECT pg_advisory_xact_lock(123456)');const r=await c.query("SELECT 1 FROM users WHERE role='superadmin'");if(r.rowCount){await c.query('ROLLBACK');return res.sendStatus(409)}await c.query("INSERT INTO users(email,password_hash,role) VALUES($1,$2,'superadmin')",[email.toLowerCase(),passwordHash(password)]);await c.query('COMMIT');res.sendStatus(201)}catch(e){await c.query('ROLLBACK');throw e}finally{c.release()}});
 app.post('/recover-superadmin',limiter,async(req,res)=>{const {email,password,token}=req.body||{};if(!valid(email,password)||typeof token!=='string'||!process.env.BOOTSTRAP_TOKEN||!timingSafeEqual(Buffer.from(hash(token)),Buffer.from(hash(process.env.BOOTSTRAP_TOKEN))))return res.status(403).json({error:'Invalid recovery details'});const client=await db.connect();try{await client.query('BEGIN');const r=await client.query("UPDATE users SET password_hash=$1 WHERE email=$2 AND role='superadmin' AND active RETURNING id",[passwordHash(password),email.toLowerCase()]);if(!r.rowCount){await client.query('ROLLBACK');return res.status(404).json({error:'Super Admin email not found'})}await client.query('DELETE FROM sessions WHERE user_id=ANY($1::uuid[])',[r.rows.map(x=>x.id)]);await client.query('COMMIT');res.sendStatus(204)}catch(e){await client.query('ROLLBACK');throw e}finally{client.release()}});
@@ -69,4 +70,5 @@ for(const [kind,table,column] of [['workouts','workout_plans','exercises'],['die
 }
 
 app.use((err,req,res,next)=>{console.error(err.code||'request error');res.sendStatus(err.code==='23505'?409:500)});
-app.listen(3000,'0.0.0.0');
+const port=Number(process.env.PORT)||3000;
+app.listen(port,'0.0.0.0',()=>console.log('TrainerX HTTP server listening on port '+port));
