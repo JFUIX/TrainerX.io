@@ -19,7 +19,7 @@ Log in via the browser. Superadmin creates gyms and owner accounts. Owner can cr
 ## Existing database migration
 For a database created before fee collection was added, run `docker compose exec -T db psql -U trainerx -d trainerx < migrations/002-fee-payments.sql` from the repository root after the database is running. Fresh database initialization already includes the payment schema. Back up existing data before migrating.
 
-## Phase 2 status
+For existing databases, also run `docker compose exec -T db psql -U trainerx -d trainerx < migrations/003-training.sql` before restarting the app. The QR generator is installed automatically during the Docker build.\n\n## Phase 2 status
 Implemented: responsive role-based dashboard, gym creation, user creation, plans, member directory, membership assignment and renewals, cash/bank/UPI payment recording ledger, reception check-in, attendance and renewal lists, owner overview.
 
 Not yet implemented: QR check-in, downloadable fee receipts, payment gateway processing, workout/diet editing, WhatsApp integration, inactive-member reports, automated reminders, true online self-registration, tests and production hardening.
