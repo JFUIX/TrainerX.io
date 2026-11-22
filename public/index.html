@@ -96,14 +96,6 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .insight-retention-hint{font-size:13px;margin:0 0 8px}
 @media(max-width:950px){.insight-panels{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:530px){.insight-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.insight-summary .insight-featured{grid-column:1/-1}.insight .card{padding:12px}}
-.renewal-calendar{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px}
-.calendar-day{display:grid;gap:5px;min-width:0;padding:10px 5px;border:1px solid var(--tx-line);background:var(--tx-control);color:var(--tx-text);font-size:12px}
-.calendar-day span{color:var(--tx-muted);font-weight:500}
-.calendar-day[aria-pressed=true]{border-color:var(--tx-accent);background:#382723}
-.calendar-results h3{margin:12px 0 3px;font-size:15px}
-.calendar-results p{margin:4px 0 8px}
-.calendar-results ul{padding-left:18px;margin:4px 0 0}
-@media(max-width:850px){.renewal-calendar{grid-template-columns:repeat(4,minmax(0,1fr))}}
 .insight-operations{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);align-items:start;gap:12px}
 .insight-text-button{padding:5px 0;background:transparent;color:var(--tx-accent-soft);font-size:13px}
 .insight-text-button:hover{text-decoration:underline}
@@ -246,15 +238,14 @@ if(view==='Financials'){
   bind('expenseForm',data=>api('/expenses','POST',{...data,amount:Number(data.amount)}));
 }
 if(view==='Insight'){
-  const [report,insights,trends,[alerts,account]]=await Promise.all([
+  const [report,insights,trends,account]=await Promise.all([
     api('/report'),api('/business-insights'),api('/membership-trends'),
-    Promise.allSettled([api('/alerts'),api('/gym-account')])
+    api('/gym-account').catch(()=>null)
   ]);
   signal.throwIfAborted();
   renderInsight(el,report,insights,trends);
   startDashboardClock(el.querySelector('.dashboard-clock'),signal);
-  renderDashboardCalendar($('#dashboardCalendar'),alerts.value);
-  renderDashboardAccount($('#dashboardAccount'),account.value,api,signal);
+  renderDashboardAccount($('#dashboardAccount'),account,api,signal);
 }
 if(view==='Gyms'){const gyms=await api('/gyms');el.innerHTML='<h1>Gym management</h1><p>Manage gym accounts and reset owner passwords securely.</p><div class="card">'+rows(gyms,g=>'<div class="item"><strong>'+safe(g.name)+'</strong><p>'+safe(g.owner_email||'No owner')+' · '+safe(g.currency)+'</p><form class="row" data-reset-gym="'+safe(g.id)+'"><label style="flex:1;min-width:210px">New owner password<input type="password" name="password" minlength="12" maxlength="128" autocomplete="new-password" placeholder="12+ characters" required></label><button class="secondary" type="submit">Reset owner password</button></form>'+subscriptionForm(g)+'</div>')+'</div><h2>Add gym</h2>'+form([['name','Gym name'],['currency','Currency (e.g. PKR)'],['email','Owner email','email'],['password','Owner password (12+ characters)','password']],'gymForm','Create gym');bind('gymForm',async d=>{await api('/gyms','POST',{...d,currency:(d.currency||'PKR').trim().toUpperCase()})});el.querySelectorAll('[data-reset-gym]').forEach(form=>form.addEventListener('submit',async e=>{e.preventDefault();const gym=gyms.find(g=>g.id===form.dataset.resetGym);if(!confirm('Reset the owner password for '+gym.name+'? Existing owner sessions will be signed out.'))return;try{await api('/gyms/'+encodeURIComponent(gym.id)+'/reset-owner-password','POST',{password:form.elements.password.value});form.reset();notice('Owner password reset. Sign in with the new password.')}catch(err){notice(err.message,true)}}));el.querySelectorAll('[data-subscription]').forEach(node=>bindForm(node,data=>
     api('/gyms/'+node.dataset.subscription+'/subscription','PATCH',{plan:data.plan,paid_through:data.paid_through||null,active:data.active==='true'})))}
@@ -353,7 +344,6 @@ function renderInsight(el,report,insights,trends){
         ${stat('Registered members',report.members,{target:'Members',link:'View members'})}
         ${stat('Today’s check-ins',report.attendance,{target:'Attendance',link:'View attendance'})}
       </section>
-      <section class="card" id="dashboardCalendar"></section>
       <div class="insight-panels">
           <section class="card">
             <div class="insight-panel-head"><h2>Membership growth</h2></div>
@@ -451,37 +441,6 @@ function renderInsight(el,report,insights,trends){
     };
   });
 }
-function renderDashboardCalendar(panel,alerts){
-  if(!alerts){
-    panel.innerHTML='<h2>Renewal calendar</h2><p>Unable to load upcoming renewals.</p>';
-    return;
-  }
-  const dateLabel=new Intl.DateTimeFormat(undefined,{weekday:'short',month:'short',day:'numeric'});
-  const today=new Date();
-  today.setHours(12,0,0,0);
-  const renewals=alerts.filter(alert=>alert.kind==='expiry');
-  const days=Array.from({length:8},(_,offset)=>{
-    const day=new Date(today);
-    day.setDate(today.getDate()+offset);
-    return {label:dateLabel.format(day),date:localDay(day),renewals:renewals.filter(alert=>alert.due_on===localDay(day))};
-  });
-  panel.innerHTML='<div class="insight-panel-head"><h2>Renewal calendar</h2><span class="insight-period">Next 7 days</span></div>'+
-    '<div class="renewal-calendar" aria-label="Renewal dates">'+days.map(({label,date,renewals})=>
-      '<button type="button" class="calendar-day" data-calendar-day="'+date+'" aria-pressed="false">'+
-      '<time datetime="'+date+'">'+safe(label)+'</time><span>'+renewals.length+' '+(renewals.length===1?'expiry':'expiries')+'</span></button>'
-    ).join('')+'</div><div class="calendar-results" aria-live="polite"></div>';
-  const buttons=panel.querySelectorAll('[data-calendar-day]');
-  const results=panel.querySelector('.calendar-results');
-  function select(day){
-    buttons.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.calendarDay===day.date)));
-    results.innerHTML='<h3>'+safe(day.label)+'</h3>'+(day.renewals.length
-      ?'<ul>'+day.renewals.map(entry=>'<li>'+safe(entry.full_name||entry.email)+'</li>').join('')+'</ul>'
-      :'<p class="sub">No memberships expire on this date.</p>');
-  }
-  buttons.forEach((button,index)=>button.onclick=()=>select(days[index]));
-  select(days.find(day=>day.renewals.length)||days[0]);
-}
-
 function renderDashboardAccount(panel,account,api,signal){
   if(!account){
     panel.innerHTML='<h2>Gym account</h2><p>Unable to load gym settings.</p>';
