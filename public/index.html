@@ -127,6 +127,50 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .insight-account-form button{white-space:nowrap}
 .dashboard-setting-status:empty{display:none}
 @media(max-width:950px){.insight-operations{grid-template-columns:minmax(0,1fr)}}
+.analytics{display:grid;gap:16px;min-width:0}
+.analytics h1,.analytics h2,.analytics p{margin:0}
+.analytics-header,.analytics-controls{display:flex;align-items:end;gap:10px;flex-wrap:wrap}
+.analytics-header{justify-content:space-between;align-items:center}
+.analytics-controls label{gap:4px}
+.analytics-controls input,.analytics-controls button{padding:8px 11px;font-size:13px}
+.analytics-grid,.analytics-totals{display:grid;gap:12px}
+.analytics-totals{grid-template-columns:repeat(3,minmax(0,1fr))}
+.analytics-grid{grid-template-columns:minmax(0,2fr) minmax(0,3fr)}
+.analytics .card{margin:0;border-radius:14px;padding:16px;min-width:0;box-shadow:none}
+.analytics .analytics-total{display:grid;gap:8px}
+.analytics-total span{color:var(--tx-muted);font-size:13px}
+.analytics-total strong,.analytics-ring strong{font-size:clamp(19px,2.4vw,29px);line-height:1.1;letter-spacing:-.035em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.analytics-total:first-child{background:linear-gradient(135deg,#743323,#362326);border-color:#9a4d3c}
+.analytics-total:first-child span{color:#ffe5d9}
+.analytics-panel-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.analytics-panel-head h2{margin:0;font-size:18px}
+.analytics .sub{color:var(--tx-muted)}
+.analytics-ring{display:grid;place-items:center;position:relative;width:min(178px,68%);aspect-ratio:1;margin:12px auto 18px;border-radius:50%;background:conic-gradient(var(--expense-segments))}
+.analytics-ring::before{content:'';position:absolute;inset:18%;border-radius:50%;background:var(--tx-panel)}
+.analytics-ring-label{position:relative;display:grid;gap:5px;width:63%;text-align:center}
+.analytics-ring strong{font-size:clamp(14px,1.45vw,21px)}
+.analytics-ring-label span{font-size:11px;color:var(--tx-muted)}
+.analytics-legend{display:grid;gap:8px;list-style:none;margin:0;padding:0}
+.analytics-legend li{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px}
+.analytics-legend li+li{border-top:1px solid var(--tx-line);padding-top:8px}
+.analytics-legend li>span,.analytics-keys span{display:flex;align-items:center;gap:6px}
+.analytics-swatch{width:8px;height:8px;background:var(--swatch);border-radius:50%;flex:none}
+.analytics-keys{display:flex;flex-wrap:wrap;gap:12px;color:var(--tx-muted);font-size:12px}
+.analytics-plot{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:5px;margin-top:12px}
+.analytics-plot-bars{display:flex;align-items:end;justify-content:center;gap:3px;height:170px;padding:0 3px;background:repeating-linear-gradient(to top,transparent 0 32px,#ffffff10 32px 33px);border-bottom:1px solid var(--tx-line)}
+.analytics-plot-bars span{width:min(43%,24px);border-radius:4px 4px 0 0}
+.analytics-revenue{--swatch:#ff865a;background:linear-gradient(#ff9f7b,#a84c37)}
+.analytics-expense{--swatch:#c6adf2;background:linear-gradient(#c6adf2,#70608d)}
+.analytics-plot-day{text-align:center;font-size:10px;color:var(--tx-muted);padding-top:5px}
+.analytics-table-wrap{overflow-x:auto}
+.analytics-table{width:100%;border-collapse:collapse;text-align:left;font-size:13px}
+.analytics-table th,.analytics-table td{padding:9px 8px;border-bottom:1px solid var(--tx-line)}
+.analytics-table th{color:var(--tx-muted);font-weight:600}
+.analytics-table :is(th,td):last-child{text-align:right;white-space:nowrap}
+.analytics-table td:nth-child(4){overflow-wrap:anywhere;min-width:8rem}
+.analytics .analytics-table-note{margin-top:10px}
+@media(max-width:1000px){.analytics-grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:480px){.analytics-totals{grid-template-columns:minmax(0,1fr)}.analytics .card{padding:12px}.analytics-plot-bars{height:140px}}
 </style></head><body>
 <div class="shell"><header><div><div class="logo">TRAINER<span>X</span><small>.io</small></div><div class="sub">GYM MANAGEMENT SUITE</div></div><div class="row"><span id="identity" class="sub"></span><button id="logout" class="secondary hidden">Log out</button></div></header>
 <section id="setup" class="card hidden" style="max-width:500px;margin:5vh auto"><h1>Set up TrainerX</h1><p>Create the first platform administrator. Enter the BOOTSTRAP_TOKEN from your Railway service variables, along with your administrator credentials.</p><form id="setupForm" class="form"><label>Admin email<input name="email" type="email" required autocomplete="email"></label><label>Admin password (12+ characters)<input name="password" type="password" minlength="12" required autocomplete="new-password"></label><label>Setup token<input name="token" type="password" required autocomplete="off"></label><button class="primary" type="submit">Create administrator</button></form><p id="setupNotice" role="status"></p></section><section id="login" class="card"><div class="sub" style="letter-spacing:.08em;color:var(--tx-accent)">TRAINERX ACCESS PORTAL</div><h1 id="portalTitle">Welcome to TrainerX.</h1><p id="portalDescription">Sign in to access your gym management dashboard.</p><form id="loginForm" class="form"><label>Email<input name="email" type="email" required autocomplete="username"></label><label>Password<input name="password" type="password" required autocomplete="current-password"></label><button class="primary" type="submit">Sign in</button><p id="loginNotice" role="status" style="grid-column:1/-1"></p></form><div style="margin-top:24px;display:flex;flex-direction:column;align-items:flex-start;gap:12px"><a id="adminAccess" href="/admin" style="font-size:13px;color:var(--tx-muted);text-decoration:underline;text-underline-offset:4px">Super Admin access</a><a id="backToGym" href="/gym" class="hidden" style="font-size:13px;color:var(--tx-muted);text-decoration:underline;text-underline-offset:4px">Back to gym owner sign in</a><button id="recoverToggle" type="button" style="font-size:12px;font-weight:400;background:transparent;color:var(--tx-muted);padding:0;text-decoration:underline;text-underline-offset:3px" class="hidden">Forgot Super Admin password?</button></div><form id="recoverForm" class="form hidden" style="margin-top:18px"><label>Super Admin email<input name="email" type="email" required></label><label>New password (12+ characters)<input name="password" type="password" minlength="12" required autocomplete="new-password"></label><label>Railway BOOTSTRAP_TOKEN<input name="token" type="password" required autocomplete="off"></label><button class="primary" type="submit">Reset Super Admin password</button></form><p id="recoverNotice" role="status"></p></section>
@@ -206,25 +250,70 @@ if(view==='Financials'){
   const money=value=>account.currency+' '+Number(value).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
   const totals=[['Revenue',report.revenue],['Expenses',report.expenses],['Net cash flow',report.net]];
   const expenseCategories=['Rent','Payroll','Utilities','Equipment','Marketing','Other'];
-  const expenseTotals=report.entries.filter(row=>row.type==='Expense').reduce((totals,row)=>{
-    totals[row.category]=(totals[row.category]||0)+Math.round(Number(row.amount)*100);
-    return totals;
-  },{});
-  el.innerHTML='<h1>'+safe(pageLabel(view))+'</h1><section class="card"><form id="financialDates" class="form">'+
-    '<label>From<input type="date" name="from" value="'+safe(dates.from)+'" required></label>'+
-    '<label>Through<input type="date" name="to" value="'+safe(dates.to)+'" required></label>'+
-    '<button class="secondary">Apply date range</button><button type="button" class="secondary" id="exportFinance">Export CSV</button></form></section>'+
-    '<div class="dash-kpis">'+totals.map(([label,value])=>'<div class="card dash-kpi"><span>'+label+'</span><strong>'+safe(money(value))+'</strong></div>').join('')+'</div>'+
-    '<section class="card"><h2>Expenses by category</h2>'+rows(Object.entries(expenseTotals),([category,cents])=>
-      '<div class="item row"><b>'+safe(category)+'</b><span>'+safe(money(cents/100))+'</span></div>')+'</section>'+
-    '<section class="card"><h2>Record an expense</h2><form id="expenseForm" class="form">'+
-    '<label>Date<input type="date" name="incurred_on" value="'+today+'" required></label>'+
-    '<label>Category<select name="category">'+expenseCategories.map(value=>option(value,value)).join('')+'</select></label>'+
-    '<label>Amount ('+safe(account.currency)+')<input type="number" name="amount" min=".01" max="100000000" step=".01" required></label>'+
-    '<label>Description<input name="description" maxlength="500"></label><button class="primary">Record expense</button></form></section>'+
-    '<section class="card"><h2>Transactions</h2>'+rows(report.entries.slice(0,100),r=>'<div class="item"><b>'+safe(r.type)+' · '+safe(money(r.amount))+
-    '</b><p>'+safe(r.date)+' · '+safe(r.category)+(r.description?' · '+safe(r.description):'')+'</p></div>')+
-    (report.entries.length>100?'<p>Showing 100 transactions. The CSV includes all '+report.entries.length+'.</p>':'')+'</section>';
+  const expenseTotals=new Map();
+  for(const row of report.entries){
+    if(row.type==='Expense')expenseTotals.set(row.category,(expenseTotals.get(row.category)||0)+Math.round(Number(row.amount)*100));
+  }
+  const categories=[...expenseTotals].sort((a,b)=>b[1]-a[1]);
+  const colors=['#ff865a','#c6adf2','#e5b87e','#9cc7c1','#f3b7aa','#9ca9d8'];
+  const totalExpenseCents=categories.reduce((sum,[,cents])=>sum+cents,0);
+  let fraction=0;
+  const segments=categories.map(([,cents],index)=>{
+    const start=fraction;
+    fraction+=100*cents/totalExpenseCents;
+    return colors[index%colors.length]+' '+start+'% '+fraction+'%';
+  }).join(', ')||'#474248 0% 100%';
+  el.innerHTML=`<div class="analytics">
+    <div class="analytics-header">
+      <h1>${safe(pageLabel(view))}</h1>
+      <form id="financialDates" class="analytics-controls">
+        <label>From<input type="date" name="from" value="${safe(dates.from)}" required></label>
+        <label>Through<input type="date" name="to" value="${safe(dates.to)}" required></label>
+        <button class="secondary">Apply date range</button>
+        <button type="button" class="secondary" id="exportFinance">Export CSV</button>
+      </form>
+    </div>
+    <div class="analytics-totals">
+      ${totals.map(([label,value])=>`<section class="card analytics-total"><span>${label}</span><strong>${safe(money(value))}</strong></section>`).join('')}
+    </div>
+    <div class="analytics-grid">
+      <section class="card">
+        <div class="analytics-panel-head"><h2>Expenses by category</h2></div>
+        <div class="analytics-ring" style="--expense-segments:${segments}">
+          <div class="analytics-ring-label"><strong>${safe(money(report.expenses))}</strong><span>Total expenses</span></div>
+        </div>
+        ${categories.length?`<ul class="analytics-legend">${categories.map(([category,cents],index)=>`
+          <li><span><i class="analytics-swatch" style="--swatch:${colors[index%colors.length]}" aria-hidden="true"></i>${safe(category)}</span>
+          <strong>${safe(money(cents/100))}</strong></li>`).join('')}</ul>`:'<p class="sub">No expenses recorded for this period.</p>'}
+      </section>
+      <section class="card">
+        <div class="analytics-panel-head"><h2>Financial activity</h2>
+          <div class="analytics-keys"><span><i class="analytics-swatch analytics-revenue" aria-hidden="true"></i>Revenue</span>
+          <span><i class="analytics-swatch analytics-expense" aria-hidden="true"></i>Expenses</span></div>
+        </div>
+        ${renderFinancialActivity(report.entries,dates,money)}
+      </section>
+    </div>
+    <section class="card">
+      <div class="analytics-panel-head"><h2>Record an expense</h2></div>
+      <form id="expenseForm" class="form">
+        <label>Date<input type="date" name="incurred_on" value="${today}" required></label>
+        <label>Category<select name="category">${expenseCategories.map(value=>option(value,value)).join('')}</select></label>
+        <label>Amount (${safe(account.currency)})<input type="number" name="amount" min=".01" max="100000000" step=".01" required></label>
+        <label>Description<input name="description" maxlength="500"></label>
+        <button class="primary">Record expense</button>
+      </form>
+    </section>
+    <section class="card">
+      <div class="analytics-panel-head"><h2>Transactions</h2><span class="sub">${report.entries.length} recorded</span></div>
+      ${report.entries.length?`<div class="analytics-table-wrap" role="region" aria-label="Transactions" tabindex="0"><table class="analytics-table">
+        <thead><tr><th scope="col">Date</th><th scope="col">Type</th><th scope="col">Category</th><th scope="col">Description</th><th scope="col">Amount</th></tr></thead>
+        <tbody>${report.entries.slice(0,100).map(row=>`<tr><td>${safe(row.date)}</td><td>${safe(row.type)}</td>
+          <td>${safe(row.category)}</td><td>${safe(row.description||'—')}</td><td>${safe(money(row.amount))}</td></tr>`).join('')}</tbody>
+      </table></div>`:'<p class="sub">No transactions in this period.</p>'}
+      ${report.entries.length>100?`<p class="sub analytics-table-note">Showing 100 transactions. The CSV includes all ${report.entries.length}.</p>`:''}
+    </section>
+  </div>`;
   $('#financialDates').onsubmit=e=>{
     e.preventDefault();
     const next=formData(e.currentTarget);
@@ -275,6 +364,33 @@ if(view==='Renewals'){const r=await api('/renewals');el.innerHTML='<h1>Upcoming 
 
 if(view==='My plans'){const p=await api('/plans');el.innerHTML='<h1>Available plans</h1><div class="card">'+rows(p,x=>'<div class="item"><b>'+safe(x.name)+'</b> · '+safe(x.months)+' months · '+safe(x.price)+'</div>')+'</div>'}
 }catch(e){if(!signal.aborted)el.innerHTML='<p class="error">'+safe(e.message)+'</p>'}}
+function renderFinancialActivity(entries,dates,money){
+  if(!entries.length)return '<p class="sub">No revenue or expenses recorded for this period.</p>';
+  const day=86400000;
+  const from=Date.parse(dates.from);
+  const days=Math.round((Date.parse(dates.to)-from)/day)+1;
+  const span=Math.ceil(days/8);
+  const periods=Array.from({length:Math.ceil(days/span)},()=>({Payment:0,Expense:0}));
+  for(const row of entries){
+    const index=Math.floor((Date.parse(row.date)-from)/(day*span));
+    periods[index][row.type]+=Math.round(Number(row.amount)*100);
+  }
+  const max=Math.max(1,...periods.map(period=>Math.max(period.Payment,period.Expense)));
+  const dateFormat=new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric',timeZone:'UTC'});
+  const bars=periods.map((period,index)=>{
+    const start=dateFormat.format(from+index*span*day);
+    const end=dateFormat.format(from+Math.min(days-1,(index+1)*span-1)*day);
+    const label=(start===end?start:start+' – '+end)+': revenue '+money(period.Payment/100)+', expenses '+money(period.Expense/100);
+    const html=`<div title="${safe(label)}" aria-hidden="true"><div class="analytics-plot-bars">
+      <span class="analytics-revenue" style="height:${period.Payment/max*100}%"></span>
+      <span class="analytics-expense" style="height:${period.Expense/max*100}%"></span>
+    </div><div class="analytics-plot-day">${safe(start)}</div></div>`;
+    return {label,html};
+  });
+  return '<div class="analytics-plot" role="img" aria-label="'+safe(bars.map(bar=>bar.label).join('. '))+'">'+
+    bars.map(bar=>bar.html).join('')+'</div>';
+}
+
 function startDashboardClock(clock,signal){
   const dateNode=clock.querySelector('.dashboard-clock-date');
   const timeNode=clock.querySelector('.dashboard-clock-time');
