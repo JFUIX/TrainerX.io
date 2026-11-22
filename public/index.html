@@ -55,7 +55,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .insight-shortcuts .secondary{background:#333034}
 .insight-summary,.insight-panels{display:grid;gap:12px;min-width:0}
 .insight-summary{grid-template-columns:repeat(3,minmax(0,1fr))}
-.insight-panels{grid-template-columns:minmax(0,4fr) minmax(0,5fr)}
+.insight-panels{grid-template-columns:minmax(0,5fr) minmax(0,4fr)}
 .insight .card{margin:0;border:1px solid var(--tx-line);border-radius:15px;box-shadow:none;background:var(--tx-panel);padding:16px;min-width:0}
 .insight-summary .card{background:linear-gradient(145deg,#353032,#232225 75%)}
 .insight-summary .insight-featured{background:linear-gradient(125deg,#8c341e,#5b251c 68%,#432322);border-color:#aa533b}
@@ -96,7 +96,6 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .insight-retention-hint{font-size:13px;margin:0 0 8px}
 @media(max-width:950px){.insight-panels{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:530px){.insight-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.insight-summary .insight-featured{grid-column:1/-1}.insight .card{padding:12px}}
-.insight-operations{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);align-items:start;gap:12px}
 .insight-text-button{padding:5px 0;background:transparent;color:var(--tx-accent-soft);font-size:13px}
 .insight-text-button:hover{text-decoration:underline}
 .insight-activity{margin-top:16px;padding-top:14px;border-top:1px solid var(--tx-line)}
@@ -124,7 +123,6 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .insight-account-form label{min-width:160px}
 .insight-account-form button{white-space:nowrap}
 .dashboard-setting-status:empty{display:none}
-@media(max-width:950px){.insight-operations{grid-template-columns:minmax(0,1fr)}}
 .analytics{display:grid;gap:16px;min-width:0}
 .analytics h1,.analytics h2,.analytics p{margin:0}
 .analytics-header,.analytics-controls{display:flex;align-items:end;gap:10px;flex-wrap:wrap}
@@ -169,14 +167,34 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .analytics .analytics-table-note{margin-top:10px}
 @media(max-width:1000px){.analytics-grid{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:480px){.analytics-totals{grid-template-columns:minmax(0,1fr)}.analytics .card{padding:12px}.analytics-plot-bars{height:140px}}
-.insight-lead,.insight-content{min-width:0;display:grid;gap:16px}
-.dashboard-attendance-rail{min-width:0}
+.insight-lead,.insight-content,.insight-attendance-stack{min-width:0;display:grid;gap:12px}
+.insight-lead{padding-top:2px}
+.insight .dashboard-clock{border-right:3px solid var(--tx-accent);padding-right:12px}
+.insight .dashboard-clock-time{color:#ffe9df}
+.insight .insight-summary .card:not(.insight-featured){background:linear-gradient(155deg,#302b2e,var(--tx-panel) 75%)}
+.insight .insight-summary .insight-featured{background:radial-gradient(ellipse at 10% 0,#af4d2e,transparent 75%),linear-gradient(130deg,#713221,#472625)}
+.insight .insight-summary .card:hover{border-color:#a06354}
+.insight .dashboard-attendance-rail{background:linear-gradient(150deg,#322727,var(--tx-panel) 68%);border-color:#765045}
+.insight .dashboard-attendance-rail h2{display:flex;align-items:center;gap:8px}
+.insight .dashboard-attendance-rail h2::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--tx-accent);box-shadow:0 0 10px #ff865a65}
+.insight-attendance-stack .insight-attendance-stats{gap:7px}
+.insight-attendance-stack .insight-attendance-stats strong{font-size:19px}
+.insight-attendance-stack .insight-attendance-stats .insight-stat+.insight-stat{padding-left:7px}
+.insight-attendance-stack .dash-chart{height:112px}
+.insight-front-desk{display:grid;gap:16px;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+.insight-front-desk .insight-activity-list{max-height:224px;overflow:auto;scrollbar-width:thin}
+.insight-front-desk .insight-activity{border:0;border-left:1px solid var(--tx-line);padding:0 0 0 16px;margin:0}
+@media(max-width:700px){
+  .insight-front-desk{grid-template-columns:minmax(0,1fr)}
+  .insight-front-desk .insight-activity{border-left:0;border-top:1px solid var(--tx-line);padding:12px 0 0}
+}
 @media(min-width:1240px){
   .shell:has(.dashboard-attendance-rail){max-width:1680px;padding-inline:clamp(22px,2.1vw,36px)}
-  .insight:has(.dashboard-attendance-rail){grid-template-columns:minmax(0,1fr) minmax(245px,286px);grid-template-areas:"lead attendance" "content attendance";align-items:start}
+  .insight:has(.dashboard-attendance-rail){grid-template-columns:minmax(0,1fr) minmax(245px,286px);grid-template-areas:"lead attendance" "panels attendance" "content content";align-items:start;grid-template-rows:auto 1fr auto}
   .insight-lead{grid-area:lead}
+  .insight-panels{grid-area:panels}
+  .insight-attendance-stack{grid-area:attendance}
   .insight-content{grid-area:content}
-  .dashboard-attendance-rail{grid-area:attendance;position:sticky;top:20px}
 }
 .dashboard-check-in{display:grid;gap:8px}
 .dashboard-check-in-form{display:grid;gap:5px}
@@ -193,7 +211,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .dashboard-check-in-history h3 span{font-variant-numeric:tabular-nums;color:var(--tx-muted)}
 .dashboard-check-in-history p{margin-top:8px}
 .dashboard-check-in-history li>span{color:var(--tx-text)}
-.dashboard-check-in-history ul{margin:8px 0 0;padding:0;list-style:none;max-height:260px;overflow:auto}
+.dashboard-check-in-history ul{margin:8px 0 0;padding:0;list-style:none;max-height:180px;overflow:auto;scrollbar-width:thin}
 .dashboard-check-in-history li{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--tx-line);overflow-wrap:anywhere}
 .dashboard-check-in-history time{white-space:nowrap}
 .dashboard-attendance-trends{margin-top:13px;padding-top:10px;border-top:1px solid var(--tx-line)}
@@ -491,50 +509,11 @@ function renderInsight(el,report,insights,trends){
           ${stat('Today’s check-ins',report.attendance,{target:'Attendance',link:'Open check-in'})}
         </section>
       </div>
+      <div class="insight-attendance-stack">
       <aside class="card dashboard-attendance-rail" aria-labelledby="dashboardAttendanceHeading">
         <div class="insight-panel-head"><h2 id="dashboardAttendanceHeading">Today’s attendance</h2></div>
         <div class="dashboard-check-in" id="dashboardCheckIn"></div>
       </aside>
-      <div class="insight-content">
-        <div class="insight-panels">
-            <section class="card">
-              <div class="insight-panel-head"><h2>Membership growth</h2></div>
-              <div class="insight-details">
-                ${stat('Joined today',report.new_members)}
-                ${stat('Joined this month',insights.joined_month)}
-                ${stat('Eligible to check in',report.active)}
-              </div>
-              ${monthlyChart('New members','joined')}
-            </section>
-            <section class="card">
-              <div class="insight-panel-head"><h2>Revenue</h2><span class="insight-period">Last 7 days</span></div>
-              ${weeklyChart('revenue',money,'Revenue for the last seven days')}
-              <div class="insight-details">
-                ${stat('Collected this month',report.revenue_month,{key:'revenue'})}
-                ${stat('Collected in the past 30 days',insights.collected_30d,{key:'rolling'})}
-                ${stat('Pending fees',money(report.pending))}
-              </div>
-            </section>
-        </div>
-        <div class="insight-operations">
-          <section class="card">
-            <div class="insight-panel-head">
-              <h2>Front desk</h2>
-              <button type="button" class="insight-text-button" data-insight-view="Alerts">View alerts <span aria-hidden="true">→</span></button>
-            </div>
-            <div class="insight-actions">
-              ${action('Alerts',insights.expiring_7d,'Expiring in 7 days')}
-              ${action('Members',report.expired,'Expired memberships')}
-              ${action('Members',insights.expired_30d,'Expired in the past 30 days')}
-            </div>
-            <div class="insight-activity">
-              <div class="insight-panel-head"><h3>Recent activity</h3><span class="insight-period">Today</span></div>
-              ${report.activity.length?`<ul class="insight-activity-list">${report.activity.map(event=>`<li>
-                <div><strong>${safe(event.who)}</strong><span>${safe(event.kind)}</span></div>
-                <time datetime="${safe(event.occurred_at)}">${safe(new Date(event.occurred_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}))}</time>
-              </li>`).join('')}</ul>`:'<p class="insight-period">No check-ins or payments yet today.</p>'}
-            </div>
-          </section>
           <section class="card">
             <div class="insight-panel-head"><h2>Attendance trends</h2><span class="insight-period">Last 7 days</span></div>
               <div class="insight-attendance-stats">
@@ -548,7 +527,48 @@ function renderInsight(el,report,insights,trends){
                 ${monthlyChart('Check-ins','visits')}
               </details>
           </section>
+      </div>
+        <div class="insight-panels">
+            <section class="card">
+              <div class="insight-panel-head"><h2>Revenue</h2><span class="insight-period">Last 7 days</span></div>
+              ${weeklyChart('revenue',money,'Revenue for the last seven days')}
+              <div class="insight-details">
+                ${stat('Collected this month',report.revenue_month,{key:'revenue'})}
+                ${stat('Collected in the past 30 days',insights.collected_30d,{key:'rolling'})}
+                ${stat('Pending fees',money(report.pending))}
+              </div>
+            </section>
+            <section class="card">
+              <div class="insight-panel-head"><h2>Membership growth</h2></div>
+              <div class="insight-details">
+                ${stat('Joined today',report.new_members)}
+                ${stat('Joined this month',insights.joined_month)}
+                ${stat('Eligible to check in',report.active)}
+              </div>
+              ${monthlyChart('New members','joined')}
+            </section>
         </div>
+      <div class="insight-content">
+          <section class="card">
+            <div class="insight-panel-head">
+              <h2>Front desk</h2>
+              <button type="button" class="insight-text-button" data-insight-view="Alerts">View alerts <span aria-hidden="true">→</span></button>
+            </div>
+            <div class="insight-front-desk">
+            <div class="insight-actions">
+              ${action('Alerts',insights.expiring_7d,'Expiring in 7 days')}
+              ${action('Members',report.expired,'Expired memberships')}
+              ${action('Members',insights.expired_30d,'Expired in the past 30 days')}
+            </div>
+            <div class="insight-activity">
+              <div class="insight-panel-head"><h3>Recent activity</h3><span class="insight-period">Today</span></div>
+              ${report.activity.length?`<ul class="insight-activity-list">${report.activity.map(event=>`<li>
+                <div><strong>${safe(event.who)}</strong><span>${safe(event.kind)}</span></div>
+                <time datetime="${safe(event.occurred_at)}">${safe(new Date(event.occurred_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}))}</time>
+              </li>`).join('')}</ul>`:'<p class="insight-period">No check-ins or payments yet today.</p>'}
+            </div>
+            </div>
+          </section>
         <section class="card" id="dashboardAccount"></section>
         <details class="card insight-disclosure">
           <summary>
