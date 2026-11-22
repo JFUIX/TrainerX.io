@@ -49,10 +49,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .insight-shortcuts{display:flex;gap:8px;flex-wrap:wrap}
 .insight-shortcuts button{padding:9px 12px;font-size:13px}
 .insight-shortcuts .secondary{background:#333034}
-.insight-summary,.insight-panels,.insight-support{display:grid;gap:12px;min-width:0}
+.insight-summary,.insight-panels{display:grid;gap:12px;min-width:0}
 .insight-summary{grid-template-columns:repeat(3,minmax(0,1fr))}
 .insight-panels{grid-template-columns:minmax(0,4fr) minmax(0,5fr)}
-.insight-support{grid-template-columns:repeat(2,minmax(0,1fr))}
 .insight .card{margin:0;border:1px solid var(--tx-line);border-radius:15px;box-shadow:none;background:var(--tx-panel);padding:16px;min-width:0}
 .insight-summary .card{background:linear-gradient(145deg,#353032,#232225 75%)}
 .insight-summary .insight-featured{background:linear-gradient(125deg,#8c341e,#5b251c 68%,#432322);border-color:#aa533b}
@@ -91,19 +90,47 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .insight-table tbody th{font-weight:500}
 .insight-table td{font-variant-numeric:tabular-nums}
 .insight-retention-hint{font-size:13px;margin:0 0 8px}
-@media(max-width:950px){.insight-panels,.insight-support{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:950px){.insight-panels{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:530px){.insight-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.insight-summary .insight-featured{grid-column:1/-1}.insight .card{padding:12px}}
 .renewal-calendar{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px}
 .calendar-day{display:grid;gap:5px;min-width:0;padding:10px 5px;border:1px solid var(--tx-line);background:var(--tx-control);color:var(--tx-text);font-size:12px}
 .calendar-day span{color:var(--tx-muted);font-weight:500}
 .calendar-day[aria-pressed=true]{border-color:var(--tx-accent);background:#382723}
-.calendar-results h3,.dashboard-account h3{margin:12px 0 3px;font-size:15px}
-.calendar-results p,.dashboard-account p{margin:4px 0 8px}
+.calendar-results h3{margin:12px 0 3px;font-size:15px}
+.calendar-results p{margin:4px 0 8px}
 .calendar-results ul{padding-left:18px;margin:4px 0 0}
-.dashboard-account{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:16px}
-.dashboard-account .form{align-items:end}
 @media(max-width:850px){.renewal-calendar{grid-template-columns:repeat(4,minmax(0,1fr))}}
-@media(max-width:600px){.dashboard-account{grid-template-columns:minmax(0,1fr)}}
+.insight-operations{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);align-items:start;gap:12px}
+.insight-text-button{padding:5px 0;background:transparent;color:var(--tx-accent-soft);font-size:13px}
+.insight-text-button:hover{text-decoration:underline}
+.insight-activity{margin-top:16px;padding-top:14px;border-top:1px solid var(--tx-line)}
+.insight-activity h3{margin:0;font-size:14px}
+.insight-activity-list{margin:0;padding:0;list-style:none}
+.insight-activity-list li{display:flex;justify-content:space-between;align-items:start;gap:12px;padding:8px 0}
+.insight-activity-list li+li{border-top:1px solid var(--tx-line)}
+.insight-activity-list strong{display:block;overflow-wrap:anywhere;font-size:13px}
+.insight-activity-list span,.insight-activity-list time{color:var(--tx-muted);font-size:12px}
+.insight-activity-list time{white-space:nowrap}
+.insight-attendance-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.insight-attendance-stats .insight-stat+.insight-stat{border-left:1px solid var(--tx-line);padding-left:10px}
+.insight-attendance-stats .insight-stat-label{font-size:12px}
+.insight-attendance-stats strong{font-size:22px}
+.insight-attendance-trend{padding-top:11px;color:var(--tx-muted);font-size:13px}
+.insight-attendance-trend summary{cursor:pointer}
+.insight-disclosure summary{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;list-style:none}
+.insight-disclosure summary::-webkit-details-marker{display:none}
+.insight-disclosure summary::after{content:'';width:8px;height:8px;border:solid var(--tx-muted);border-width:0 2px 2px 0;transform:rotate(45deg);flex:none;margin-right:3px}
+.insight-disclosure[open] summary::after{transform:rotate(225deg)}
+.insight-disclosure-title{display:block;font-size:15px;font-weight:650;margin-bottom:3px}
+.insight-disclosure-body{border-top:1px solid var(--tx-line);margin-top:13px;padding-top:12px}
+.insight-disclosure-body p{margin:4px 0 10px}
+.insight-account-state{margin-left:auto;padding:4px 7px;border:1px solid var(--tx-line);border-radius:6px;font-size:12px;color:var(--tx-muted)}
+.insight-account-state[data-state="on"]{color:var(--tx-accent-soft)}
+.insight-account-form{display:flex;align-items:end;gap:8px;flex-wrap:wrap}
+.insight-account-form label{min-width:160px}
+.insight-account-form button{white-space:nowrap}
+.dashboard-setting-status:empty{display:none}
+@media(max-width:950px){.insight-operations{grid-template-columns:minmax(0,1fr)}}
 </style></head><body>
 <div class="shell"><header><div><div class="logo">TRAINER<span>X</span><small>.io</small></div><div class="sub">GYM MANAGEMENT SUITE</div></div><div class="row"><span id="identity" class="sub"></span><button id="logout" class="secondary hidden">Log out</button></div></header>
 <section id="setup" class="card hidden" style="max-width:500px;margin:5vh auto"><h1>Set up TrainerX</h1><p>Create the first platform administrator. Enter the BOOTSTRAP_TOKEN from your Railway service variables, along with your administrator credentials.</p><form id="setupForm" class="form"><label>Admin email<input name="email" type="email" required autocomplete="email"></label><label>Admin password (12+ characters)<input name="password" type="password" minlength="12" required autocomplete="new-password"></label><label>Setup token<input name="token" type="password" required autocomplete="off"></label><button class="primary" type="submit">Create administrator</button></form><p id="setupNotice" role="status"></p></section><section id="login" class="card"><div class="sub" style="letter-spacing:.08em;color:var(--tx-accent)">TRAINERX ACCESS PORTAL</div><h1 id="portalTitle">Welcome to TrainerX.</h1><p id="portalDescription">Sign in to access your gym management dashboard.</p><form id="loginForm" class="form"><label>Email<input name="email" type="email" required autocomplete="username"></label><label>Password<input name="password" type="password" required autocomplete="current-password"></label><button class="primary" type="submit">Sign in</button><p id="loginNotice" role="status" style="grid-column:1/-1"></p></form><div style="margin-top:24px;display:flex;flex-direction:column;align-items:flex-start;gap:12px"><a id="adminAccess" href="/admin" style="font-size:13px;color:var(--tx-muted);text-decoration:underline;text-underline-offset:4px">Super Admin access</a><a id="backToGym" href="/gym" class="hidden" style="font-size:13px;color:var(--tx-muted);text-decoration:underline;text-underline-offset:4px">Back to gym owner sign in</a><button id="recoverToggle" type="button" style="font-size:12px;font-weight:400;background:transparent;color:var(--tx-muted);padding:0;text-decoration:underline;text-underline-offset:3px" class="hidden">Forgot Super Admin password?</button></div><form id="recoverForm" class="form hidden" style="margin-top:18px"><label>Super Admin email<input name="email" type="email" required></label><label>New password (12+ characters)<input name="password" type="password" minlength="12" required autocomplete="new-password"></label><label>Railway BOOTSTRAP_TOKEN<input name="token" type="password" required autocomplete="off"></label><button class="primary" type="submit">Reset Super Admin password</button></form><p id="recoverNotice" role="status"></p></section>
@@ -318,45 +345,54 @@ function renderInsight(el,report,insights,trends){
             </div>
           </section>
       </div>
-      <section class="card">
-        <div class="insight-panel-head"><h2>Recent activity</h2><span class="insight-period">Today</span></div>
-        ${report.activity.length?`<table class="insight-table">
-          <thead><tr><th scope="col">Activity</th><th scope="col">Member</th><th scope="col">Time</th></tr></thead>
-          <tbody>${report.activity.map(event=>`<tr><td>${safe(event.kind)}</td><td>${safe(event.who)}</td>
-            <td>${safe(new Date(event.occurred_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}))}</td></tr>`).join('')}</tbody>
-        </table>`:'<p>No check-ins or payments recorded today.</p>'}
-      </section>
-      <div class="insight-support">
-          <section class="card">
-            <div class="insight-panel-head"><h2>Needs attention</h2></div>
-            <div class="insight-actions">
-              ${action('Alerts',insights.expiring_7d,'Expiring in 7 days')}
-              ${action('Members',report.expired,'Expired memberships')}
-              ${action('Members',insights.expired_30d,'Expired in the past 30 days')}
-            </div>
-          </section>
-          <section class="card">
-            <div class="insight-panel-head"><h2>Attendance</h2><span class="insight-period">Last 7 days</span></div>
-            ${weeklyChart('attendance',value=>value+' visits','Check-ins for the last seven days')}
-            <div class="insight-details">
-              ${stat('Check-ins in the past 30 days',insights.visits_30d)}
-              ${stat('Unique visitors in the past 30 days',insights.visitors_30d)}
-              ${stat('Today’s attendance rate',attendanceRate+'%')}
-            </div>
+      <div class="insight-operations">
+        <section class="card">
+          <div class="insight-panel-head">
+            <h2>Front desk</h2>
+            <button type="button" class="insight-text-button" data-insight-view="Alerts">View alerts <span aria-hidden="true">→</span></button>
+          </div>
+          <div class="insight-actions">
+            ${action('Alerts',insights.expiring_7d,'Expiring in 7 days')}
+            ${action('Members',report.expired,'Expired memberships')}
+            ${action('Members',insights.expired_30d,'Expired in the past 30 days')}
+          </div>
+          <div class="insight-activity">
+            <div class="insight-panel-head"><h3>Recent activity</h3><span class="insight-period">Today</span></div>
+            ${report.activity.length?`<ul class="insight-activity-list">${report.activity.map(event=>`<li>
+              <div><strong>${safe(event.who)}</strong><span>${safe(event.kind)}</span></div>
+              <time datetime="${safe(event.occurred_at)}">${safe(new Date(event.occurred_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}))}</time>
+            </li>`).join('')}</ul>`:'<p class="insight-period">No check-ins or payments yet today.</p>'}
+          </div>
+        </section>
+        <section class="card">
+          <div class="insight-panel-head"><h2>Attendance</h2><span class="insight-period">Last 7 days</span></div>
+          <div class="insight-attendance-stats">
+            ${stat('Today’s attendance rate',attendanceRate+'%')}
+            ${stat('Check-ins · 30 days',insights.visits_30d)}
+            ${stat('Unique visitors · 30 days',insights.visitors_30d)}
+          </div>
+          ${weeklyChart('attendance',value=>value+' visits','Check-ins for the last seven days')}
+          <details class="insight-attendance-trend">
+            <summary>Six-month attendance trend</summary>
             ${monthlyChart('Check-ins','visits')}
-          </section>
+          </details>
+        </section>
       </div>
       <section class="card" id="dashboardAccount"></section>
-      <section class="card">
-        <div class="insight-panel-head"><h2>Retention and churn</h2><span class="insight-period">Last 6 months</span></div>
-        <p class="insight-retention-hint">Based on members whose memberships were in force at the start of each month.</p>
-        <table class="insight-table insight-retention">
-          <thead><tr><th scope="col">Month</th><th scope="col">Opening members</th><th scope="col">Retained</th><th scope="col">Churned</th></tr></thead>
-          <tbody>${trends.map(row=>`<tr><th scope="row">${safe(row.month)}</th><td>${row.opening}</td>
-            <td>${row.opening?Math.round(row.retained/row.opening*100)+'%':'—'}</td>
-            <td>${row.opening?row.opening-row.retained:'—'}</td></tr>`).join('')}</tbody>
-        </table>
-      </section>
+      <details class="card insight-disclosure">
+        <summary>
+          <div><span class="insight-disclosure-title">Retention and churn</span><span class="insight-period">Last 6 months</span></div>
+        </summary>
+        <div class="insight-disclosure-body">
+          <p class="insight-retention-hint">Based on members whose memberships were in force at the start of each month.</p>
+          <table class="insight-table insight-retention">
+            <thead><tr><th scope="col">Month</th><th scope="col">Opening members</th><th scope="col">Retained</th><th scope="col">Churned</th></tr></thead>
+            <tbody>${trends.map(row=>`<tr><th scope="row">${safe(row.month)}</th><td>${row.opening}</td>
+              <td>${row.opening?Math.round(row.retained/row.opening*100)+'%':'—'}</td>
+              <td>${row.opening?row.opening-row.retained:'—'}</td></tr>`).join('')}</tbody>
+          </table>
+        </div>
+      </details>
     </div>`;
 
   el.querySelectorAll('[data-insight-view]').forEach(button=>button.onclick=()=>{
@@ -423,16 +459,23 @@ function renderDashboardAccount(panel,account,api,signal){
     return;
   }
   const deliveryStatus={sent:'accepted by WhatsApp',failed:'failed',sending:'pending or interrupted'};
-  panel.innerHTML='<div class="insight-panel-head"><h2>Gym account</h2></div><div class="dashboard-account">'+
-    '<div><h3>'+safe(account.name)+'</h3><p>'+safe(account.subscription_plan)+' plan · '+
-    (account.subscription_until?'Paid through '+safe(account.subscription_until):'No expiry set')+'</p></div>'+
-    '<div><h3>WhatsApp reminders</h3><p>Members who opt in receive one reminder per membership expiry or overdue billing period.</p>'+
+  const whatsappState=enabled=>account.whatsapp_configured?(enabled?'On':'Off'):'Setup needed';
+  panel.innerHTML='<details class="insight-disclosure">'+
+    '<summary><div><span class="insight-disclosure-title">Gym account</span><span class="insight-period">'+
+    safe(account.name)+' · '+safe(account.subscription_plan)+' plan · '+
+    (account.subscription_until?'Paid through '+safe(account.subscription_until):'No expiry set')+'</span></div>'+
+    '<span class="insight-account-state" data-state="'+(account.whatsapp_configured&&account.whatsapp_enabled?'on':'off')+'">WhatsApp · '+whatsappState(account.whatsapp_enabled)+'</span></summary>'+
+    '<div class="insight-disclosure-body"><h3>WhatsApp reminders</h3>'+
+    '<p>Opted-in members receive reminders for expiring memberships and overdue payments.</p>'+
     (account.reminders.length?'<p>Last 30 days · '+account.reminders.map(r=>safe(r.total)+' '+safe(deliveryStatus[r.status])).join(' · ')+'</p>':'')+
-    (account.whatsapp_configured?'':'<p>Connect a WhatsApp Business sender and approved templates before enabling reminders.</p>')+
-    '<form id="whatsappSettings" class="form"><label>Automated reminders<select name="enabled">'+
-    option('false','Off',String(account.whatsapp_enabled))+option('true','On',String(account.whatsapp_enabled))+
-    '</select></label><button class="primary">Save settings</button></form>'+
-    '<p class="dashboard-setting-status" role="status" aria-live="polite"></p></div></div>';
+    (account.whatsapp_configured?'':'<p>Connect a WhatsApp Business sender and approved templates to turn on reminders.</p>')+
+    '<form id="whatsappSettings" class="insight-account-form"><label>Automated reminders<select name="enabled">'+
+    option('false','Off',String(account.whatsapp_enabled))+
+    (account.whatsapp_configured?option('true','On',String(account.whatsapp_enabled)):
+      '<option value="true" disabled '+(account.whatsapp_enabled?'selected':'')+'>On</option>')+
+    '</select></label><button class="secondary">Save settings</button></form>'+
+    '<p class="dashboard-setting-status" role="status" aria-live="polite"></p></div></details>';
+  const badge=panel.querySelector('.insight-account-state');
   const form=panel.querySelector('#whatsappSettings');
   const status=panel.querySelector('[role="status"]');
   const submit=form.querySelector('button');
@@ -442,7 +485,10 @@ function renderDashboardAccount(panel,account,api,signal){
     status.className='dashboard-setting-status';
     status.textContent='Saving…';
     try{
-      await api('/gym-account/whatsapp','PUT',{enabled:form.elements.enabled.value==='true'});
+      const enabled=form.elements.enabled.value==='true';
+      await api('/gym-account/whatsapp','PUT',{enabled});
+      badge.textContent='WhatsApp · '+whatsappState(enabled);
+      badge.dataset.state=account.whatsapp_configured&&enabled?'on':'off';
       status.classList.add('success');
       status.textContent='Settings saved.';
     }catch(error){
