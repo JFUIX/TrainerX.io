@@ -9,6 +9,7 @@ services:
       - dbdata:/var/lib/postgresql/data
       - ./schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
       - ./migrations/004-member-profiles.sql:/docker-entrypoint-initdb.d/04-member-profiles.sql:ro
+      - ./migrations/005-gym-operations.sql:/docker-entrypoint-initdb.d/05-gym-operations.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U trainerx"]
       interval: 5s
@@ -19,6 +20,12 @@ services:
     environment:
       DB_PASSWORD: ${DB_PASSWORD}
       BOOTSTRAP_TOKEN: ${BOOTSTRAP_TOKEN:?Set BOOTSTRAP_TOKEN}
+      WHATSAPP_TOKEN: ${WHATSAPP_TOKEN:-}
+      WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID:-}
+      WHATSAPP_API_VERSION: ${WHATSAPP_API_VERSION:-}
+      WHATSAPP_EXPIRY_TEMPLATE: ${WHATSAPP_EXPIRY_TEMPLATE:-}
+      WHATSAPP_OVERDUE_TEMPLATE: ${WHATSAPP_OVERDUE_TEMPLATE:-}
+      WHATSAPP_TEMPLATE_LANGUAGE: ${WHATSAPP_TEMPLATE_LANGUAGE:-en}
     ports:
       - "127.0.0.1:3000:3000"
     depends_on:

@@ -1,4 +1,5 @@
 import test from 'node:test';
+import {createHash,createHmac} from 'node:crypto';
 import assert from 'node:assert/strict';
 const base='http://127.0.0.1:3000';
 const request=async(path,method='GET',body,token)=>{const r=await fetch(base+path,{method,headers:{'content-type':'application/json',...(token?{'authorization':'Bearer '+token}:{})},body:body?JSON.stringify(body):undefined});let data=null;try{data=await r.json()}catch{}return {status:r.status,data}};
@@ -28,4 +29,97 @@ test('health and role-isolated membership and payment journey',async()=>{
  const memberWorkouts=await request('/workouts','GET',null,memberLogin.data.token);assert.equal(memberWorkouts.status,200);assert.equal(memberWorkouts.data.length,1);
  assert.ok(gym.data.id);
  const denied=await request('/members','GET',null,admin.data.token);assert.equal(denied.status,403);
+ const ownerToken=owner.data.token,adminToken=admin.data.token;
+ const memberFreeze='/members/'+member.data.id+'/freeze';
+ const freeze={starts_on:today,ends_on:today};
+ assert.equal((await request(memberFreeze,'PUT',freeze,ownerToken)).status,200);
+ assert.deepEqual((await request(memberFreeze,'GET',null,ownerToken)).data,freeze);
+ const report=await request('/report','GET',null,ownerToken);
+ assert.equal(report.status,200);
+ assert.equal(report.data.active,0);
+ assert.equal((await request('/attendance','POST',{member_id:member.data.id},ownerToken)).status,409);
+ const payload=gym.data.id+'.'+(Math.floor(Date.now()/60000)+1);
+ const gateKey=createHash('sha256').update('trainerx-gate-v1:'+process.env.BOOTSTRAP_TOKEN).digest();
+ const gate=payload+'.'+createHmac('sha256',gateKey).update(payload).digest('hex');
+ assert.equal((await request('/gate-checkin','POST',{code:gate},memberLogin.data.token)).status,409);
+ assert.equal((await request(memberFreeze,'DELETE',null,ownerToken)).status,204);
+ assert.equal((await request('/gate-checkin','POST',{code:gate},memberLogin.data.token)).status,201);
+
+ const previousMonth=today.slice(0,7)+'-01';
+ const lastMonth=new Date(Date.parse(previousMonth)-86400000).toISOString().slice(0,7)+'-01';
+ assert.equal((await request('/memberships','POST',{member_id:member.data.id,plan_id:plan.data.id,starts_on:lastMonth},ownerToken)).status,201);
+ const alerts=await request('/alerts','GET',null,ownerToken);
+ assert.equal(alerts.status,200);
+ assert.ok(alerts.data.some(row=>row.kind==='overdue'&&Number(row.amount)===2500));
+ const trends=await request('/membership-trends','GET',null,ownerToken);
+ assert.equal(trends.status,200);
+ assert.equal(trends.data.length,6);
+ assert.equal(trends.data.at(-1).visits,1);
+ assert.equal(trends.data.at(-1).retained,1);
+
+ const expense={incurred_on:today,category:'Rent',description:'Studio rent',amount:150};
+ assert.equal((await request('/expenses','POST',expense,ownerToken)).status,201);
+ const ledgerPath='/financial-report?from='+today+'&to='+today;
+ const ledger=await request(ledgerPath,'GET',null,ownerToken);
+ assert.equal(ledger.status,200);
+ assert.equal(ledger.data.revenue,1000);
+ assert.equal(ledger.data.expenses,150);
+ assert.equal(ledger.data.net,850);
+ assert.equal(ledger.data.entries.length,2);
+ assert.equal((await request(ledgerPath,'GET',null,memberLogin.data.token)).status,403);
+
+ const staffEmail='staff-'+Date.now()+'@example.test';
+ const staff=await request('/users','POST',{email:staffEmail,password,role:'reception'},ownerToken);
+ assert.equal(staff.status,201);
+ const staffLogin=await request('/login','POST',{email:staffEmail,password});
+ assert.equal(staffLogin.status,200);
+ assert.equal((await request('/alerts','GET',null,staffLogin.data.token)).status,200);
+ assert.equal((await request('/expenses','POST',expense,staffLogin.data.token)).status,403);
+ const staffPath='/staff/'+staff.data.id;
+ assert.equal((await request(staffPath,'PATCH',{role:'trainer',active:true},ownerToken)).status,200);
+ assert.equal((await request('/me','GET',null,staffLogin.data.token)).status,401);
+ const trainer=await request('/login','POST',{email:staffEmail,password});
+ assert.equal(trainer.data.role,'trainer');
+ assert.equal((await request('/alerts','GET',null,trainer.data.token)).status,403);
+
+ const secondEmail='second-'+Date.now()+'@example.test';
+ const second=await request('/gyms','POST',{name:'Second Gym',email:secondEmail,password},adminToken);
+ assert.equal(second.status,201);
+ const otherOwner=await request('/login','POST',{email:secondEmail,password});
+ assert.equal(otherOwner.status,200);
+ assert.equal((await request(memberFreeze,'PUT',freeze,otherOwner.data.token)).status,404);
+ assert.equal((await request(staffPath,'PATCH',{role:'trainer',active:false},otherOwner.data.token)).status,404);
+ const otherLedger=await request(ledgerPath,'GET',null,otherOwner.data.token);
+ assert.deepEqual(otherLedger.data,{entries:[],revenue:0,expenses:0,net:0});
+
+ const account=await request('/gym-account','GET',null,ownerToken);
+ assert.equal(account.status,200);
+ assert.equal(account.data.whatsapp_enabled,false);
+ if(!account.data.whatsapp_configured){
+   assert.equal((await request('/gym-account/whatsapp','PUT',{enabled:true},ownerToken)).status,409);
+ }
+ const enrolled=await request('/members/register','POST',{
+   email:'enrolled-'+Date.now()+'@example.test',joined_on:today,full_name:'Enrolled Member',phone:'+923001234567',
+   age:28,residential_address:'Test address',amount:2500,trainer_id:null,membership_months:1,plan_id:plan.data.id
+ },ownerToken);
+ assert.equal(enrolled.status,201);
+ const enrolledFreeze='/members/'+enrolled.data.id+'/freeze';
+ const consentPath='/members/'+enrolled.data.id+'/whatsapp';
+ assert.equal((await request(consentPath,'PUT',{phone:'+923001234567'},ownerToken)).status,204);
+ assert.equal((await request(consentPath,'PUT',{phone:null},ownerToken)).status,204);
+ assert.equal((await request(enrolledFreeze,'PUT',freeze,ownerToken)).status,200);
+ assert.equal((await request('/public-checkin','POST',{gate,code:enrolled.data.attendance_code})).status,409);
+ assert.equal((await request('/attendance/code','POST',{code:enrolled.data.attendance_code},ownerToken)).status,409);
+ assert.equal((await request(enrolledFreeze,'DELETE',null,ownerToken)).status,204);
+ assert.equal((await request('/public-checkin','POST',{gate,code:enrolled.data.attendance_code})).status,201);
+
+ const subscriptionPath='/gyms/'+gym.data.id+'/subscription';
+ const expired={plan:'Professional',paid_through:'2000-01-01',active:true};
+ assert.equal((await request(subscriptionPath,'PATCH',expired,ownerToken)).status,403);
+ assert.equal((await request(subscriptionPath,'PATCH',expired,adminToken)).status,200);
+ assert.equal((await request('/me','GET',null,ownerToken)).status,401);
+ assert.equal((await request('/login','POST',{email:ownerEmail,password})).status,401);
+ assert.equal((await request(subscriptionPath,'PATCH',{plan:'Professional',paid_through:null,active:true},adminToken)).status,200);
+ assert.equal((await request('/gym-account','GET',null,ownerToken)).data.subscription_plan,'Professional');
+
 });
