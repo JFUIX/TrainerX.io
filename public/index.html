@@ -151,7 +151,7 @@ function notice(msg,error=false){$('#notice').textContent=msg;$('#notice').class
 function formData(form){return Object.fromEntries(new FormData(form))}
 function form(fields,id,button){return '<form id="'+id+'" class="card form">'+fields.map(f=>'<label>'+f[1]+'<input name="'+f[0]+'" type="'+(f[2]||'text')+'" '+(f[3]||'required')+'></label>').join('')+'<button class="primary" type="submit">'+button+'</button></form>'}
 function rows(data,fn){return data.length?data.map(fn).join(''):'<p>No records yet.</p>'}
-const views={superadmin:['Gyms'],owner:['Insight','Members','Attendance','Financials','Fees','Plans','Gate QR'],reception:['Members','Fees','Attendance','Gate QR','Alerts'],trainer:['Trainer Clients','Workouts','Diets'],member:['My attendance','Scan QR','My plans','Workouts','Diets']};
+const views={superadmin:['Gyms'],owner:['Insight','Financials','Members','Attendance','Fees','Plans','Gate QR'],reception:['Members','Fees','Attendance','Gate QR','Alerts'],trainer:['Trainer Clients','Workouts','Diets'],member:['My attendance','Scan QR','My plans','Workouts','Diets']};
 const ownerLabels={Insight:'Dashboard',Financials:'Analytics',Members:'Users',Workouts:'Workout'};
 const pageLabel=id=>me.role==='owner'?(ownerLabels[id]||id):id;
 const option=(value,label,selected)=>'<option value="'+safe(value)+'" '+(selected===value?'selected':'')+'>'+safe(label)+'</option>';
