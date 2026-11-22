@@ -93,12 +93,17 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .insight-retention-hint{font-size:13px;margin:0 0 8px}
 @media(max-width:950px){.insight-panels,.insight-support{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:530px){.insight-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.insight-summary .insight-featured{grid-column:1/-1}.insight .card{padding:12px}}
-.renewal-calendar{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,165px),1fr));gap:12px}
-.calendar-day{margin:0;padding:16px;min-width:0;overflow-wrap:anywhere}
-.calendar-day.calendar-today{border-color:var(--tx-accent)}
-.calendar-day h2{margin:0;font-size:15px}
-.calendar-day ul{padding-left:18px;margin-bottom:0;color:var(--tx-muted)}
-.calendar-day li+li{margin-top:6px}
+.renewal-calendar{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px}
+.calendar-day{display:grid;gap:5px;min-width:0;padding:10px 5px;border:1px solid var(--tx-line);background:var(--tx-control);color:var(--tx-text);font-size:12px}
+.calendar-day span{color:var(--tx-muted);font-weight:500}
+.calendar-day[aria-pressed=true]{border-color:var(--tx-accent);background:#382723}
+.calendar-results h3,.dashboard-account h3{margin:12px 0 3px;font-size:15px}
+.calendar-results p,.dashboard-account p{margin:4px 0 8px}
+.calendar-results ul{padding-left:18px;margin:4px 0 0}
+.dashboard-account{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:16px}
+.dashboard-account .form{align-items:end}
+@media(max-width:850px){.renewal-calendar{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:600px){.dashboard-account{grid-template-columns:minmax(0,1fr)}}
 </style></head><body>
 <div class="shell"><header><div><div class="logo">TRAINER<span>X</span><small>.io</small></div><div class="sub">GYM MANAGEMENT SUITE</div></div><div class="row"><span id="identity" class="sub"></span><button id="logout" class="secondary hidden">Log out</button></div></header>
 <section id="setup" class="card hidden" style="max-width:500px;margin:5vh auto"><h1>Set up TrainerX</h1><p>Create the first platform administrator. Enter the BOOTSTRAP_TOKEN from your Railway service variables, along with your administrator credentials.</p><form id="setupForm" class="form"><label>Admin email<input name="email" type="email" required autocomplete="email"></label><label>Admin password (12+ characters)<input name="password" type="password" minlength="12" required autocomplete="new-password"></label><label>Setup token<input name="token" type="password" required autocomplete="off"></label><button class="primary" type="submit">Create administrator</button></form><p id="setupNotice" role="status"></p></section><section id="login" class="card"><div class="sub" style="letter-spacing:.08em;color:var(--tx-accent)">TRAINERX ACCESS PORTAL</div><h1 id="portalTitle">Welcome to TrainerX.</h1><p id="portalDescription">Sign in to access your gym management dashboard.</p><form id="loginForm" class="form"><label>Email<input name="email" type="email" required autocomplete="username"></label><label>Password<input name="password" type="password" required autocomplete="current-password"></label><button class="primary" type="submit">Sign in</button><p id="loginNotice" role="status" style="grid-column:1/-1"></p></form><div style="margin-top:24px;display:flex;flex-direction:column;align-items:flex-start;gap:12px"><a id="adminAccess" href="/admin" style="font-size:13px;color:var(--tx-muted);text-decoration:underline;text-underline-offset:4px">Super Admin access</a><a id="backToGym" href="/gym" class="hidden" style="font-size:13px;color:var(--tx-muted);text-decoration:underline;text-underline-offset:4px">Back to gym owner sign in</a><button id="recoverToggle" type="button" style="font-size:12px;font-weight:400;background:transparent;color:var(--tx-muted);padding:0;text-decoration:underline;text-underline-offset:3px" class="hidden">Forgot Super Admin password?</button></div><form id="recoverForm" class="form hidden" style="margin-top:18px"><label>Super Admin email<input name="email" type="email" required></label><label>New password (12+ characters)<input name="password" type="password" minlength="12" required autocomplete="new-password"></label><label>Railway BOOTSTRAP_TOKEN<input name="token" type="password" required autocomplete="off"></label><button class="primary" type="submit">Reset Super Admin password</button></form><p id="recoverNotice" role="status"></p></section>
@@ -119,8 +124,8 @@ function notice(msg,error=false){$('#notice').textContent=msg;$('#notice').class
 function formData(form){return Object.fromEntries(new FormData(form))}
 function form(fields,id,button){return '<form id="'+id+'" class="card form">'+fields.map(f=>'<label>'+f[1]+'<input name="'+f[0]+'" type="'+(f[2]||'text')+'" '+(f[3]||'required')+'></label>').join('')+'<button class="primary" type="submit">'+button+'</button></form>'}
 function rows(data,fn){return data.length?data.map(fn).join(''):'<p>No records yet.</p>'}
-const views={superadmin:['Gyms'],owner:['Insight','Role Maintenance','Alerts','Calendar','Financials','Members','Workouts','Attendance','Fees','Plans','Gate QR','Account'],reception:['Members','Fees','Attendance','Gate QR','Alerts'],trainer:['Trainer Clients','Workouts','Diets'],member:['My attendance','Scan QR','My plans','Workouts','Diets']};
-const ownerLabels={Insight:'Dashboard',Alerts:'Inbox',Financials:'Analytics',Members:'Users',Workouts:'Workout'};
+const views={superadmin:['Gyms'],owner:['Insight','Members','Attendance','Financials','Fees','Plans','Gate QR'],reception:['Members','Fees','Attendance','Gate QR','Alerts'],trainer:['Trainer Clients','Workouts','Diets'],member:['My attendance','Scan QR','My plans','Workouts','Diets']};
+const ownerLabels={Insight:'Dashboard',Financials:'Analytics',Members:'Users',Workouts:'Workout'};
 const pageLabel=id=>me.role==='owner'?(ownerLabels[id]||id):id;
 const option=(value,label,selected)=>'<option value="'+safe(value)+'" '+(selected===value?'selected':'')+'>'+safe(label)+'</option>';
 function localDay(date=new Date()){
@@ -160,46 +165,11 @@ async function render(){
     return result;
   };
   let memberData;
-  notice('');$('#nav').innerHTML=views[me.role].map(v=>'<button class="'+(view===v?'active':'')+'" data-view="'+safe(v)+'"'+(view===v?' aria-current="page"':'')+'>'+safe(pageLabel(v))+'</button>').join('');const el=$('#content');el.innerHTML='<p>Loading…</p>';try{
-if(view==='Role Maintenance'){
-  const accounts=(await api('/users')).filter(u=>['reception','trainer'].includes(u.role));
-  const roles=selected=>['reception','trainer'].map(role=>option(role,role==='trainer'?'Trainer':'Reception',selected)).join('');
-  el.innerHTML='<h1>Role Maintenance</h1><p>Reception manages members, fees and check-ins. Trainers manage workouts and diets.</p>'+
-    '<form id="staffAccountForm" class="card form"><label>Email<input type="email" name="email" required></label>'+
-    '<label>Temporary password<input type="password" autocomplete="new-password" minlength="12" maxlength="128" name="password" required></label>'+
-    '<label>Role<select name="role">'+roles()+'</select></label><button class="primary">Create account</button></form>'+
-    '<section class="card"><h2>Staff accounts</h2>'+rows(accounts,u=>
-      '<form class="item form" data-staff="'+safe(u.id)+'"><b>'+safe(u.email)+'</b>'+
-      '<label>Role<select name="role">'+roles(u.role)+'</select></label>'+
-      '<label>Access<select name="active">'+option('true','Active',String(u.active))+option('false','Disabled',String(u.active))+
-      '</select></label><button class="secondary">Save access</button></form>')+'</section>';
-  bind('staffAccountForm',data=>api('/users','POST',data));
-  el.querySelectorAll('[data-staff]').forEach(node=>bindForm(node,data=>
-    api('/staff/'+node.dataset.staff,'PATCH',{role:data.role,active:data.active==='true'})));
-}
-if(view==='Calendar'){
-  const renewals=(await api('/alerts')).filter(alert=>alert.kind==='expiry');
-  const today=new Date();
-  today.setHours(12,0,0,0);
-  const days=Array.from({length:8},(_,offset)=>{
-    const day=new Date(today);
-    day.setDate(today.getDate()+offset);
-    return day;
-  });
-  const dateLabel=new Intl.DateTimeFormat(undefined,{weekday:'short',month:'short',day:'numeric'});
-  el.innerHTML='<h1>Calendar</h1><p>Membership expiries through the next seven days.</p><div class="renewal-calendar">'+
-    days.map((day,index)=>{
-      const date=localDay(day);
-      const entries=renewals.filter(alert=>alert.due_on===date);
-      return '<section class="card calendar-day'+(index===0?' calendar-today':'')+'"><h2><time datetime="'+date+'">'+
-        safe(dateLabel.format(day))+'</time></h2>'+(entries.length?
-        '<ul>'+entries.map(entry=>'<li>'+safe(entry.full_name||entry.email)+'</li>').join('')+'</ul>':
-        '<p class="sub">No expiries</p>')+'</section>';
-    }).join('')+'</div>';
-}
+  const navView=me.role==='owner'&&['Alerts','Workouts'].includes(view)?'Insight':view;
+  notice('');$('#nav').innerHTML=views[me.role].map(v=>'<button class="'+(navView===v?'active':'')+'" data-view="'+safe(v)+'"'+(navView===v?' aria-current="page"':'')+'>'+safe(pageLabel(v))+'</button>').join('');const el=$('#content');el.innerHTML='<p>Loading…</p>';try{
 if(view==='Alerts'){
   const alerts=await api('/alerts');
-  el.innerHTML='<h1>'+safe(me.role==='owner'?pageLabel(view):'Member alerts')+'</h1><p>Expiries in the next seven days and unpaid balances from previous billing months.</p>'+
+  el.innerHTML='<h1>Member alerts</h1><p>Expiries in the next seven days and unpaid balances from previous billing months.</p>'+
     [['expiry','Expiring memberships'],['overdue','Overdue fees']].map(([kind,title])=>
       '<section class="card"><h2>'+title+'</h2>'+rows(alerts.filter(a=>a.kind===kind),a=>
         '<div class="item"><b>'+safe(a.full_name||a.email)+'</b><p>'+
@@ -244,24 +214,15 @@ if(view==='Financials'){
     report.entries.map(r=>[r.date,r.type,r.category,r.description,r.amount,account.currency]));
   bind('expenseForm',data=>api('/expenses','POST',{...data,amount:Number(data.amount)}));
 }
-if(view==='Account'){
-  const account=await api('/gym-account');
-  const deliveryStatus={sent:'accepted by WhatsApp',failed:'failed',sending:'pending or interrupted'};
-  el.innerHTML='<h1>Gym account</h1><section class="card"><h2>'+safe(account.name)+'</h2><p>'+safe(account.subscription_plan)+
-    ' plan · '+(account.subscription_until?'Paid through '+safe(account.subscription_until):'No expiry set')+'</p></section>'+
-    '<section class="card"><h2>WhatsApp reminders</h2><p>Members who opt in receive one reminder per membership expiry or overdue billing period.</p>'+
-    (account.reminders.length?'<p>Last 30 days · '+account.reminders.map(r=>safe(r.total)+' '+safe(deliveryStatus[r.status])).join(' · ')+'</p>':'')+
-    (account.whatsapp_configured?'':'<p>Connect a WhatsApp Business sender and approved templates before enabling reminders.</p>')+
-    '<form id="whatsappSettings" class="form"><label>Automated reminders<select name="enabled">'+
-    option('false','Off',String(account.whatsapp_enabled))+option('true','On',String(account.whatsapp_enabled))+
-    '</select></label><button class="primary">Save settings</button></form></section>';
-  bind('whatsappSettings',data=>api('/gym-account/whatsapp','PUT',{enabled:data.enabled==='true'}));
-}
 if(view==='Insight'){
-  const [report,insights,trends]=await Promise.all([
-    api('/report'),api('/business-insights'),api('/membership-trends')
+  const [report,insights,trends,[alerts,account]]=await Promise.all([
+    api('/report'),api('/business-insights'),api('/membership-trends'),
+    Promise.allSettled([api('/alerts'),api('/gym-account')])
   ]);
+  signal.throwIfAborted();
   renderInsight(el,report,insights,trends);
+  renderDashboardCalendar($('#dashboardCalendar'),alerts.value);
+  renderDashboardAccount($('#dashboardAccount'),account.value,api,signal);
 }
 if(view==='Gyms'){const gyms=await api('/gyms');el.innerHTML='<h1>Gym management</h1><p>Manage gym accounts and reset owner passwords securely.</p><div class="card">'+rows(gyms,g=>'<div class="item"><strong>'+safe(g.name)+'</strong><p>'+safe(g.owner_email||'No owner')+' · '+safe(g.currency)+'</p><form class="row" data-reset-gym="'+safe(g.id)+'"><label style="flex:1;min-width:210px">New owner password<input type="password" name="password" minlength="12" maxlength="128" autocomplete="new-password" placeholder="12+ characters" required></label><button class="secondary" type="submit">Reset owner password</button></form>'+subscriptionForm(g)+'</div>')+'</div><h2>Add gym</h2>'+form([['name','Gym name'],['currency','Currency (e.g. PKR)'],['email','Owner email','email'],['password','Owner password (12+ characters)','password']],'gymForm','Create gym');bind('gymForm',async d=>{await api('/gyms','POST',{...d,currency:(d.currency||'PKR').trim().toUpperCase()})});el.querySelectorAll('[data-reset-gym]').forEach(form=>form.addEventListener('submit',async e=>{e.preventDefault();const gym=gyms.find(g=>g.id===form.dataset.resetGym);if(!confirm('Reset the owner password for '+gym.name+'? Existing owner sessions will be signed out.'))return;try{await api('/gyms/'+encodeURIComponent(gym.id)+'/reset-owner-password','POST',{password:form.elements.password.value});form.reset();notice('Owner password reset. Sign in with the new password.')}catch(err){notice(err.message,true)}}));el.querySelectorAll('[data-subscription]').forEach(node=>bindForm(node,data=>
     api('/gyms/'+node.dataset.subscription+'/subscription','PATCH',{plan:data.plan,paid_through:data.paid_through||null,active:data.active==='true'})))}
@@ -328,6 +289,7 @@ function renderInsight(el,report,insights,trends){
           <button type="button" class="primary" data-insight-view="Members">+ Add member</button>
           <button type="button" class="secondary" data-insight-view="Attendance">Attendance</button>
           <button type="button" class="secondary" data-insight-view="Gate QR">Entrance kiosk</button>
+          <button type="button" class="secondary" data-insight-view="Workouts">Workout</button>
         </div>
       </div>
       <section class="insight-summary" aria-label="Key metrics">
@@ -335,6 +297,7 @@ function renderInsight(el,report,insights,trends){
         ${stat('Registered members',report.members,{target:'Members',link:'View members'})}
         ${stat('Today’s check-ins',report.attendance,{target:'Attendance',link:'View attendance'})}
       </section>
+      <section class="card" id="dashboardCalendar"></section>
       <div class="insight-panels">
           <section class="card">
             <div class="insight-panel-head"><h2>Membership growth</h2></div>
@@ -383,6 +346,7 @@ function renderInsight(el,report,insights,trends){
             ${monthlyChart('Check-ins','visits')}
           </section>
       </div>
+      <section class="card" id="dashboardAccount"></section>
       <section class="card">
         <div class="insight-panel-head"><h2>Retention and churn</h2><span class="insight-period">Last 6 months</span></div>
         <p class="insight-retention-hint">Based on members whose memberships were in force at the start of each month.</p>
@@ -422,6 +386,75 @@ function renderInsight(el,report,insights,trends){
     };
   });
 }
+function renderDashboardCalendar(panel,alerts){
+  if(!alerts){
+    panel.innerHTML='<h2>Renewal calendar</h2><p>Unable to load upcoming renewals.</p>';
+    return;
+  }
+  const dateLabel=new Intl.DateTimeFormat(undefined,{weekday:'short',month:'short',day:'numeric'});
+  const today=new Date();
+  today.setHours(12,0,0,0);
+  const renewals=alerts.filter(alert=>alert.kind==='expiry');
+  const days=Array.from({length:8},(_,offset)=>{
+    const day=new Date(today);
+    day.setDate(today.getDate()+offset);
+    return {label:dateLabel.format(day),date:localDay(day),renewals:renewals.filter(alert=>alert.due_on===localDay(day))};
+  });
+  panel.innerHTML='<div class="insight-panel-head"><h2>Renewal calendar</h2><span class="insight-period">Next 7 days</span></div>'+
+    '<div class="renewal-calendar" aria-label="Renewal dates">'+days.map(({label,date,renewals})=>
+      '<button type="button" class="calendar-day" data-calendar-day="'+date+'" aria-pressed="false">'+
+      '<time datetime="'+date+'">'+safe(label)+'</time><span>'+renewals.length+' '+(renewals.length===1?'expiry':'expiries')+'</span></button>'
+    ).join('')+'</div><div class="calendar-results" aria-live="polite"></div>';
+  const buttons=panel.querySelectorAll('[data-calendar-day]');
+  const results=panel.querySelector('.calendar-results');
+  function select(day){
+    buttons.forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.calendarDay===day.date)));
+    results.innerHTML='<h3>'+safe(day.label)+'</h3>'+(day.renewals.length
+      ?'<ul>'+day.renewals.map(entry=>'<li>'+safe(entry.full_name||entry.email)+'</li>').join('')+'</ul>'
+      :'<p class="sub">No memberships expire on this date.</p>');
+  }
+  buttons.forEach((button,index)=>button.onclick=()=>select(days[index]));
+  select(days.find(day=>day.renewals.length)||days[0]);
+}
+
+function renderDashboardAccount(panel,account,api,signal){
+  if(!account){
+    panel.innerHTML='<h2>Gym account</h2><p>Unable to load gym settings.</p>';
+    return;
+  }
+  const deliveryStatus={sent:'accepted by WhatsApp',failed:'failed',sending:'pending or interrupted'};
+  panel.innerHTML='<div class="insight-panel-head"><h2>Gym account</h2></div><div class="dashboard-account">'+
+    '<div><h3>'+safe(account.name)+'</h3><p>'+safe(account.subscription_plan)+' plan · '+
+    (account.subscription_until?'Paid through '+safe(account.subscription_until):'No expiry set')+'</p></div>'+
+    '<div><h3>WhatsApp reminders</h3><p>Members who opt in receive one reminder per membership expiry or overdue billing period.</p>'+
+    (account.reminders.length?'<p>Last 30 days · '+account.reminders.map(r=>safe(r.total)+' '+safe(deliveryStatus[r.status])).join(' · ')+'</p>':'')+
+    (account.whatsapp_configured?'':'<p>Connect a WhatsApp Business sender and approved templates before enabling reminders.</p>')+
+    '<form id="whatsappSettings" class="form"><label>Automated reminders<select name="enabled">'+
+    option('false','Off',String(account.whatsapp_enabled))+option('true','On',String(account.whatsapp_enabled))+
+    '</select></label><button class="primary">Save settings</button></form>'+
+    '<p class="dashboard-setting-status" role="status" aria-live="polite"></p></div></div>';
+  const form=panel.querySelector('#whatsappSettings');
+  const status=panel.querySelector('[role="status"]');
+  const submit=form.querySelector('button');
+  form.onsubmit=async event=>{
+    event.preventDefault();
+    submit.disabled=true;
+    status.className='dashboard-setting-status';
+    status.textContent='Saving…';
+    try{
+      await api('/gym-account/whatsapp','PUT',{enabled:form.elements.enabled.value==='true'});
+      status.classList.add('success');
+      status.textContent='Settings saved.';
+    }catch(error){
+      if(signal.aborted)return;
+      status.classList.add('error');
+      status.textContent=error.message;
+    }finally{
+      submit.disabled=false;
+    }
+  };
+}
+
 function subscriptionForm(gym){
   return '<form class="form" data-subscription="'+safe(gym.id)+'">'+
     '<label>Subscription plan<input name="plan" value="'+safe(gym.subscription_plan)+'" maxlength="80" required></label>'+
