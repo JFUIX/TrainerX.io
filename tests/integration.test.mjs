@@ -5,6 +5,10 @@ const base='http://127.0.0.1:3000';
 const request=async(path,method='GET',body,token)=>{const r=await fetch(base+path,{method,headers:{'content-type':'application/json',...(token?{'authorization':'Bearer '+token}:{})},body:body?JSON.stringify(body):undefined});let data=null;try{data=await r.json()}catch{}return {status:r.status,data}};
 test('health and role-isolated membership and payment journey',async()=>{
  assert.equal((await request('/health')).status,200);
+ const checkin=await fetch(base+'/checkin');
+ assert.equal(checkin.status,200);
+ assert.match(checkin.headers.get('content-type'),/^text\/html/);
+ assert.match(await checkin.text(),/href="\/theme\.css"/);
  const email='root-'+Date.now()+'@example.test',password='secure-password-123';
  assert.equal((await request('/bootstrap','POST',{email,password,token:process.env.BOOTSTRAP_TOKEN})).status,201);
  const admin=await request('/login','POST',{email,password});assert.equal(admin.status,200);assert.ok(admin.data.token);
