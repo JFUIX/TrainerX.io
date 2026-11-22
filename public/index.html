@@ -193,7 +193,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
   .insight:has(.dashboard-attendance-rail){grid-template-columns:minmax(0,1fr) minmax(245px,286px);grid-template-areas:"lead attendance" "panels attendance" "content content";align-items:start;grid-template-rows:auto 1fr auto}
   .insight-lead{grid-area:lead}
   .insight-panels{grid-area:panels}
-  .insight-attendance-stack{grid-area:attendance}
+  .insight-attendance-stack{grid-area:attendance;align-self:stretch;grid-template-rows:auto 1fr}
+  .insight-attendance-stack .attendance-trends-card{display:flex;flex-direction:column}
+  .insight-attendance-stack .attendance-trends-card .dash-chart{flex:1;height:auto;min-height:112px}
   .insight-content{grid-area:content}
 }
 .dashboard-check-in{display:grid;gap:8px}
@@ -514,7 +516,7 @@ function renderInsight(el,report,insights,trends){
         <div class="insight-panel-head"><h2 id="dashboardAttendanceHeading">Today’s attendance</h2></div>
         <div class="dashboard-check-in" id="dashboardCheckIn"></div>
       </aside>
-          <section class="card">
+          <section class="card attendance-trends-card">
             <div class="insight-panel-head"><h2>Attendance trends</h2><span class="insight-period">Last 7 days</span></div>
               <div class="insight-attendance-stats">
                 ${stat('Today’s attendance rate',attendanceRate+'%')}
