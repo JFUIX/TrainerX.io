@@ -111,8 +111,6 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .insight-attendance-stats .insight-stat+.insight-stat{border-left:1px solid var(--tx-line);padding-left:10px}
 .insight-attendance-stats .insight-stat-label{font-size:12px}
 .insight-attendance-stats strong{font-size:22px}
-.insight-attendance-trend{padding-top:11px;color:var(--tx-muted);font-size:13px}
-.insight-attendance-trend summary{cursor:pointer}
 .insight-disclosure summary{display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;list-style:none}
 .insight-disclosure summary::-webkit-details-marker{display:none}
 .insight-disclosure summary::after{content:'';width:8px;height:8px;border:solid var(--tx-muted);border-width:0 2px 2px 0;transform:rotate(45deg);flex:none;margin-right:3px}
@@ -171,6 +169,24 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .analytics .analytics-table-note{margin-top:10px}
 @media(max-width:1000px){.analytics-grid{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:480px){.analytics-totals{grid-template-columns:minmax(0,1fr)}.analytics .card{padding:12px}.analytics-plot-bars{height:140px}}
+.dashboard-check-in{display:grid;gap:8px}
+.dashboard-check-in-form{display:grid;gap:5px}
+.dashboard-check-in-form>div{display:flex;align-items:center;gap:8px}
+.dashboard-check-in-form input{max-width:8rem;padding:8px 10px;letter-spacing:.15em;font-variant-numeric:tabular-nums}
+.dashboard-check-in-form button{padding:8px 12px;white-space:nowrap;font-size:13px}
+.dashboard-check-in input{scroll-margin-top:24px}
+.dashboard-check-in p{margin:0}
+.dashboard-check-in-status:empty{display:none}
+.dashboard-check-in-status{font-size:13px}
+.dashboard-check-in-history{font-size:13px;color:var(--tx-muted)}
+.dashboard-check-in-history summary{cursor:pointer}
+.dashboard-check-in-history summary span{margin-left:4px}
+.dashboard-check-in-history ul{margin:8px 0 0;padding:0;list-style:none;max-height:160px;overflow:auto}
+.dashboard-check-in-history li{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--tx-line);overflow-wrap:anywhere}
+.dashboard-check-in-history time{white-space:nowrap}
+.dashboard-attendance-trends{margin-top:13px;padding-top:10px;border-top:1px solid var(--tx-line)}
+.dashboard-attendance-trends summary{font-size:13px;color:var(--tx-muted);cursor:pointer}
+.dashboard-attendance-trends .insight-attendance-stats{margin-top:10px}
 </style></head><body>
 <div class="shell"><header><div><div class="logo">TRAINER<span>X</span><small>.io</small></div><div class="sub">GYM MANAGEMENT SUITE</div></div><div class="row"><span id="identity" class="sub"></span><button id="logout" class="secondary hidden">Log out</button></div></header>
 <section id="setup" class="card hidden" style="max-width:500px;margin:5vh auto"><h1>Set up TrainerX</h1><p>Create the first platform administrator. Enter the BOOTSTRAP_TOKEN from your Railway service variables, along with your administrator credentials.</p><form id="setupForm" class="form"><label>Admin email<input name="email" type="email" required autocomplete="email"></label><label>Admin password (12+ characters)<input name="password" type="password" minlength="12" required autocomplete="new-password"></label><label>Setup token<input name="token" type="password" required autocomplete="off"></label><button class="primary" type="submit">Create administrator</button></form><p id="setupNotice" role="status"></p></section><section id="login" class="card"><div class="sub" style="letter-spacing:.08em;color:var(--tx-accent)">TRAINERX ACCESS PORTAL</div><h1 id="portalTitle">Welcome to TrainerX.</h1><p id="portalDescription">Sign in to access your gym management dashboard.</p><form id="loginForm" class="form"><label>Email<input name="email" type="email" required autocomplete="username"></label><label>Password<input name="password" type="password" required autocomplete="current-password"></label><button class="primary" type="submit">Sign in</button><p id="loginNotice" role="status" style="grid-column:1/-1"></p></form><div style="margin-top:24px;display:flex;flex-direction:column;align-items:flex-start;gap:12px"><a id="adminAccess" href="/admin" style="font-size:13px;color:var(--tx-muted);text-decoration:underline;text-underline-offset:4px">Super Admin access</a><a id="backToGym" href="/gym" class="hidden" style="font-size:13px;color:var(--tx-muted);text-decoration:underline;text-underline-offset:4px">Back to gym owner sign in</a><button id="recoverToggle" type="button" style="font-size:12px;font-weight:400;background:transparent;color:var(--tx-muted);padding:0;text-decoration:underline;text-underline-offset:3px" class="hidden">Forgot Super Admin password?</button></div><form id="recoverForm" class="form hidden" style="margin-top:18px"><label>Super Admin email<input name="email" type="email" required></label><label>New password (12+ characters)<input name="password" type="password" minlength="12" required autocomplete="new-password"></label><label>Railway BOOTSTRAP_TOKEN<input name="token" type="password" required autocomplete="off"></label><button class="primary" type="submit">Reset Super Admin password</button></form><p id="recoverNotice" role="status"></p></section>
@@ -191,7 +207,7 @@ function notice(msg,error=false){$('#notice').textContent=msg;$('#notice').class
 function formData(form){return Object.fromEntries(new FormData(form))}
 function form(fields,id,button){return '<form id="'+id+'" class="card form">'+fields.map(f=>'<label>'+f[1]+'<input name="'+f[0]+'" type="'+(f[2]||'text')+'" '+(f[3]||'required')+'></label>').join('')+'<button class="primary" type="submit">'+button+'</button></form>'}
 function rows(data,fn){return data.length?data.map(fn).join(''):'<p>No records yet.</p>'}
-const views={superadmin:['Gyms'],owner:['Insight','Financials','Members','Attendance','Fees','Plans','Gate QR'],reception:['Members','Fees','Attendance','Gate QR','Alerts'],trainer:['Trainer Clients','Workouts','Diets'],member:['My attendance','Scan QR','My plans','Workouts','Diets']};
+const views={superadmin:['Gyms'],owner:['Insight','Financials','Members','Fees','Plans','Gate QR'],reception:['Members','Fees','Attendance','Gate QR','Alerts'],trainer:['Trainer Clients','Workouts','Diets'],member:['My attendance','Scan QR','My plans','Workouts','Diets']};
 const ownerLabels={Insight:'Dashboard',Financials:'Analytics',Members:'Users',Workouts:'Workout'};
 const pageLabel=id=>me.role==='owner'?(ownerLabels[id]||id):id;
 const option=(value,label,selected)=>'<option value="'+safe(value)+'" '+(selected===value?'selected':'')+'>'+safe(label)+'</option>';
@@ -328,14 +344,15 @@ if(view==='Financials'){
   bind('expenseForm',data=>api('/expenses','POST',{...data,amount:Number(data.amount)}));
 }
 if(view==='Insight'){
-  const [report,insights,trends,account]=await Promise.all([
+  const [report,insights,trends,account,attendance]=await Promise.all([
     api('/report'),api('/business-insights'),api('/membership-trends'),
-    api('/gym-account').catch(()=>null)
+    api('/gym-account').catch(()=>null),api('/attendance').catch(()=>null)
   ]);
   signal.throwIfAborted();
   renderInsight(el,report,insights,trends);
   startDashboardClock(el.querySelector('.dashboard-clock'),signal);
   renderDashboardAccount($('#dashboardAccount'),account,api,signal);
+  renderDashboardCheckIn($('#dashboardCheckIn'),attendance,api,signal);
 }
 if(view==='Gyms'){const gyms=await api('/gyms');el.innerHTML='<h1>Gym management</h1><p>Manage gym accounts and reset owner passwords securely.</p><div class="card">'+rows(gyms,g=>'<div class="item"><strong>'+safe(g.name)+'</strong><p>'+safe(g.owner_email||'No owner')+' · '+safe(g.currency)+'</p><form class="row" data-reset-gym="'+safe(g.id)+'"><label style="flex:1;min-width:210px">New owner password<input type="password" name="password" minlength="12" maxlength="128" autocomplete="new-password" placeholder="12+ characters" required></label><button class="secondary" type="submit">Reset owner password</button></form>'+subscriptionForm(g)+'</div>')+'</div><h2>Add gym</h2>'+form([['name','Gym name'],['currency','Currency (e.g. PKR)'],['email','Owner email','email'],['password','Owner password (12+ characters)','password']],'gymForm','Create gym');bind('gymForm',async d=>{await api('/gyms','POST',{...d,currency:(d.currency||'PKR').trim().toUpperCase()})});el.querySelectorAll('[data-reset-gym]').forEach(form=>form.addEventListener('submit',async e=>{e.preventDefault();const gym=gyms.find(g=>g.id===form.dataset.resetGym);if(!confirm('Reset the owner password for '+gym.name+'? Existing owner sessions will be signed out.'))return;try{await api('/gyms/'+encodeURIComponent(gym.id)+'/reset-owner-password','POST',{password:form.elements.password.value});form.reset();notice('Owner password reset. Sign in with the new password.')}catch(err){notice(err.message,true)}}));el.querySelectorAll('[data-subscription]').forEach(node=>bindForm(node,data=>
     api('/gyms/'+node.dataset.subscription+'/subscription','PATCH',{plan:data.plan,paid_through:data.paid_through||null,active:data.active==='true'})))}
@@ -452,14 +469,14 @@ function renderInsight(el,report,insights,trends){
       </div>
       <div class="insight-shortcuts">
         <button type="button" class="primary" data-insight-view="Members">+ Add member</button>
-        <button type="button" class="secondary" data-insight-view="Attendance">Attendance</button>
+        <button type="button" class="secondary" data-insight-view="Attendance">Quick check-in</button>
         <button type="button" class="secondary" data-insight-view="Gate QR">Entrance kiosk</button>
         <button type="button" class="secondary" data-insight-view="Workouts">Workout</button>
       </div>
       <section class="insight-summary" aria-label="Key metrics">
         ${stat('Collected today',report.revenue_today,{key:'today',target:'Financials',link:'View analytics'})}
         ${stat('Registered members',report.members,{target:'Members',link:'View members'})}
-        ${stat('Today’s check-ins',report.attendance,{target:'Attendance',link:'View attendance'})}
+        ${stat('Today’s check-ins',report.attendance,{target:'Attendance',link:'Open check-in'})}
       </section>
       <div class="insight-panels">
           <section class="card">
@@ -501,15 +518,17 @@ function renderInsight(el,report,insights,trends){
           </div>
         </section>
         <section class="card">
-          <div class="insight-panel-head"><h2>Attendance</h2><span class="insight-period">Last 7 days</span></div>
-          <div class="insight-attendance-stats">
-            ${stat('Today’s attendance rate',attendanceRate+'%')}
-            ${stat('Check-ins · 30 days',insights.visits_30d)}
-            ${stat('Unique visitors · 30 days',insights.visitors_30d)}
-          </div>
-          ${weeklyChart('attendance',value=>value+' visits','Check-ins for the last seven days')}
-          <details class="insight-attendance-trend">
-            <summary>Six-month attendance trend</summary>
+          <div class="insight-panel-head"><h2>Today’s attendance</h2></div>
+          <div class="dashboard-check-in" id="dashboardCheckIn"></div>
+          <details class="dashboard-attendance-trends">
+            <summary>Attendance trends</summary>
+            <div class="insight-attendance-stats">
+              ${stat('Today’s attendance rate',attendanceRate+'%')}
+              ${stat('Check-ins · 30 days',insights.visits_30d)}
+              ${stat('Unique visitors · 30 days',insights.visitors_30d)}
+            </div>
+            <span class="insight-period">Last 7 days</span>
+            ${weeklyChart('attendance',value=>value+' visits','Check-ins for the last seven days')}
             ${monthlyChart('Check-ins','visits')}
           </details>
         </section>
@@ -532,6 +551,10 @@ function renderInsight(el,report,insights,trends){
     </div>`;
 
   el.querySelectorAll('[data-insight-view]').forEach(button=>button.onclick=()=>{
+    if(button.dataset.insightView==='Attendance'){
+      $('#dashboardCheckInCode').focus();
+      return;
+    }
     view=button.dataset.insightView;
     render();
   });
@@ -558,6 +581,57 @@ function renderInsight(el,report,insights,trends){
     };
   });
 }
+function renderDashboardCheckIn(panel,attendance,api,signal){
+  const timeFormat=new Intl.DateTimeFormat(undefined,{hour:'2-digit',minute:'2-digit'});
+  panel.innerHTML=`<form id="dashboardCheckInForm" class="dashboard-check-in-form">
+    <label for="dashboardCheckInCode">4-digit member attendance code</label>
+    <div><input id="dashboardCheckInCode" name="code" type="text" inputmode="numeric" pattern="[0-9]{4}"
+      minlength="4" maxlength="4" autocomplete="off" placeholder="0000" required>
+      <button class="primary" type="submit">Check In</button></div>
+  </form>
+  <p class="dashboard-check-in-status" role="status"></p>
+  ${attendance?.length?`<details class="dashboard-check-in-history">
+    <summary>Today’s check-ins <span>${attendance.length}</span></summary>
+    <ul>${attendance.map(entry=>`<li><span>${safe(entry.email)}</span>
+      <time datetime="${safe(entry.checked_at)}">${safe(timeFormat.format(new Date(entry.checked_at)))}</time></li>`).join('')}</ul>
+  </details>`:`<p class="insight-period">${attendance?'No check-ins yet today.':'Unable to load today’s check-ins.'}</p>`}`;
+
+  const form=panel.querySelector('form');
+  const code=form.elements.code;
+  const submit=form.querySelector('button');
+  const status=panel.querySelector('[role="status"]');
+  form.onsubmit=async event=>{
+    event.preventDefault();
+    if(submit.disabled)return;
+    submit.disabled=true;
+    status.className='dashboard-check-in-status';
+    status.textContent='Checking in…';
+    try{
+      const result=await api('/attendance/code','POST',{code:code.value});
+      const refresh=render();
+      const refreshedSignal=renderController.signal;
+      await refresh;
+      if(refreshedSignal.aborted)return;
+      const refreshedStatus=$('#dashboardCheckIn [role="status"]');
+      if(refreshedStatus){
+        refreshedStatus.classList.add('success');
+        refreshedStatus.textContent=result.name+' checked in.';
+        $('#dashboardCheckInCode').focus();
+      }else{
+        notice(result.name+' checked in.');
+      }
+    }catch(error){
+      if(signal.aborted)return;
+      status.classList.add('error');
+      status.textContent=error.message;
+      code.focus();
+      code.select();
+    }finally{
+      submit.disabled=false;
+    }
+  };
+}
+
 function renderDashboardAccount(panel,account,api,signal){
   if(!account){
     panel.innerHTML='<h2>Gym account</h2><p>Unable to load gym settings.</p>';
