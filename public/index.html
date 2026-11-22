@@ -46,6 +46,54 @@ header:after,.member-mini .card:after,.dash-kpi:after,#login:before{background:v
 body{background:radial-gradient(ellipse 70% 34% at 83% -12%,color-mix(in srgb,var(--tx-accent) 10%,transparent),transparent 80%),radial-gradient(ellipse 45% 28% at -14% 65%,rgba(55,113,74,.09),transparent 80%),var(--tx-bg)}
 button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline-color:var(--tx-accent)}
 .brand-preview{--gym-accent:var(--tx-accent)}
+.insight{display:grid;gap:18px}
+.insight-header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.insight-header h1{margin:0 0 4px;font-size:clamp(32px,4vw,48px)}
+.insight-header p{margin:0;font-size:14px}
+.insight-shortcuts{display:flex;gap:8px;flex-wrap:wrap}
+.insight-shortcuts button{padding:9px 12px;font-size:13px}
+.insight-summary,.insight-panels{display:grid;gap:12px;min-width:0}
+.insight-summary{grid-template-columns:repeat(4,minmax(0,1fr))}
+.insight-panels{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+.insight-column{display:grid;gap:12px;min-width:0}
+.insight .card{margin:0;border-radius:14px;box-shadow:none;background:#151e18;padding:16px}
+.insight .insight-featured{background:#202e1c;border-color:#526943}
+.insight .insight-featured strong{color:var(--tx-accent)}
+.insight-stat{display:grid;align-content:start;gap:8px;min-width:0}
+.insight-stat-label{color:#b6c4b8;font-size:13px}
+.insight-stat strong{font-size:clamp(21px,2.15vw,31px);line-height:1.05;letter-spacing:-.04em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.insight .money-toggle{padding:3px 7px}
+.insight .money-toggle svg{width:15px;height:15px}
+.insight-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.insight-panel-head h2{margin:0}
+.insight-period{color:#a9baaa;font-size:12px}
+.insight-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
+.insight-details .insight-stat{background:#111a14;border:1px solid #2b382e;border-radius:9px;padding:10px}
+.insight-details .insight-stat-label{font-size:12px}
+.insight-details .insight-stat strong{font-size:20px}
+.insight-details .insight-stat:last-child:nth-child(odd){grid-column:1/-1}
+.insight .dash-chart{height:112px;padding-top:8px;border-bottom:1px solid #314036}
+.insight .dash-chart span{padding-bottom:6px}
+.insight .dash-chart .bar{width:min(100%,42px);min-height:0;margin-inline:auto}
+.insight-months{display:grid;gap:8px;margin-top:14px}
+.insight-months h3{font-size:13px;margin:0}
+.insight-month{display:grid;grid-template-columns:58px 1fr 38px;align-items:center;gap:10px;font-size:12px;color:#b6c4b8}
+.insight-month meter{width:100%;accent-color:var(--tx-accent)}
+.insight-month b{text-align:right;color:#effbea}
+.insight-actions{display:grid;gap:6px}
+.insight-actions button{display:grid;grid-template-columns:minmax(32px,auto) minmax(0,1fr) auto;align-items:center;gap:10px;text-align:left;background:#1c281e;color:#e6f0e5;font-size:13px;padding:9px}
+.insight-actions button:hover{background:#253627}
+.insight-actions strong{font-size:17px;color:var(--tx-accent);text-align:center;font-variant-numeric:tabular-nums}
+.insight-retention{width:100%;border-collapse:collapse;font-size:13px;text-align:left}
+.insight-retention th,.insight-retention td{padding:9px 6px;border-bottom:1px solid #304034}
+.insight-retention tbody tr:last-child>*{border:0}
+.insight-retention thead th{color:#b6c4b8;font-weight:600}
+.insight-retention tbody th{font-weight:500}
+.insight-retention td{font-variant-numeric:tabular-nums}
+.insight-retention-hint{font-size:13px;margin:0 0 8px}
+@media(max-width:1100px){.insight-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:950px){.insight-panels{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:380px){.insight-details{grid-template-columns:minmax(0,1fr)}.insight .card{padding:12px}}
 </style></head><body>
 <div class="shell"><header><div><div class="logo">TRAINER<span>X</span><small>.io</small></div><div class="sub">GYM MANAGEMENT SUITE</div></div><div class="row"><span id="identity" class="sub"></span><button id="logout" class="secondary hidden">Log out</button></div></header>
 <section id="setup" class="card hidden" style="max-width:500px;margin:5vh auto"><h1>Set up TrainerX</h1><p>Create the first platform administrator. Enter the BOOTSTRAP_TOKEN from your Railway service variables, along with your administrator credentials.</p><form id="setupForm" class="form"><label>Admin email<input name="email" type="email" required autocomplete="email"></label><label>Admin password (12+ characters)<input name="password" type="password" minlength="12" required autocomplete="new-password"></label><label>Setup token<input name="token" type="password" required autocomplete="off"></label><button class="primary" type="submit">Create administrator</button></form><p id="setupNotice" role="status"></p></section><section id="login" class="card"><div class="sub" style="letter-spacing:.08em;color:#c3ff53">TRAINERX ACCESS PORTAL</div><h1 id="portalTitle">Welcome to TrainerX.</h1><p id="portalDescription">Sign in to access your gym management dashboard.</p><form id="loginForm" class="form"><label>Email<input name="email" type="email" required autocomplete="username"></label><label>Password<input name="password" type="password" required autocomplete="current-password"></label><button class="primary" type="submit">Sign in</button><p id="loginNotice" role="status" style="grid-column:1/-1"></p></form><div style="margin-top:24px;display:flex;flex-direction:column;align-items:flex-start;gap:12px"><a id="adminAccess" href="/admin" style="font-size:13px;color:#b9c7bb;text-decoration:underline;text-underline-offset:4px">Super Admin access</a><a id="backToGym" href="/gym" class="hidden" style="font-size:13px;color:#b9c7bb;text-decoration:underline;text-underline-offset:4px">Back to gym owner sign in</a><button id="recoverToggle" type="button" style="font-size:12px;font-weight:400;background:transparent;color:#94a69a;padding:0;text-decoration:underline;text-underline-offset:3px" class="hidden">Forgot Super Admin password?</button></div><form id="recoverForm" class="form hidden" style="margin-top:18px"><label>Super Admin email<input name="email" type="email" required></label><label>New password (12+ characters)<input name="password" type="password" minlength="12" required autocomplete="new-password"></label><label>Railway BOOTSTRAP_TOKEN<input name="token" type="password" required autocomplete="off"></label><button class="primary" type="submit">Reset Super Admin password</button></form><p id="recoverNotice" role="status"></p></section>
@@ -203,81 +251,100 @@ if(view==='My plans'){const p=await api('/plans');el.innerHTML='<h1>Available pl
 function renderInsight(el,report,insights,trends){
   const money=value=>(report.currency||'PKR')+' '+Number(value||0).toLocaleString('en-PK',{maximumFractionDigits:0});
   const eye='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
-  const kpi=(label,value,key)=>`<article class="card dash-kpi${key==='today'?' accent':''}">
-    <span class="kpi-label">${safe(label)}</span>
+  const stat=(label,value,{key,summary=false}={})=>`<div class="insight-stat${summary?' card':''}${key==='today'?' insight-featured':''}">
+    <span class="insight-stat-label">${safe(label)}</span>
     <div class="money-line">
       ${key?`<strong class="money-value" data-money="${key}" data-amount="${safe(money(value))}">••••••</strong>
         <button type="button" class="money-toggle" data-money-toggle="${key}" data-money-label="${safe(label)}"
           aria-label="${safe('Show '+label.toLowerCase())}">${eye}</button>`:`<strong>${safe(value)}</strong>`}
-    </div></article>`;
-  const weeklyChart=(field,format)=>{
-    const max=Math.max(1,...report.trend.map(d=>Number(d[field])));
-    return '<div class="dash-chart">'+report.trend.map(d=>`<div class="bar-col" title="${safe(format(d[field]))}">
-      <div class="bar" style="height:${Math.max(3,Math.round(Number(d[field])/max*100))}%"></div>
-      <span>${safe(d.label)}</span></div>`).join('')+'</div>';
+    </div></div>`;
+  const weeklyChart=(field,format,label)=>{
+    const max=Math.max(1,...report.trend.map(day=>Number(day[field])));
+    const summary=report.trend.map(day=>day.label+' '+format(day[field])).join(', ');
+    return `<div class="dash-chart" role="img" aria-label="${safe(label+': '+summary)}">`+report.trend.map(day=>
+      `<div class="bar-col" aria-hidden="true" title="${safe(format(day[field]))}">
+        <div class="bar" style="height:${Math.round(Number(day[field])/max*100)}%"></div>
+        <span>${safe(day.label)}</span>
+      </div>`).join('')+'</div>';
   };
   const monthlyChart=(label,key)=>{
-    const max=Math.max(1,...trends.map(d=>d[key]));
-    return '<h3>'+label+' · 6 months</h3>'+trends.map(d=>`<div class="item row">
-      <span>${safe(d.month)}</span><meter min="0" max="${max}" value="${d[key]}" aria-label="${label} ${safe(d.month)}"></meter>
-      <b>${d[key]}</b></div>`).join('');
+    const max=Math.max(1,...trends.map(row=>row[key]));
+    return `<div class="insight-months"><h3>${label} · 6 months</h3>`+trends.map(row=>`<div class="insight-month">
+      <span>${safe(row.month)}</span><meter min="0" max="${max}" value="${row[key]}" aria-label="${label} ${safe(row.month)}"></meter>
+      <b>${row[key]}</b></div>`).join('')+'</div>';
   };
-  const action=(target,value,label)=>`<button class="dash-action" data-insight-view="${target}"><strong>${safe(value)}</strong>${label}</button>`;
+  const action=(target,value,label)=>`<button type="button" data-insight-view="${target}">
+    <strong>${safe(value)}</strong><span>${label}</span><span aria-hidden="true">→</span></button>`;
   const attendanceRate=report.active?Math.round(report.attendance/report.active*100):0;
   el.innerHTML=`
-    <div class="dash-quick"><div>
-      <button class="secondary" data-insight-view="Members">+ Add member</button>
-      <button class="secondary" data-insight-view="Attendance">Attendance</button>
-      <button class="primary" data-insight-view="Gate QR">Entrance kiosk</button>
-    </div></div>
-    <section class="dashboard-hero">
-      <h1>Insight</h1>
-      <p>${safe(new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}))}</p>
-    </section>
-    <div class="dash-kpis">
-      ${kpi('Registered members',report.members)}
-      ${kpi('Eligible to check in',report.active)}
-      ${kpi('Today’s check-ins',report.attendance)}
-      ${kpi('Collected today',report.revenue_today,'today')}
-      ${kpi('Pending fees',money(report.pending))}
-      ${kpi('Joined today',report.new_members)}
-      ${kpi('Joined this month',insights.joined_month)}
-      ${kpi('Today’s attendance rate',attendanceRate+'%')}
-      ${kpi('Check-ins in the past 30 days',insights.visits_30d)}
-      ${kpi('Collected this month',report.revenue_month,'revenue')}
-      ${kpi('Collected in the past 30 days',insights.collected_30d,'rolling')}
-      ${kpi('Unique visitors in the past 30 days',insights.visitors_30d)}
-    </div>
-    <div class="dash-panels">
-      <section class="card">
-        <div class="dash-panel-head"><h2>Revenue</h2><span class="badge">7 days</span></div>
-        ${weeklyChart('revenue',money)}
-      </section>
-      <section class="card">
-        <div class="dash-panel-head"><h2>Attendance</h2><span class="badge">7 days</span></div>
-        ${weeklyChart('attendance',value=>value+' visits')}
-        ${monthlyChart('Check-ins','visits')}
-      </section>
-      <section class="card">
-        <div class="dash-panel-head"><h2>Membership growth</h2></div>
-        ${monthlyChart('New members','joined')}
-      </section>
-      <section class="card">
-        <div class="dash-panel-head"><h2>Needs attention</h2></div>
-        <div class="dash-actions">
-          ${action('Alerts',insights.expiring_7d,'Expiring in 7 days')}
-          ${action('Members',report.expired,'Expired memberships')}
-          ${action('Members',insights.expired_30d,'Expired in the past 30 days')}
+    <div class="insight">
+      <div class="insight-header">
+        <div><h1>Insight</h1>
+        <p>${safe(new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}))}</p></div>
+        <div class="insight-shortcuts">
+          <button type="button" class="primary" data-insight-view="Members">+ Add member</button>
+          <button type="button" class="secondary" data-insight-view="Attendance">Attendance</button>
+          <button type="button" class="secondary" data-insight-view="Gate QR">Entrance kiosk</button>
         </div>
+      </div>
+      <section class="insight-summary" aria-label="Key metrics">
+        ${stat('Registered members',report.members,{summary:true})}
+        ${stat('Today’s check-ins',report.attendance,{summary:true})}
+        ${stat('Collected today',report.revenue_today,{key:'today',summary:true})}
+        ${stat('Pending fees',money(report.pending),{summary:true})}
       </section>
-    </div>
-    <section class="card">
-      <h2>Retention and churn</h2>
-      <p>Compares memberships in force at the start and end of each month. The current month is through today.</p>
-      ${rows(trends,row=>`<div class="item"><b>${safe(row.month)}</b><p>${
-        row.opening?Math.round(row.retained/row.opening*100)+'% retained · '+(row.opening-row.retained)+' of '+row.opening+' churned'
-        :'No opening cohort'}</p></div>`)}
-    </section>`;
+      <div class="insight-panels">
+        <div class="insight-column">
+          <section class="card">
+            <div class="insight-panel-head"><h2>Revenue</h2><span class="insight-period">Last 7 days</span></div>
+            ${weeklyChart('revenue',money,'Revenue for the last seven days')}
+            <div class="insight-details">
+              ${stat('Collected this month',report.revenue_month,{key:'revenue'})}
+              ${stat('Collected in the past 30 days',insights.collected_30d,{key:'rolling'})}
+            </div>
+          </section>
+          <section class="card">
+            <div class="insight-panel-head"><h2>Membership growth</h2></div>
+            <div class="insight-details">
+              ${stat('Joined today',report.new_members)}
+              ${stat('Joined this month',insights.joined_month)}
+              ${stat('Eligible to check in',report.active)}
+            </div>
+            ${monthlyChart('New members','joined')}
+          </section>
+        </div>
+        <div class="insight-column">
+          <section class="card">
+            <div class="insight-panel-head"><h2>Needs attention</h2></div>
+            <div class="insight-actions">
+              ${action('Alerts',insights.expiring_7d,'Expiring in 7 days')}
+              ${action('Members',report.expired,'Expired memberships')}
+              ${action('Members',insights.expired_30d,'Expired in the past 30 days')}
+            </div>
+          </section>
+          <section class="card">
+            <div class="insight-panel-head"><h2>Attendance</h2><span class="insight-period">Last 7 days</span></div>
+            ${weeklyChart('attendance',value=>value+' visits','Check-ins for the last seven days')}
+            <div class="insight-details">
+              ${stat('Check-ins in the past 30 days',insights.visits_30d)}
+              ${stat('Unique visitors in the past 30 days',insights.visitors_30d)}
+              ${stat('Today’s attendance rate',attendanceRate+'%')}
+            </div>
+            ${monthlyChart('Check-ins','visits')}
+          </section>
+        </div>
+      </div>
+      <section class="card">
+        <div class="insight-panel-head"><h2>Retention and churn</h2><span class="insight-period">Last 6 months</span></div>
+        <p class="insight-retention-hint">Based on members whose memberships were in force at the start of each month.</p>
+        <table class="insight-retention">
+          <thead><tr><th scope="col">Month</th><th scope="col">Opening members</th><th scope="col">Retained</th><th scope="col">Churned</th></tr></thead>
+          <tbody>${trends.map(row=>`<tr><th scope="row">${safe(row.month)}</th><td>${row.opening}</td>
+            <td>${row.opening?Math.round(row.retained/row.opening*100)+'%':'—'}</td>
+            <td>${row.opening?row.opening-row.retained:'—'}</td></tr>`).join('')}</tbody>
+        </table>
+      </section>
+    </div>`;
 
   el.querySelectorAll('[data-insight-view]').forEach(button=>button.onclick=()=>{
     view=button.dataset.insightView;
