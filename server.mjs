@@ -7,7 +7,7 @@ import pg from 'pg';
 import QRCode from 'qrcode';
 import {rateLimit} from 'express-rate-limit';
 import {randomBytes,scrypt,timingSafeEqual,createHash,createHmac} from 'node:crypto';
-const app=express(); app.disable('x-powered-by'); app.use(compression()); app.set('trust proxy',1); app.use('/gym-logo',express.json({limit:'1.5mb'})); app.use(express.json({limit:'16kb'}));
+const app=express(); app.disable('x-powered-by'); app.use(compression()); app.set('trust proxy',1); app.use(express.json({limit:'16kb'}));
 const db=new pg.Pool(process.env.DATABASE_URL ? {connectionString:process.env.DATABASE_URL} : {host:'db',user:'trainerx',database:'trainerx',password:process.env.DB_PASSWORD});
 const hash=t=>createHash('sha256').update(t).digest('hex');
 const deriveKey=promisify(scrypt);
@@ -73,22 +73,7 @@ app.post('/fees',auth,async(req,res)=>{if(!staff(req.user))return res.sendStatus
 
 const gateSecret=createHash('sha256').update('trainerx-gate-v1:'+String(process.env.BOOTSTRAP_TOKEN||'')).digest();
 const gateSign=v=>createHmac('sha256',gateSecret).update(v).digest('hex');
-// Public read-only image endpoint; gym owners upload via authenticated endpoint below.
-app.get('/gym-logo/:id',async(req,res)=>{if(!/^[0-9a-f-]{36}$/i.test(req.params.id))return res.sendStatus(404);const q=await db.query('SELECT logo_bytes,logo_mime FROM gyms WHERE id=$1 AND active',[req.params.id]);if(!q.rowCount||!q.rows[0].logo_bytes)return res.sendStatus(404);res.set('Content-Type',q.rows[0].logo_mime);res.set('X-Content-Type-Options','nosniff');res.set('Cache-Control','public,max-age=3600');res.send(q.rows[0].logo_bytes)});
-app.post('/gym-logo',auth,rateLimit({windowMs:60000,limit:10}),async(req,res)=>{if(req.user.role!=='owner')return res.sendStatus(403);const {image}=req.body||{};if(typeof image!=='string'||image.length>1450000)return res.status(413).json({error:'Logo must be PNG, JPG or WebP under 1 MB'});const m=/^data:image\/(png|jpeg|webp);base64,([A-Za-z0-9+/]+={0,2})$/.exec(image);if(!m)return res.status(400).json({error:'Select a PNG, JPG or WebP image'});const bytes=Buffer.from(m[2],'base64');if(bytes.length===0||bytes.length>1048576)return res.status(413).json({error:'Logo must be under 1 MB'});const kind=m[1];const validImage=kind==='png'?bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])):kind==='jpeg'?bytes.length>3&&bytes[0]===255&&bytes[1]===216&&bytes[2]===255:bytes.length>12&&bytes.toString('ascii',0,4)==='RIFF'&&bytes.toString('ascii',8,12)==='WEBP';if(!validImage)return res.status(400).json({error:'Image file format does not match its content'});const mime='image/'+kind;const url='/gym-logo/'+req.user.gym_id+'?v='+Date.now();await db.query('UPDATE gyms SET logo_bytes=$1,logo_mime=$2,logo_url=$3 WHERE id=$4',[bytes,mime,url,req.user.gym_id]);res.set('Cache-Control','no-store').json({logo_url:url})});
-app.get('/gym-brand',auth,async(req,res)=>{if(!staff(req.user))return res.sendStatus(403);const r=await db.query('SELECT name,brand_color,logo_url FROM gyms WHERE id=$1',[req.user.gym_id]);if(!r.rowCount)return res.sendStatus(404);res.set('Cache-Control','no-store').json(r.rows[0])});
-app.put('/gym-brand',auth,async(req,res)=>{
-  if(req.user.role!=='owner')return res.sendStatus(403);
-  const {brand_color,logo_url}=req.body||{};
-  if(typeof brand_color!=='string'||!/^#[0-9a-fA-F]{6}$/.test(brand_color)||typeof logo_url!=='string'||logo_url.length>500)return res.sendStatus(400);
-  const localPrefix='/gym-logo/'+req.user.gym_id+'?v=';
-  const isLocal=logo_url.startsWith(localPrefix)&&/^\d+$/.test(logo_url.slice(localPrefix.length));
-  const isRemote=logo_url.startsWith('https://')&&!/[<>"'\\]/.test(logo_url);
-  if(logo_url&&!isLocal&&!isRemote)return res.status(400).json({error:'Use an HTTPS logo URL'});
-  const q=await db.query('UPDATE gyms SET brand_color=$1,logo_url=$2 WHERE id=$3 RETURNING name,brand_color,logo_url',[brand_color,logo_url||null,req.user.gym_id]);
-  res.json(q.rows[0]);
-});
-app.get('/gate-qr',auth,async(req,res)=>{if(!staff(req.user))return res.sendStatus(403);const expires=Math.floor(Date.now()/60000)+1;const payload=req.user.gym_id+'.'+expires;const code=payload+'.'+gateSign(payload);const url=req.protocol+'://'+req.get('host')+'/checkin.html?gate='+encodeURIComponent(code);const gym=await db.query('SELECT name,brand_color,logo_url FROM gyms WHERE id=$1',[req.user.gym_id]);res.set('Cache-Control','no-store').json({qr:await QRCode.toDataURL(url,{width:420,margin:2}),expires_at:new Date(expires*60000).toISOString(),gym:gym.rows[0]||null})});
+app.get('/gate-qr',auth,async(req,res)=>{if(!staff(req.user))return res.sendStatus(403);const expires=Math.floor(Date.now()/60000)+1;const payload=req.user.gym_id+'.'+expires;const code=payload+'.'+gateSign(payload);const url=req.protocol+'://'+req.get('host')+'/checkin.html?gate='+encodeURIComponent(code);const gym=await db.query('SELECT name FROM gyms WHERE id=$1',[req.user.gym_id]);res.set('Cache-Control','no-store').json({qr:await QRCode.toDataURL(url,{width:420,margin:2}),expires_at:new Date(expires*60000).toISOString(),gym:gym.rows[0]||null})});
 // Public phone-camera check-in. The rotating signed QR identifies the gym, not the member.
 app.post('/public-checkin',rateLimit({windowMs:60000,limit:12}),async(req,res)=>{
  const {gate,code}=req.body||{};

@@ -21,6 +21,9 @@ test('health and role-isolated membership and payment journey',async()=>{
  const memberLogin=await request('/login','POST',{email:memberEmail,password});assert.equal(memberLogin.status,200);
  const forbidden=await request('/fees','GET',null,memberLogin.data.token);assert.equal(forbidden.status,403);
  const qr=await request('/gate-qr','GET',null,owner.data.token);assert.equal(qr.status,200);assert.match(qr.data.qr,/^data:image\/png;base64,/);
+ assert.deepEqual(qr.data.gym,{name:'Integration Gym'});
+ assert.equal((await request('/gym-brand','GET',null,owner.data.token)).status,404);
+ assert.equal((await request('/gym-logo','POST',{},owner.data.token)).status,404);
  const workout=await request('/workouts','POST',{member_id:member.data.id,title:'Full Body',exercises:[{name:'Push-up',sets:'3',reps:'10'}]},owner.data.token);assert.equal(workout.status,201);
  const memberWorkouts=await request('/workouts','GET',null,memberLogin.data.token);assert.equal(memberWorkouts.status,200);assert.equal(memberWorkouts.data.length,1);
  assert.ok(gym.data.id);
