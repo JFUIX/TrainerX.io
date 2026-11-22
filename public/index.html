@@ -43,9 +43,13 @@ header:after,.member-mini .card:after,.dash-kpi:after,#login:before{background:v
 .dash-chart .bar{background:var(--tx-accent)}.dash-kpi:before{background:color-mix(in srgb,var(--tx-accent) 6%,transparent)}
 button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline-color:var(--tx-accent)}
 .insight{display:grid;gap:16px}
-.insight-header{display:flex;align-items:end;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.insight-header{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .insight-header h1{margin:0 0 3px;font-size:clamp(30px,3.5vw,43px)}
-.insight-header p,.insight-period{margin:0;color:var(--tx-muted);font-size:13px}
+.insight-period{margin:0;color:var(--tx-muted);font-size:13px}
+.dashboard-clock{display:grid;gap:5px;text-align:right;justify-items:end}
+.dashboard-clock-date{font-size:clamp(13px,2.2vw,20px);color:var(--tx-muted);font-weight:600}
+.dashboard-clock-time{font-size:clamp(25px,5vw,44px);line-height:1;white-space:nowrap;letter-spacing:-.035em;font-weight:700;font-variant-numeric:tabular-nums;color:var(--tx-text)}
+@media(max-width:400px){.insight-header h1{font-size:27px}.dashboard-clock-date{font-size:12px}.shell>header>.row{min-width:0}#identity{overflow-wrap:anywhere}}
 .insight-shortcuts{display:flex;gap:8px;flex-wrap:wrap}
 .insight-shortcuts button{padding:9px 12px;font-size:13px}
 .insight-shortcuts .secondary{background:#333034}
@@ -248,6 +252,7 @@ if(view==='Insight'){
   ]);
   signal.throwIfAborted();
   renderInsight(el,report,insights,trends);
+  startDashboardClock(el.querySelector('.dashboard-clock'),signal);
   renderDashboardCalendar($('#dashboardCalendar'),alerts.value);
   renderDashboardAccount($('#dashboardAccount'),account.value,api,signal);
 }
@@ -279,6 +284,27 @@ if(view==='Renewals'){const r=await api('/renewals');el.innerHTML='<h1>Upcoming 
 
 if(view==='My plans'){const p=await api('/plans');el.innerHTML='<h1>Available plans</h1><div class="card">'+rows(p,x=>'<div class="item"><b>'+safe(x.name)+'</b> · '+safe(x.months)+' months · '+safe(x.price)+'</div>')+'</div>'}
 }catch(e){if(!signal.aborted)el.innerHTML='<p class="error">'+safe(e.message)+'</p>'}}
+function startDashboardClock(clock,signal){
+  const dateNode=clock.querySelector('.dashboard-clock-date');
+  const timeNode=clock.querySelector('.dashboard-clock-time');
+  const dateFormat=new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const timeFormat=new Intl.DateTimeFormat('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
+  let timer;
+  function tick(){
+    const now=new Date();
+    const date=localDay(now);
+    if(dateNode.dateTime!==date){
+      dateNode.dateTime=date;
+      dateNode.textContent=dateFormat.format(now);
+    }
+    timeNode.dateTime=now.toISOString();
+    timeNode.textContent=timeFormat.format(now);
+    timer=setTimeout(tick,1000-Date.now()%1000);
+  }
+  signal.addEventListener('abort',()=>clearTimeout(timer),{once:true});
+  tick();
+}
+
 function renderInsight(el,report,insights,trends){
   const money=value=>(report.currency||'PKR')+' '+Number(value||0).toLocaleString('en-PK',{maximumFractionDigits:0});
   const eye='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
@@ -310,14 +336,17 @@ function renderInsight(el,report,insights,trends){
   el.innerHTML=`
     <div class="insight">
       <div class="insight-header">
-        <div><h1>Dashboard</h1>
-        <p>${safe(new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}))}</p></div>
-        <div class="insight-shortcuts">
-          <button type="button" class="primary" data-insight-view="Members">+ Add member</button>
-          <button type="button" class="secondary" data-insight-view="Attendance">Attendance</button>
-          <button type="button" class="secondary" data-insight-view="Gate QR">Entrance kiosk</button>
-          <button type="button" class="secondary" data-insight-view="Workouts">Workout</button>
+        <h1>Dashboard</h1>
+        <div class="dashboard-clock" aria-label="Local date and time">
+          <time class="dashboard-clock-date"></time>
+          <time class="dashboard-clock-time"></time>
         </div>
+      </div>
+      <div class="insight-shortcuts">
+        <button type="button" class="primary" data-insight-view="Members">+ Add member</button>
+        <button type="button" class="secondary" data-insight-view="Attendance">Attendance</button>
+        <button type="button" class="secondary" data-insight-view="Gate QR">Entrance kiosk</button>
+        <button type="button" class="secondary" data-insight-view="Workouts">Workout</button>
       </div>
       <section class="insight-summary" aria-label="Key metrics">
         ${stat('Collected today',report.revenue_today,{key:'today',target:'Financials',link:'View analytics'})}
