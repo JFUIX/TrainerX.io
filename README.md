@@ -24,6 +24,8 @@ Implemented: responsive role-based dashboard, gym creation, user creation, plans
 
 Not yet implemented: QR check-in, downloadable fee receipts, payment gateway processing, workout/diet editing, WhatsApp integration, inactive-member reports, automated reminders, true online self-registration, tests and production hardening.
 
+Run `docker compose exec -T db psql -v ON_ERROR_STOP=1 -U trainerx -d trainerx < migrations/004-member-profiles.sql` for existing Compose databases that predate the member profile or billing month features. New Compose databases run this migration during initialization.
+
 ## Deployment safety
 Do not expose this build publicly or use real customer data yet. The browser stores session tokens in sessionStorage; commercial release requires stronger browser session protections, HTTPS, database backups, migrations, audit logging, rate limiting, access-control testing and payment validation. Existing Docker databases do not automatically rerun schema initialization scripts.
 
