@@ -169,24 +169,35 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .analytics .analytics-table-note{margin-top:10px}
 @media(max-width:1000px){.analytics-grid{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:480px){.analytics-totals{grid-template-columns:minmax(0,1fr)}.analytics .card{padding:12px}.analytics-plot-bars{height:140px}}
+.insight-lead,.insight-content{min-width:0;display:grid;gap:16px}
+.dashboard-attendance-rail{min-width:0}
+@media(min-width:1240px){
+  .shell:has(.dashboard-attendance-rail){max-width:1680px;padding-inline:clamp(22px,2.1vw,36px)}
+  .insight:has(.dashboard-attendance-rail){grid-template-columns:minmax(0,1fr) minmax(245px,286px);grid-template-areas:"lead attendance" "content attendance";align-items:start}
+  .insight-lead{grid-area:lead}
+  .insight-content{grid-area:content}
+  .dashboard-attendance-rail{grid-area:attendance;position:sticky;top:20px}
+}
 .dashboard-check-in{display:grid;gap:8px}
 .dashboard-check-in-form{display:grid;gap:5px}
 .dashboard-check-in-form>div{display:flex;align-items:center;gap:8px}
-.dashboard-check-in-form input{max-width:8rem;padding:8px 10px;letter-spacing:.15em;font-variant-numeric:tabular-nums}
+.dashboard-check-in-form input{min-width:0;max-width:8rem;padding:8px 10px;letter-spacing:.15em;font-variant-numeric:tabular-nums}
 .dashboard-check-in-form button{padding:8px 12px;white-space:nowrap;font-size:13px}
 .dashboard-check-in input{scroll-margin-top:24px}
 .dashboard-check-in p{margin:0}
 .dashboard-check-in-status:empty{display:none}
 .dashboard-check-in-status{font-size:13px}
 .dashboard-check-in-history{font-size:13px;color:var(--tx-muted)}
-.dashboard-check-in-history summary{cursor:pointer}
-.dashboard-check-in-history summary span{margin-left:4px}
-.dashboard-check-in-history ul{margin:8px 0 0;padding:0;list-style:none;max-height:160px;overflow:auto}
+.dashboard-check-in-history{margin-top:5px;padding-top:12px;border-top:1px solid var(--tx-line)}
+.dashboard-check-in-history h3{display:flex;justify-content:space-between;align-items:center;gap:5px;margin:0;font-size:13px;color:var(--tx-text)}
+.dashboard-check-in-history h3 span{font-variant-numeric:tabular-nums;color:var(--tx-muted)}
+.dashboard-check-in-history p{margin-top:8px}
+.dashboard-check-in-history li>span{color:var(--tx-text)}
+.dashboard-check-in-history ul{margin:8px 0 0;padding:0;list-style:none;max-height:260px;overflow:auto}
 .dashboard-check-in-history li{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--tx-line);overflow-wrap:anywhere}
 .dashboard-check-in-history time{white-space:nowrap}
 .dashboard-attendance-trends{margin-top:13px;padding-top:10px;border-top:1px solid var(--tx-line)}
 .dashboard-attendance-trends summary{font-size:13px;color:var(--tx-muted);cursor:pointer}
-.dashboard-attendance-trends .insight-attendance-stats{margin-top:10px}
 </style></head><body>
 <div class="shell"><header><div><div class="logo">TRAINER<span>X</span><small>.io</small></div><div class="sub">GYM MANAGEMENT SUITE</div></div><div class="row"><span id="identity" class="sub"></span><button id="logout" class="secondary hidden">Log out</button></div></header>
 <section id="setup" class="card hidden" style="max-width:500px;margin:5vh auto"><h1>Set up TrainerX</h1><p>Create the first platform administrator. Enter the BOOTSTRAP_TOKEN from your Railway service variables, along with your administrator credentials.</p><form id="setupForm" class="form"><label>Admin email<input name="email" type="email" required autocomplete="email"></label><label>Admin password (12+ characters)<input name="password" type="password" minlength="12" required autocomplete="new-password"></label><label>Setup token<input name="token" type="password" required autocomplete="off"></label><button class="primary" type="submit">Create administrator</button></form><p id="setupNotice" role="status"></p></section><section id="login" class="card"><div class="sub" style="letter-spacing:.08em;color:var(--tx-accent)">TRAINERX ACCESS PORTAL</div><h1 id="portalTitle">Welcome to TrainerX.</h1><p id="portalDescription">Sign in to access your gym management dashboard.</p><form id="loginForm" class="form"><label>Email<input name="email" type="email" required autocomplete="username"></label><label>Password<input name="password" type="password" required autocomplete="current-password"></label><button class="primary" type="submit">Sign in</button><p id="loginNotice" role="status" style="grid-column:1/-1"></p></form><div style="margin-top:24px;display:flex;flex-direction:column;align-items:flex-start;gap:12px"><a id="adminAccess" href="/admin" style="font-size:13px;color:var(--tx-muted);text-decoration:underline;text-underline-offset:4px">Super Admin access</a><a id="backToGym" href="/gym" class="hidden" style="font-size:13px;color:var(--tx-muted);text-decoration:underline;text-underline-offset:4px">Back to gym owner sign in</a><button id="recoverToggle" type="button" style="font-size:12px;font-weight:400;background:transparent;color:var(--tx-muted);padding:0;text-decoration:underline;text-underline-offset:3px" class="hidden">Forgot Super Admin password?</button></div><form id="recoverForm" class="form hidden" style="margin-top:18px"><label>Super Admin email<input name="email" type="email" required></label><label>New password (12+ characters)<input name="password" type="password" minlength="12" required autocomplete="new-password"></label><label>Railway BOOTSTRAP_TOKEN<input name="token" type="password" required autocomplete="off"></label><button class="primary" type="submit">Reset Super Admin password</button></form><p id="recoverNotice" role="status"></p></section>
@@ -460,94 +471,100 @@ function renderInsight(el,report,insights,trends){
   const attendanceRate=report.active?Math.round(report.attendance/report.active*100):0;
   el.innerHTML=`
     <div class="insight">
-      <div class="insight-header">
-        <h1>Dashboard</h1>
-        <div class="dashboard-clock" aria-label="Local date and time">
-          <time class="dashboard-clock-date"></time>
-          <time class="dashboard-clock-time"></time>
+      <div class="insight-lead">
+        <div class="insight-header">
+          <h1>Dashboard</h1>
+          <div class="dashboard-clock" aria-label="Local date and time">
+            <time class="dashboard-clock-date"></time>
+            <time class="dashboard-clock-time"></time>
+          </div>
         </div>
-      </div>
-      <div class="insight-shortcuts">
-        <button type="button" class="primary" data-insight-view="Members">+ Add member</button>
-        <button type="button" class="secondary" data-insight-view="Attendance">Quick check-in</button>
-        <button type="button" class="secondary" data-insight-view="Gate QR">Entrance kiosk</button>
-        <button type="button" class="secondary" data-insight-view="Workouts">Workout</button>
-      </div>
-      <section class="insight-summary" aria-label="Key metrics">
-        ${stat('Collected today',report.revenue_today,{key:'today',target:'Financials',link:'View analytics'})}
-        ${stat('Registered members',report.members,{target:'Members',link:'View members'})}
-        ${stat('Today’s check-ins',report.attendance,{target:'Attendance',link:'Open check-in'})}
-      </section>
-      <div class="insight-panels">
-          <section class="card">
-            <div class="insight-panel-head"><h2>Membership growth</h2></div>
-            <div class="insight-details">
-              ${stat('Joined today',report.new_members)}
-              ${stat('Joined this month',insights.joined_month)}
-              ${stat('Eligible to check in',report.active)}
-            </div>
-            ${monthlyChart('New members','joined')}
-          </section>
-          <section class="card">
-            <div class="insight-panel-head"><h2>Revenue</h2><span class="insight-period">Last 7 days</span></div>
-            ${weeklyChart('revenue',money,'Revenue for the last seven days')}
-            <div class="insight-details">
-              ${stat('Collected this month',report.revenue_month,{key:'revenue'})}
-              ${stat('Collected in the past 30 days',insights.collected_30d,{key:'rolling'})}
-              ${stat('Pending fees',money(report.pending))}
-            </div>
-          </section>
-      </div>
-      <div class="insight-operations">
-        <section class="card">
-          <div class="insight-panel-head">
-            <h2>Front desk</h2>
-            <button type="button" class="insight-text-button" data-insight-view="Alerts">View alerts <span aria-hidden="true">→</span></button>
-          </div>
-          <div class="insight-actions">
-            ${action('Alerts',insights.expiring_7d,'Expiring in 7 days')}
-            ${action('Members',report.expired,'Expired memberships')}
-            ${action('Members',insights.expired_30d,'Expired in the past 30 days')}
-          </div>
-          <div class="insight-activity">
-            <div class="insight-panel-head"><h3>Recent activity</h3><span class="insight-period">Today</span></div>
-            ${report.activity.length?`<ul class="insight-activity-list">${report.activity.map(event=>`<li>
-              <div><strong>${safe(event.who)}</strong><span>${safe(event.kind)}</span></div>
-              <time datetime="${safe(event.occurred_at)}">${safe(new Date(event.occurred_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}))}</time>
-            </li>`).join('')}</ul>`:'<p class="insight-period">No check-ins or payments yet today.</p>'}
-          </div>
-        </section>
-        <section class="card">
-          <div class="insight-panel-head"><h2>Today’s attendance</h2></div>
-          <div class="dashboard-check-in" id="dashboardCheckIn"></div>
-          <details class="dashboard-attendance-trends">
-            <summary>Attendance trends</summary>
-            <div class="insight-attendance-stats">
-              ${stat('Today’s attendance rate',attendanceRate+'%')}
-              ${stat('Check-ins · 30 days',insights.visits_30d)}
-              ${stat('Unique visitors · 30 days',insights.visitors_30d)}
-            </div>
-            <span class="insight-period">Last 7 days</span>
-            ${weeklyChart('attendance',value=>value+' visits','Check-ins for the last seven days')}
-            ${monthlyChart('Check-ins','visits')}
-          </details>
+        <div class="insight-shortcuts">
+          <button type="button" class="primary" data-insight-view="Members">+ Add member</button>
+          <button type="button" class="secondary" data-insight-view="Attendance">Quick check-in</button>
+          <button type="button" class="secondary" data-insight-view="Gate QR">Entrance kiosk</button>
+          <button type="button" class="secondary" data-insight-view="Workouts">Workout</button>
+        </div>
+        <section class="insight-summary" aria-label="Key metrics">
+          ${stat('Collected today',report.revenue_today,{key:'today',target:'Financials',link:'View analytics'})}
+          ${stat('Registered members',report.members,{target:'Members',link:'View members'})}
+          ${stat('Today’s check-ins',report.attendance,{target:'Attendance',link:'Open check-in'})}
         </section>
       </div>
-      <section class="card" id="dashboardAccount"></section>
-      <details class="card insight-disclosure">
-        <summary>
-          <div><span class="insight-disclosure-title">Retention and churn</span><span class="insight-period">Last 6 months</span></div>
-        </summary>
-        <div class="insight-disclosure-body">
-          <p class="insight-retention-hint">Based on members whose memberships were in force at the start of each month.</p>
-          <table class="insight-table insight-retention">
-            <thead><tr><th scope="col">Month</th><th scope="col">Opening members</th><th scope="col">Retained</th><th scope="col">Churned</th></tr></thead>
-            <tbody>${trends.map(row=>`<tr><th scope="row">${safe(row.month)}</th><td>${row.opening}</td>
-              <td>${row.opening?Math.round(row.retained/row.opening*100)+'%':'—'}</td>
-              <td>${row.opening?row.opening-row.retained:'—'}</td></tr>`).join('')}</tbody>
-          </table>
+      <aside class="card dashboard-attendance-rail" aria-labelledby="dashboardAttendanceHeading">
+        <div class="insight-panel-head"><h2 id="dashboardAttendanceHeading">Today’s attendance</h2></div>
+        <div class="dashboard-check-in" id="dashboardCheckIn"></div>
+      </aside>
+      <div class="insight-content">
+        <div class="insight-panels">
+            <section class="card">
+              <div class="insight-panel-head"><h2>Membership growth</h2></div>
+              <div class="insight-details">
+                ${stat('Joined today',report.new_members)}
+                ${stat('Joined this month',insights.joined_month)}
+                ${stat('Eligible to check in',report.active)}
+              </div>
+              ${monthlyChart('New members','joined')}
+            </section>
+            <section class="card">
+              <div class="insight-panel-head"><h2>Revenue</h2><span class="insight-period">Last 7 days</span></div>
+              ${weeklyChart('revenue',money,'Revenue for the last seven days')}
+              <div class="insight-details">
+                ${stat('Collected this month',report.revenue_month,{key:'revenue'})}
+                ${stat('Collected in the past 30 days',insights.collected_30d,{key:'rolling'})}
+                ${stat('Pending fees',money(report.pending))}
+              </div>
+            </section>
         </div>
-      </details>
+        <div class="insight-operations">
+          <section class="card">
+            <div class="insight-panel-head">
+              <h2>Front desk</h2>
+              <button type="button" class="insight-text-button" data-insight-view="Alerts">View alerts <span aria-hidden="true">→</span></button>
+            </div>
+            <div class="insight-actions">
+              ${action('Alerts',insights.expiring_7d,'Expiring in 7 days')}
+              ${action('Members',report.expired,'Expired memberships')}
+              ${action('Members',insights.expired_30d,'Expired in the past 30 days')}
+            </div>
+            <div class="insight-activity">
+              <div class="insight-panel-head"><h3>Recent activity</h3><span class="insight-period">Today</span></div>
+              ${report.activity.length?`<ul class="insight-activity-list">${report.activity.map(event=>`<li>
+                <div><strong>${safe(event.who)}</strong><span>${safe(event.kind)}</span></div>
+                <time datetime="${safe(event.occurred_at)}">${safe(new Date(event.occurred_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}))}</time>
+              </li>`).join('')}</ul>`:'<p class="insight-period">No check-ins or payments yet today.</p>'}
+            </div>
+          </section>
+          <section class="card">
+            <div class="insight-panel-head"><h2>Attendance trends</h2><span class="insight-period">Last 7 days</span></div>
+              <div class="insight-attendance-stats">
+                ${stat('Today’s attendance rate',attendanceRate+'%')}
+                ${stat('Check-ins · 30 days',insights.visits_30d)}
+                ${stat('Unique visitors · 30 days',insights.visitors_30d)}
+              </div>
+              ${weeklyChart('attendance',value=>value+' visits','Check-ins for the last seven days')}
+              <details class="dashboard-attendance-trends">
+                <summary>Six-month attendance trend</summary>
+                ${monthlyChart('Check-ins','visits')}
+              </details>
+          </section>
+        </div>
+        <section class="card" id="dashboardAccount"></section>
+        <details class="card insight-disclosure">
+          <summary>
+            <div><span class="insight-disclosure-title">Retention and churn</span><span class="insight-period">Last 6 months</span></div>
+          </summary>
+          <div class="insight-disclosure-body">
+            <p class="insight-retention-hint">Based on members whose memberships were in force at the start of each month.</p>
+            <table class="insight-table insight-retention">
+              <thead><tr><th scope="col">Month</th><th scope="col">Opening members</th><th scope="col">Retained</th><th scope="col">Churned</th></tr></thead>
+              <tbody>${trends.map(row=>`<tr><th scope="row">${safe(row.month)}</th><td>${row.opening}</td>
+                <td>${row.opening?Math.round(row.retained/row.opening*100)+'%':'—'}</td>
+                <td>${row.opening?row.opening-row.retained:'—'}</td></tr>`).join('')}</tbody>
+            </table>
+          </div>
+        </details>
+      </div>
     </div>`;
 
   el.querySelectorAll('[data-insight-view]').forEach(button=>button.onclick=()=>{
@@ -590,11 +607,12 @@ function renderDashboardCheckIn(panel,attendance,api,signal){
       <button class="primary" type="submit">Check In</button></div>
   </form>
   <p class="dashboard-check-in-status" role="status"></p>
-  ${attendance?.length?`<details class="dashboard-check-in-history">
-    <summary>Today’s check-ins <span>${attendance.length}</span></summary>
-    <ul>${attendance.map(entry=>`<li><span>${safe(entry.email)}</span>
-      <time datetime="${safe(entry.checked_at)}">${safe(timeFormat.format(new Date(entry.checked_at)))}</time></li>`).join('')}</ul>
-  </details>`:`<p class="insight-period">${attendance?'No check-ins yet today.':'Unable to load today’s check-ins.'}</p>`}`;
+  <section class="dashboard-check-in-history">
+    <h3>Latest check-ins ${attendance?`<span>${attendance.length}</span>`:''}</h3>
+    ${attendance?.length?`<ul>${attendance.map(entry=>`<li><span>${safe(entry.full_name||entry.email)}</span>
+      <time datetime="${safe(entry.checked_at)}">${safe(timeFormat.format(new Date(entry.checked_at)))}</time></li>`).join('')}</ul>`:
+      `<p class="insight-period">${attendance?'No check-ins yet today.':'Unable to load today’s check-ins.'}</p>`}
+  </section>`;
 
   const form=panel.querySelector('form');
   const code=form.elements.code;

@@ -116,6 +116,9 @@ test('health and role-isolated membership and payment journey',async()=>{
  assert.equal((await request('/attendance/code','POST',{code:enrolled.data.attendance_code},ownerToken)).status,409);
  assert.equal((await request(enrolledFreeze,'DELETE',null,ownerToken)).status,204);
  assert.equal((await request('/public-checkin','POST',{gate,code:enrolled.data.attendance_code})).status,201);
+ const attendance=await request('/attendance','GET',null,ownerToken);
+ assert.equal(attendance.status,200);
+ assert.equal(attendance.data.find(entry=>entry.member_id===enrolled.data.id)?.full_name,'Enrolled Member');
 
  const subscriptionPath='/gyms/'+gym.data.id+'/subscription';
  const expired={plan:'Professional',paid_through:'2000-01-01',active:true};
