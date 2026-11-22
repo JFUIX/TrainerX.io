@@ -261,7 +261,8 @@ if(view==='Financials'){
   const segments=categories.map(([,cents],index)=>{
     const start=fraction;
     fraction+=100*cents/totalExpenseCents;
-    return colors[index%colors.length]+' '+start+'% '+fraction+'%';
+    const color=colors[index%colors.length];
+    return `color-mix(in srgb, ${color}, #fff 18%) ${start}%, color-mix(in srgb, ${color}, #241b22 32%) ${fraction}%`;
   }).join(', ')||'#474248 0% 100%';
   el.innerHTML=`<div class="analytics">
     <div class="analytics-header">
