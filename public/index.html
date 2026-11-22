@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101412"><title>TrainerX | Gym Management Suite</title><style>
 :root{font-family:Inter,system-ui,sans-serif;color:#eaf4ed;background:#0c100e}*{box-sizing:border-box}body{margin:0}button,input,select{font:inherit}button{cursor:pointer;border:0;border-radius:10px;padding:12px 16px;font-weight:700}button.primary{background:var(--tx-accent,#c3ff53);color:#18210e}button.secondary{background:#28332c;color:white}.shell{max-width:1120px;margin:auto;padding:28px 18px}header{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid #273129;padding-bottom:20px}.logo{font-size:23px;font-weight:900;letter-spacing:-1px}.logo span{color:var(--tx-accent,#c3ff53)}.sub{color:#a2b0a5;font-size:13px}.grid{display:grid;grid-template-columns:220px 1fr;gap:24px;margin-top:24px}nav{display:flex;flex-direction:column;gap:8px}nav button{text-align:left;background:transparent;color:#b9c7bb}nav button.active{background:var(--tx-accent,#c3ff53);color:#11190f}main{min-width:0}.card{background:#171f1a;border:1px solid #2c382f;border-radius:16px;padding:22px;margin:16px 0}.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.metric strong{font-size:32px;display:block;color:var(--tx-accent,#c3ff53)}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.form>*{min-width:0}label{display:flex;flex-direction:column;gap:7px;font-size:13px;color:#b4c1b6}input,select{width:100%;padding:12px;border-radius:10px;background:#0d130f;border:1px solid #3a483c;color:#fff}h1{font-size:30px;margin:8px 0}h2{font-size:19px}p{color:#b5c2b8}.item{padding:14px 0;border-bottom:1px solid #303d33;overflow-wrap:anywhere}.item:last-child{border:0}.badge{display:inline-block;padding:4px 9px;border-radius:8px;background:#30452a;color:var(--tx-accent-soft,#d3ff9b);font-size:12px}.error{color:#ff9f9f}.success{color:var(--tx-accent,#c3ff53)}#notice{min-height:24px}#login{max-width:430px;margin:10vh auto}.hidden{display:none!important}@media(max-width:720px){.grid{display:block}nav{flex-direction:row;overflow-x:auto;padding:12px 0}nav button{white-space:nowrap}.metrics{grid-template-columns:1fr 1fr}.form{grid-template-columns:1fr}.shell{padding:16px}}
 
-.dashboard-hero{padding:25px;border-radius:20px;background:radial-gradient(circle at 92% 12%,#334d22 0,transparent 46%),linear-gradient(130deg,#1d2b20,#121a15);border:1px solid #3d5239;margin:12px 0 18px}.dashboard-hero h1{font-size:clamp(27px,4vw,38px);letter-spacing:-1.2px}.dashboard-hero p{margin:7px 0 0}.dash-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.dash-kpi{margin:0;min-height:125px;background:linear-gradient(145deg,#1d2920,#141c17);position:relative;overflow:hidden}.dash-kpi:before{content:'';position:absolute;right:-28px;top:-36px;width:105px;height:105px;border-radius:50%;background:color-mix(in srgb,var(--tx-accent) 5%,transparent)}.dash-kpi .kpi-label{font-size:12px;color:#a9b8aa;font-weight:600}.dash-kpi strong{font-size:clamp(22px,3vw,32px);display:block;margin:14px 0 3px;letter-spacing:-1px;color:#effbea}.dash-kpi.accent strong{color:var(--tx-accent,#c3ff53)}.dash-kpi small{font-size:11px;color:#7f9484}.dash-panels{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}.dash-panels .card{margin:0}.dash-panel-head{display:flex;justify-content:space-between;align-items:center;gap:8px}.dash-panel-head h2{margin:0}.dash-chart{height:154px;display:flex;align-items:end;gap:10px;padding-top:18px}.dash-chart .bar-col{flex:1;min-width:0;text-align:center;display:flex;flex-direction:column;justify-content:end;height:100%;gap:6px}.dash-chart .bar{width:100%;border-radius:6px 6px 2px 2px;min-height:3px;background:linear-gradient(0deg,#6da52e,var(--tx-accent,#c3ff53))}.dash-chart .bar-col span{font-size:10px;color:#9daea0}.dash-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:15px}.dash-action{background:#222f24;border:1px solid #3b4d3b;color:#e9f6e9;text-align:left;font-size:12px;padding:14px}.dash-action strong{display:block;color:var(--tx-accent,#c3ff53);font-size:22px;margin-bottom:3px}.dash-action:hover{border-color:var(--tx-accent,#c3ff53)}.dash-feed{display:flex;justify-content:space-between;gap:10px;font-size:13px}.dash-feed time{color:#93a595;white-space:nowrap}@media(max-width:850px){.dash-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.dash-panels{grid-template-columns:1fr}}@media(max-width:450px){.dash-kpi{padding:15px;min-height:112px}.dash-chart{gap:6px}.dashboard-hero{padding:20px}}
+.dashboard-hero{padding:25px;border-radius:20px;background:radial-gradient(circle at 92% 12%,#334d22 0,transparent 46%),linear-gradient(130deg,#1d2b20,#121a15);border:1px solid #3d5239;margin:12px 0 18px}.dashboard-hero h1{font-size:clamp(27px,4vw,38px);letter-spacing:-1.2px}.dashboard-hero p{margin:7px 0 0}.dash-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.dash-kpi{margin:0;min-height:125px;background:linear-gradient(145deg,#1d2920,#141c17);position:relative;overflow:hidden}.dash-kpi:before{content:'';position:absolute;pointer-events:none;right:-28px;top:-36px;width:105px;height:105px;border-radius:50%;background:color-mix(in srgb,var(--tx-accent) 5%,transparent)}.dash-kpi .kpi-label{font-size:12px;color:#a9b8aa;font-weight:600}.dash-kpi strong{font-size:clamp(22px,3vw,32px);display:block;margin:14px 0 3px;letter-spacing:-1px;color:#effbea}.dash-kpi.accent strong{color:var(--tx-accent,#c3ff53)}.dash-kpi small{font-size:11px;color:#7f9484}.dash-panels{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}.dash-panels .card{margin:0}.dash-panel-head{display:flex;justify-content:space-between;align-items:center;gap:8px}.dash-panel-head h2{margin:0}.dash-chart{height:154px;display:flex;align-items:end;gap:10px;padding-top:18px}.dash-chart .bar-col{flex:1;min-width:0;text-align:center;display:flex;flex-direction:column;justify-content:end;height:100%;gap:6px}.dash-chart .bar{width:100%;border-radius:6px 6px 2px 2px;min-height:3px;background:linear-gradient(0deg,#6da52e,var(--tx-accent,#c3ff53))}.dash-chart .bar-col span{font-size:10px;color:#9daea0}.dash-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:15px}.dash-action{background:#222f24;border:1px solid #3b4d3b;color:#e9f6e9;text-align:left;font-size:12px;padding:14px}.dash-action strong{display:block;color:var(--tx-accent,#c3ff53);font-size:22px;margin-bottom:3px}.dash-action:hover{border-color:var(--tx-accent,#c3ff53)}.dash-feed{display:flex;justify-content:space-between;gap:10px;font-size:13px}.dash-feed time{color:#93a595;white-space:nowrap}@media(max-width:850px){.dash-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.dash-panels{grid-template-columns:1fr}}@media(max-width:450px){.dash-kpi{padding:15px;min-height:112px}.dash-chart{gap:6px}.dashboard-hero{padding:20px}}
  .money-line{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.money-line strong{margin:0}.money-toggle{background:#293a2c;color:var(--tx-accent,#c3ff53);border:1px solid #486144;padding:6px 9px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center}.money-toggle:hover{background:#354b37}.money-toggle svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.money-value{font-variant-numeric:tabular-nums} 
 .member-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:16px 0}.member-toolbar input{flex:1;min-width:180px}.member-toolbar select{width:auto;min-width:130px}.member-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.member-mini .card{margin:0;padding:15px}.member-mini strong{font-size:25px;display:block;color:var(--tx-accent,#c3ff53)}.member-list .item{content-visibility:auto;contain-intrinsic-block-size:auto 36px;display:flex;justify-content:space-between;align-items:center;gap:12px}.member-person{display:flex;align-items:center;gap:12px;min-width:0}.member-avatar{flex-shrink:0;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#30472e;color:var(--tx-accent-soft,#d4ffac);font-weight:800}.member-person p{margin:5px 0;font-size:12px}.member-status{font-size:11px;padding:5px 9px;border-radius:30px;background:#2c3c2c;color:var(--tx-accent-soft,#c9ff8b)}.member-status.expired{background:#4a2929;color:#ffadad}.member-status.inactive{background:#3c3c3c;color:#bbb}.member-actions{display:flex;gap:7px;align-items:center}.member-actions button{padding:8px 11px;font-size:12px}.member-detail{margin-top:15px;border-color:#668d47}.member-tabs{display:flex;gap:6px;overflow:auto;margin:15px 0}.member-tabs button{white-space:nowrap;padding:9px 12px;font-size:12px;background:#263328;color:#dce7db}.member-tabs button.active{background:var(--tx-accent,#c3ff53);color:#18210e}.member-data{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.member-data div{background:#111a14;border-radius:10px;padding:12px;overflow-wrap:anywhere}.member-data small{display:block;color:#8fa293;margin-bottom:6px}.member-form-wrap{display:none}.member-form-wrap.open{display:block}@media(max-width:550px){.member-mini{grid-template-columns:repeat(3,1fr)}.member-mini .card{padding:11px}.member-mini strong{font-size:20px}.member-list .item{align-items:flex-start;flex-direction:column}.member-data{grid-template-columns:1fr}.member-toolbar select{flex:1}}
 
@@ -66,7 +66,7 @@ function notice(msg,error=false){$('#notice').textContent=msg;$('#notice').class
 function formData(form){return Object.fromEntries(new FormData(form))}
 function form(fields,id,button){return '<form id="'+id+'" class="card form">'+fields.map(f=>'<label>'+f[1]+'<input name="'+f[0]+'" type="'+(f[2]||'text')+'" '+(f[3]||'required')+'></label>').join('')+'<button class="primary" type="submit">'+button+'</button></form>'}
 function rows(data,fn){return data.length?data.map(fn).join(''):'<p>No records yet.</p>'}
-const views={superadmin:['Gyms'],owner:['Insight','Attendance','Members','Fees','Plans','Gate QR','Alerts','Financials','Staff','Account'],reception:['Members','Fees','Attendance','Gate QR','Alerts'],trainer:['Trainer Clients','Workouts','Diets'],member:['My attendance','Scan QR','My plans','Workouts','Diets']};
+const views={superadmin:['Gyms'],owner:['Insight','Attendance','Members','Fees','Plans','Gate QR','Alerts','Financials','Account'],reception:['Members','Fees','Attendance','Gate QR','Alerts'],trainer:['Trainer Clients','Workouts','Diets'],member:['My attendance','Scan QR','My plans','Workouts','Diets']};
 const option=(value,label,selected)=>'<option value="'+safe(value)+'" '+(selected===value?'selected':'')+'>'+safe(label)+'</option>';
 function localDay(date=new Date()){
   return [date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-');
@@ -114,22 +114,6 @@ if(view==='Alerts'){
         '<div class="item"><b>'+safe(a.full_name||a.email)+'</b><p>'+
         (kind==='expiry'?'Expires '+safe(a.due_on):'Overdue '+safe(a.currency)+' '+safe(a.amount)+' · Through '+safe(a.due_on.slice(0,7)))+
         '</p></div>')+'</section>').join('');
-}
-if(view==='Staff'){
-  const accounts=(await api('/users')).filter(u=>['reception','trainer'].includes(u.role));
-  const roles=selected=>['reception','trainer'].map(role=>option(role,role==='trainer'?'Trainer':'Reception',selected)).join('');
-  el.innerHTML='<h1>Staff</h1><p>Reception manages members, fees and check-ins. Trainers manage workouts and diets.</p>'+
-    '<form id="staffAccountForm" class="card form"><label>Email<input type="email" name="email" required></label>'+
-    '<label>Temporary password<input type="password" autocomplete="new-password" minlength="12" maxlength="128" name="password" required></label>'+
-    '<label>Role<select name="role">'+roles()+'</select></label><button class="primary">Create account</button></form>'+
-    '<section class="card"><h2>Staff accounts</h2>'+rows(accounts,u=>
-      '<form class="item form" data-staff="'+safe(u.id)+'"><b>'+safe(u.email)+'</b>'+
-      '<label>Role<select name="role">'+roles(u.role)+'</select></label>'+
-      '<label>Access<select name="active">'+option('true','Active',String(u.active))+option('false','Disabled',String(u.active))+
-      '</select></label><button class="secondary">Save access</button></form>')+'</section>';
-  bind('staffAccountForm',data=>api('/users','POST',data));
-  el.querySelectorAll('[data-staff]').forEach(node=>bindForm(node,data=>
-    api('/staff/'+node.dataset.staff,'PATCH',{role:data.role,active:data.active==='true'})));
 }
 if(view==='Financials'){
   const today=localDay();
@@ -219,10 +203,13 @@ if(view==='My plans'){const p=await api('/plans');el.innerHTML='<h1>Available pl
 function renderInsight(el,report,insights,trends){
   const money=value=>(report.currency||'PKR')+' '+Number(value||0).toLocaleString('en-PK',{maximumFractionDigits:0});
   const eye='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
-  const metric=(label,value)=>`<div class="item row"><span>${safe(label)}</span><b>${safe(value)}</b></div>`;
-  const privateAmount=(label,key,value)=>`<div class="item money-line"><span>${label}</span>
-    <b class="money-value" data-money="${key}" data-amount="${safe(money(value))}">••••••</b>
-    <button type="button" class="money-toggle" data-money-toggle="${key}" aria-label="Show amount">${eye}</button></div>`;
+  const kpi=(label,value,key)=>`<article class="card dash-kpi${key==='today'?' accent':''}">
+    <span class="kpi-label">${safe(label)}</span>
+    <div class="money-line">
+      ${key?`<strong class="money-value" data-money="${key}" data-amount="${safe(money(value))}">••••••</strong>
+        <button type="button" class="money-toggle" data-money-toggle="${key}" data-money-label="${safe(label)}"
+          aria-label="${safe('Show '+label.toLowerCase())}">${eye}</button>`:`<strong>${safe(value)}</strong>`}
+    </div></article>`;
   const weeklyChart=(field,format)=>{
     const max=Math.max(1,...report.trend.map(d=>Number(d[field])));
     return '<div class="dash-chart">'+report.trend.map(d=>`<div class="bar-col" title="${safe(format(d[field]))}">
@@ -247,31 +234,33 @@ function renderInsight(el,report,insights,trends){
       <h1>Insight</h1>
       <p>${safe(new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}))}</p>
     </section>
+    <div class="dash-kpis">
+      ${kpi('Registered members',report.members)}
+      ${kpi('Eligible to check in',report.active)}
+      ${kpi('Today’s check-ins',report.attendance)}
+      ${kpi('Collected today',report.revenue_today,'today')}
+      ${kpi('Pending fees',money(report.pending))}
+      ${kpi('Joined today',report.new_members)}
+      ${kpi('Joined this month',insights.joined_month)}
+      ${kpi('Today’s attendance rate',attendanceRate+'%')}
+      ${kpi('Check-ins in the past 30 days',insights.visits_30d)}
+      ${kpi('Collected this month',report.revenue_month,'revenue')}
+      ${kpi('Collected in the past 30 days',insights.collected_30d,'rolling')}
+      ${kpi('Unique visitors in the past 30 days',insights.visitors_30d)}
+    </div>
     <div class="dash-panels">
       <section class="card">
-        <div class="dash-panel-head"><h2>Membership</h2></div>
-        ${metric('Registered members',report.members)}
-        ${metric('Eligible to check in',report.active)}
-        ${metric('Joined today',report.new_members)}
-        ${metric('Joined this month',insights.joined_month)}
-        ${monthlyChart('New members','joined')}
+        <div class="dash-panel-head"><h2>Revenue</h2><span class="badge">7 days</span></div>
+        ${weeklyChart('revenue',money)}
       </section>
       <section class="card">
-        <div class="dash-panel-head"><h2>Revenue</h2></div>
-        ${privateAmount('Collected today','today',report.revenue_today)}
-        ${privateAmount('Collected this month','revenue',report.revenue_month)}
-        ${privateAmount('Collected in the past 30 days','rolling',insights.collected_30d)}
-        ${metric('Pending fees',money(report.pending))}
-        <h3>Collections · 7 days</h3>${weeklyChart('revenue',money)}
-      </section>
-      <section class="card">
-        <div class="dash-panel-head"><h2>Attendance</h2></div>
-        ${metric('Today’s check-ins',report.attendance)}
-        ${metric('Today’s attendance rate',attendanceRate+'%')}
-        ${metric('Check-ins in the past 30 days',insights.visits_30d)}
-        ${metric('Unique visitors in the past 30 days',insights.visitors_30d)}
-        <h3>Check-ins · 7 days</h3>${weeklyChart('attendance',value=>value+' visits')}
+        <div class="dash-panel-head"><h2>Attendance</h2><span class="badge">7 days</span></div>
+        ${weeklyChart('attendance',value=>value+' visits')}
         ${monthlyChart('Check-ins','visits')}
+      </section>
+      <section class="card">
+        <div class="dash-panel-head"><h2>Membership growth</h2></div>
+        ${monthlyChart('New members','joined')}
       </section>
       <section class="card">
         <div class="dash-panel-head"><h2>Needs attention</h2></div>
@@ -304,8 +293,9 @@ function renderInsight(el,report,insights,trends){
       const hidden=hiddenAmounts[key]===true;
       amount.textContent=hidden?'••••••':amount.dataset.amount;
       button.setAttribute('aria-pressed',String(hidden));
-      button.setAttribute('aria-label',hidden?'Show amount':'Hide amount');
-      button.title=hidden?'Show amount':'Hide amount';
+      const label=(hidden?'Show ':'Hide ')+button.dataset.moneyLabel.toLowerCase();
+      button.setAttribute('aria-label',label);
+      button.title=label;
       button.style.opacity=hidden?'0.7':'1';
     };
     update();
