@@ -46,54 +46,65 @@ header:after,.member-mini .card:after,.dash-kpi:after,#login:before{background:v
 body{background:radial-gradient(ellipse 70% 34% at 83% -12%,color-mix(in srgb,var(--tx-accent) 10%,transparent),transparent 80%),radial-gradient(ellipse 45% 28% at -14% 65%,rgba(55,113,74,.09),transparent 80%),var(--tx-bg)}
 button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline-color:var(--tx-accent)}
 .brand-preview{--gym-accent:var(--tx-accent)}
-.insight{display:grid;gap:18px}
-.insight-header{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.insight-header h1{margin:0 0 4px;font-size:clamp(32px,4vw,48px)}
-.insight-header p{margin:0;font-size:14px}
+/* Insight palette is scoped to the owner dashboard. */
+body:has(.insight){background:#171719;color:#f7f4f0}
+.shell:has(.insight){--tx-accent:#ff865a;--tx-lime:#ff865a}
+.shell:has(.insight) header{border-color:#383537}
+.shell:has(.insight) nav{background:#1c1b1e;border-color:#393638;box-shadow:none}
+.shell:has(.insight) nav button{color:#d1c9c6}
+.shell:has(.insight) nav button:hover{background:#302829}
+.shell:has(.insight) nav button.active{background:#382723;color:#ffb49a;box-shadow:inset 3px 0 #ff865a}
+.insight{--insight-border:#403b3c;--insight-surface:#242326;--insight-muted:#c3b9b6;display:grid;gap:16px}
+.insight-header{display:flex;align-items:end;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.insight-header h1{margin:0 0 3px;font-size:clamp(30px,3.5vw,43px)}
+.insight-header p,.insight-period{margin:0;color:var(--insight-muted);font-size:13px}
 .insight-shortcuts{display:flex;gap:8px;flex-wrap:wrap}
 .insight-shortcuts button{padding:9px 12px;font-size:13px}
-.insight-summary,.insight-panels{display:grid;gap:12px;min-width:0}
-.insight-summary{grid-template-columns:repeat(4,minmax(0,1fr))}
-.insight-panels{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
-.insight-column{display:grid;gap:12px;min-width:0}
-.insight .card{margin:0;border-radius:14px;box-shadow:none;background:#151e18;padding:16px}
-.insight .insight-featured{background:#202e1c;border-color:#526943}
-.insight .insight-featured strong{color:var(--tx-accent)}
-.insight-stat{display:grid;align-content:start;gap:8px;min-width:0}
-.insight-stat-label{color:#b6c4b8;font-size:13px}
-.insight-stat strong{font-size:clamp(21px,2.15vw,31px);line-height:1.05;letter-spacing:-.04em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
-.insight .money-toggle{padding:3px 7px}
+.insight-shortcuts .secondary{background:#333034}
+.insight-summary,.insight-panels,.insight-support{display:grid;gap:12px;min-width:0}
+.insight-summary{grid-template-columns:repeat(3,minmax(0,1fr))}
+.insight-panels{grid-template-columns:minmax(0,4fr) minmax(0,5fr)}
+.insight-support{grid-template-columns:repeat(2,minmax(0,1fr))}
+.insight .card{margin:0;border:1px solid var(--insight-border);border-radius:15px;box-shadow:none;background:var(--insight-surface);padding:16px;min-width:0}
+.insight-summary .card{background:linear-gradient(145deg,#353032,#232225 75%)}
+.insight-summary .insight-featured{background:linear-gradient(125deg,#8c341e,#5b251c 68%,#432322);border-color:#aa533b}
+.insight-stat{display:grid;align-content:start;gap:9px;min-width:0}
+.insight-stat-label{color:#ded4d1;font-size:13px}
+.insight-stat strong{font-size:clamp(22px,2.3vw,32px);line-height:1.1;letter-spacing:-.04em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.insight-featured strong{color:#fff4ea}
+.insight-stat-link{border:0;border-top:1px solid #ffffff30;border-radius:0;background:transparent;color:#f3e7e1;text-align:left;padding:10px 0 0;font-size:12px;display:flex;justify-content:space-between}
+.insight-stat-link:hover{color:#ffb098}
+.insight .money-toggle{padding:3px 7px;color:#ffb095;background:#352a2b;border-color:#68524e}
 .insight .money-toggle svg{width:15px;height:15px}
-.insight-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.insight-panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
 .insight-panel-head h2{margin:0}
-.insight-period{color:#a9baaa;font-size:12px}
-.insight-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
-.insight-details .insight-stat{background:#111a14;border:1px solid #2b382e;border-radius:9px;padding:10px}
+.insight-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0 0}
+.insight-details .insight-stat{background:#2d292c;border:1px solid #494043;border-radius:10px;padding:10px}
 .insight-details .insight-stat-label{font-size:12px}
-.insight-details .insight-stat strong{font-size:20px}
-.insight-details .insight-stat:last-child:nth-child(odd){grid-column:1/-1}
-.insight .dash-chart{height:112px;padding-top:8px;border-bottom:1px solid #314036}
-.insight .dash-chart span{padding-bottom:6px}
-.insight .dash-chart .bar{width:min(100%,42px);min-height:0;margin-inline:auto}
-.insight-months{display:grid;gap:8px;margin-top:14px}
+.insight-details .insight-stat strong{font-size:19px}
+.insight .dash-chart{height:145px;padding-top:5px;border-bottom:1px solid #4a4244;background:repeating-linear-gradient(to top,transparent 0 32px,#ffffff0d 32px 33px)}
+.insight .dash-chart .bar{width:min(100%,42px);min-height:0;margin-inline:auto;background:linear-gradient(#666064,#40393d)}
+.insight .dash-chart .is-peak .bar{background:linear-gradient(#ff8558,#bd4d32);box-shadow:0 0 18px #ff74452a}
+.insight .dash-chart span{padding-bottom:6px;color:var(--insight-muted)}
+.insight-months{display:grid;gap:7px;margin-top:14px}
 .insight-months h3{font-size:13px;margin:0}
-.insight-month{display:grid;grid-template-columns:58px 1fr 38px;align-items:center;gap:10px;font-size:12px;color:#b6c4b8}
-.insight-month meter{width:100%;accent-color:var(--tx-accent)}
-.insight-month b{text-align:right;color:#effbea}
+.insight-month{display:grid;grid-template-columns:55px 1fr 30px;align-items:center;gap:8px;font-size:12px;color:var(--insight-muted)}
+.insight-month meter{width:100%}
+.insight-month meter::-webkit-meter-optimum-value{background:#ed805a}
+.insight-month b{text-align:right;color:#f8eeea}
 .insight-actions{display:grid;gap:6px}
-.insight-actions button{display:grid;grid-template-columns:minmax(32px,auto) minmax(0,1fr) auto;align-items:center;gap:10px;text-align:left;background:#1c281e;color:#e6f0e5;font-size:13px;padding:9px}
-.insight-actions button:hover{background:#253627}
-.insight-actions strong{font-size:17px;color:var(--tx-accent);text-align:center;font-variant-numeric:tabular-nums}
-.insight-retention{width:100%;border-collapse:collapse;font-size:13px;text-align:left}
-.insight-retention th,.insight-retention td{padding:9px 6px;border-bottom:1px solid #304034}
-.insight-retention tbody tr:last-child>*{border:0}
-.insight-retention thead th{color:#b6c4b8;font-weight:600}
-.insight-retention tbody th{font-weight:500}
-.insight-retention td{font-variant-numeric:tabular-nums}
+.insight-actions button{display:grid;grid-template-columns:minmax(32px,auto) minmax(0,1fr) auto;align-items:center;gap:10px;text-align:left;background:#302a2d;color:#f3eae7;font-size:13px;padding:9px}
+.insight-actions button:hover{background:#433237}
+.insight-actions strong{font-size:17px;color:#ff9f7b;text-align:center;font-variant-numeric:tabular-nums}
+.insight-table{width:100%;border-collapse:collapse;font-size:13px;text-align:left}
+.insight-table th,.insight-table td{padding:8px 7px;border-bottom:1px solid #413a3d;overflow-wrap:anywhere}
+.insight-table thead th{color:var(--insight-muted);background:#302c30;font-weight:600}
+.insight-table tbody tr:last-child>*{border:0}
+.insight-table tbody th{font-weight:500}
+.insight-table td{font-variant-numeric:tabular-nums}
 .insight-retention-hint{font-size:13px;margin:0 0 8px}
-@media(max-width:1100px){.insight-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:950px){.insight-panels{grid-template-columns:minmax(0,1fr)}}
-@media(max-width:380px){.insight-details{grid-template-columns:minmax(0,1fr)}.insight .card{padding:12px}}
+@media(max-width:950px){.insight-panels,.insight-support{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:530px){.insight-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.insight-summary .insight-featured{grid-column:1/-1}.insight .card{padding:12px}}
 </style></head><body>
 <div class="shell"><header><div><div class="logo">TRAINER<span>X</span><small>.io</small></div><div class="sub">GYM MANAGEMENT SUITE</div></div><div class="row"><span id="identity" class="sub"></span><button id="logout" class="secondary hidden">Log out</button></div></header>
 <section id="setup" class="card hidden" style="max-width:500px;margin:5vh auto"><h1>Set up TrainerX</h1><p>Create the first platform administrator. Enter the BOOTSTRAP_TOKEN from your Railway service variables, along with your administrator credentials.</p><form id="setupForm" class="form"><label>Admin email<input name="email" type="email" required autocomplete="email"></label><label>Admin password (12+ characters)<input name="password" type="password" minlength="12" required autocomplete="new-password"></label><label>Setup token<input name="token" type="password" required autocomplete="off"></label><button class="primary" type="submit">Create administrator</button></form><p id="setupNotice" role="status"></p></section><section id="login" class="card"><div class="sub" style="letter-spacing:.08em;color:#c3ff53">TRAINERX ACCESS PORTAL</div><h1 id="portalTitle">Welcome to TrainerX.</h1><p id="portalDescription">Sign in to access your gym management dashboard.</p><form id="loginForm" class="form"><label>Email<input name="email" type="email" required autocomplete="username"></label><label>Password<input name="password" type="password" required autocomplete="current-password"></label><button class="primary" type="submit">Sign in</button><p id="loginNotice" role="status" style="grid-column:1/-1"></p></form><div style="margin-top:24px;display:flex;flex-direction:column;align-items:flex-start;gap:12px"><a id="adminAccess" href="/admin" style="font-size:13px;color:#b9c7bb;text-decoration:underline;text-underline-offset:4px">Super Admin access</a><a id="backToGym" href="/gym" class="hidden" style="font-size:13px;color:#b9c7bb;text-decoration:underline;text-underline-offset:4px">Back to gym owner sign in</a><button id="recoverToggle" type="button" style="font-size:12px;font-weight:400;background:transparent;color:#94a69a;padding:0;text-decoration:underline;text-underline-offset:3px" class="hidden">Forgot Super Admin password?</button></div><form id="recoverForm" class="form hidden" style="margin-top:18px"><label>Super Admin email<input name="email" type="email" required></label><label>New password (12+ characters)<input name="password" type="password" minlength="12" required autocomplete="new-password"></label><label>Railway BOOTSTRAP_TOKEN<input name="token" type="password" required autocomplete="off"></label><button class="primary" type="submit">Reset Super Admin password</button></form><p id="recoverNotice" role="status"></p></section>
@@ -251,18 +262,18 @@ if(view==='My plans'){const p=await api('/plans');el.innerHTML='<h1>Available pl
 function renderInsight(el,report,insights,trends){
   const money=value=>(report.currency||'PKR')+' '+Number(value||0).toLocaleString('en-PK',{maximumFractionDigits:0});
   const eye='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
-  const stat=(label,value,{key,summary=false}={})=>`<div class="insight-stat${summary?' card':''}${key==='today'?' insight-featured':''}">
+  const stat=(label,value,{key,target,link}={})=>`<div class="insight-stat${target?' card':''}${key==='today'?' insight-featured':''}">
     <span class="insight-stat-label">${safe(label)}</span>
     <div class="money-line">
       ${key?`<strong class="money-value" data-money="${key}" data-amount="${safe(money(value))}">••••••</strong>
         <button type="button" class="money-toggle" data-money-toggle="${key}" data-money-label="${safe(label)}"
           aria-label="${safe('Show '+label.toLowerCase())}">${eye}</button>`:`<strong>${safe(value)}</strong>`}
-    </div></div>`;
+    </div>${target?`<button type="button" class="insight-stat-link" data-insight-view="${target}">${link}<span aria-hidden="true">→</span></button>`:''}</div>`;
   const weeklyChart=(field,format,label)=>{
     const max=Math.max(1,...report.trend.map(day=>Number(day[field])));
     const summary=report.trend.map(day=>day.label+' '+format(day[field])).join(', ');
     return `<div class="dash-chart" role="img" aria-label="${safe(label+': '+summary)}">`+report.trend.map(day=>
-      `<div class="bar-col" aria-hidden="true" title="${safe(format(day[field]))}">
+      `<div class="bar-col${Number(day[field])===max?' is-peak':''}" aria-hidden="true" title="${safe(format(day[field]))}">
         <div class="bar" style="height:${Math.round(Number(day[field])/max*100)}%"></div>
         <span>${safe(day.label)}</span>
       </div>`).join('')+'</div>';
@@ -288,21 +299,11 @@ function renderInsight(el,report,insights,trends){
         </div>
       </div>
       <section class="insight-summary" aria-label="Key metrics">
-        ${stat('Registered members',report.members,{summary:true})}
-        ${stat('Today’s check-ins',report.attendance,{summary:true})}
-        ${stat('Collected today',report.revenue_today,{key:'today',summary:true})}
-        ${stat('Pending fees',money(report.pending),{summary:true})}
+        ${stat('Collected today',report.revenue_today,{key:'today',target:'Financials',link:'View financials'})}
+        ${stat('Registered members',report.members,{target:'Members',link:'View members'})}
+        ${stat('Today’s check-ins',report.attendance,{target:'Attendance',link:'View attendance'})}
       </section>
       <div class="insight-panels">
-        <div class="insight-column">
-          <section class="card">
-            <div class="insight-panel-head"><h2>Revenue</h2><span class="insight-period">Last 7 days</span></div>
-            ${weeklyChart('revenue',money,'Revenue for the last seven days')}
-            <div class="insight-details">
-              ${stat('Collected this month',report.revenue_month,{key:'revenue'})}
-              ${stat('Collected in the past 30 days',insights.collected_30d,{key:'rolling'})}
-            </div>
-          </section>
           <section class="card">
             <div class="insight-panel-head"><h2>Membership growth</h2></div>
             <div class="insight-details">
@@ -312,8 +313,25 @@ function renderInsight(el,report,insights,trends){
             </div>
             ${monthlyChart('New members','joined')}
           </section>
-        </div>
-        <div class="insight-column">
+          <section class="card">
+            <div class="insight-panel-head"><h2>Revenue</h2><span class="insight-period">Last 7 days</span></div>
+            ${weeklyChart('revenue',money,'Revenue for the last seven days')}
+            <div class="insight-details">
+              ${stat('Collected this month',report.revenue_month,{key:'revenue'})}
+              ${stat('Collected in the past 30 days',insights.collected_30d,{key:'rolling'})}
+              ${stat('Pending fees',money(report.pending))}
+            </div>
+          </section>
+      </div>
+      <section class="card">
+        <div class="insight-panel-head"><h2>Recent activity</h2><span class="insight-period">Today</span></div>
+        ${report.activity.length?`<table class="insight-table">
+          <thead><tr><th scope="col">Activity</th><th scope="col">Member</th><th scope="col">Time</th></tr></thead>
+          <tbody>${report.activity.map(event=>`<tr><td>${safe(event.kind)}</td><td>${safe(event.who)}</td>
+            <td>${safe(new Date(event.occurred_at).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}))}</td></tr>`).join('')}</tbody>
+        </table>`:'<p>No check-ins or payments recorded today.</p>'}
+      </section>
+      <div class="insight-support">
           <section class="card">
             <div class="insight-panel-head"><h2>Needs attention</h2></div>
             <div class="insight-actions">
@@ -332,12 +350,11 @@ function renderInsight(el,report,insights,trends){
             </div>
             ${monthlyChart('Check-ins','visits')}
           </section>
-        </div>
       </div>
       <section class="card">
         <div class="insight-panel-head"><h2>Retention and churn</h2><span class="insight-period">Last 6 months</span></div>
         <p class="insight-retention-hint">Based on members whose memberships were in force at the start of each month.</p>
-        <table class="insight-retention">
+        <table class="insight-table insight-retention">
           <thead><tr><th scope="col">Month</th><th scope="col">Opening members</th><th scope="col">Retained</th><th scope="col">Churned</th></tr></thead>
           <tbody>${trends.map(row=>`<tr><th scope="row">${safe(row.month)}</th><td>${row.opening}</td>
             <td>${row.opening?Math.round(row.retained/row.opening*100)+'%':'—'}</td>
