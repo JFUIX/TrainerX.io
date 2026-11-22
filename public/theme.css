@@ -1,0 +1,33 @@
+@font-face {
+  font-family: Inter;
+  src: url('/fonts/inter-latin.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+  font-family: Inter, system-ui, sans-serif;
+  color: var(--tx-text);
+  background: var(--tx-bg);
+  --tx-bg: #171719;
+  --tx-panel: #242326;
+  --tx-control: #1d1c1f;
+  --tx-line: #403b3c;
+  --tx-text: #f7f4f0;
+  --tx-muted: #c3b9b6;
+  --tx-accent: #ff865a;
+  --tx-accent-hover: #ffa17e;
+  --tx-accent-soft: #ffbcaa;
+  --tx-accent-ink: #25120e;
+}
+
+button, input, select, textarea, optgroup, option {
+  font: inherit;
+}
+
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--tx-accent);
+  outline-offset: 3px;
+}

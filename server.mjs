@@ -37,6 +37,7 @@ app.get('/trainers',auth,async(req,res)=>{if(!['owner','reception'].includes(req
 app.get('/users',auth,async(req,res)=>{if(req.user.role!=='owner')return res.sendStatus(403);res.json((await db.query('SELECT id,email,role,active FROM users WHERE gym_id=$1',[req.user.gym_id])).rows)});
 
 app.get(['/admin','/gym'],(req,res)=>res.sendFile(path.join(path.dirname(fileURLToPath(import.meta.url)),'public','index.html')));
+app.get('/checkin',(req,res)=>res.sendFile(path.join(path.dirname(fileURLToPath(import.meta.url)),'public','checkin.html')));
 app.use(express.static(path.join(path.dirname(fileURLToPath(import.meta.url)),'public'),{index:'index.html'}));
 async function allocateAttendanceCode(client,gymId){await client.query('SELECT pg_advisory_xact_lock(hashtext($1))',[gymId]);const r=await client.query('SELECT attendance_code FROM member_profiles WHERE gym_id=$1 AND attendance_code IS NOT NULL',[gymId]);const used=new Set(r.rows.map(x=>x.attendance_code));if(used.size>=10000)throw Error('No attendance codes available');const start=randomBytes(4).readUInt32BE(0)%10000;for(let i=0;i<10000;i++){const code=String((start+i)%10000).padStart(4,'0');if(!used.has(code))return code}throw Error('No attendance codes available')}
 const staff=(u)=>['owner','reception'].includes(u.role);
