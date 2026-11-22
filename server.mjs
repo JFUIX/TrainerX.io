@@ -104,6 +104,19 @@ for(const [kind,table,column] of [['workouts','workout_plans','exercises'],['die
  app.post('/'+kind,auth,async(req,res)=>{if(!['owner','trainer'].includes(req.user.role))return res.sendStatus(403);const {member_id,title}=req.body||{},items=req.body?.[column];if(!/^[0-9a-f-]{36}$/i.test(member_id||'')||typeof title!=='string'||!title.trim()||title.length>120||!Array.isArray(items)||items.length<1||items.length>30||items.some(x=>typeof x!=='object'||x===null||Array.isArray(x)||Object.values(x).some(v=>typeof v!=='string'&&typeof v!=='number'))||JSON.stringify(items).length>8000)return res.sendStatus(400);const r=await db.query("INSERT INTO "+table+"(gym_id,member_id,trainer_id,title,"+column+") SELECT $1,u.id,$2,$4,$5::jsonb FROM users u WHERE u.id=$3 AND u.gym_id=$1 AND u.role='member' AND u.active RETURNING id,title,updated_at",[req.user.gym_id,req.user.id,member_id,title,JSON.stringify(items)]);if(!r.rowCount)return res.sendStatus(404);res.status(201).json(r.rows[0])});
 }
 
+
+app.get('/business-insights',auth,async(req,res)=>{
+ if(req.user.role!=='owner')return res.sendStatus(403);
+ const g=req.user.gym_id;
+ const [members,retention,attendance,revenue]=await Promise.all([
+  db.query("SELECT count(*)::int AS total, count(*) FILTER (WHERE joined_on >= date_trunc('month',CURRENT_DATE))::int AS joined_month FROM member_profiles WHERE gym_id=$1",[g]),
+  db.query("SELECT count(*) FILTER (WHERE ends_on BETWEEN CURRENT_DATE AND CURRENT_DATE+interval '7 days')::int AS expiring_7d, count(*) FILTER (WHERE ends_on < CURRENT_DATE AND ends_on >= CURRENT_DATE-interval '30 days')::int AS expired_30d FROM (SELECT DISTINCT ON (member_id) member_id,ends_on FROM memberships WHERE gym_id=$1 ORDER BY member_id,ends_on DESC) latest",[g]),
+  db.query("SELECT count(DISTINCT member_id)::int AS visitors_30d, count(*)::int AS visits_30d FROM attendance WHERE gym_id=$1 AND attended_on>=CURRENT_DATE-interval '29 days'",[g]),
+  db.query("SELECT COALESCE(sum(amount),0)::numeric AS collected_30d FROM fee_payments WHERE gym_id=$1 AND paid_at>=now()-interval '30 days'",[g])
+ ]);
+ res.set('Cache-Control','no-store').json({...members.rows[0],...retention.rows[0],...attendance.rows[0],...revenue.rows[0]});
+});
+
 app.use((err,req,res,next)=>{console.error(err.code||'request error');res.sendStatus(err.code==='23505'?409:500)});
 const port=Number(process.env.PORT)||3000;
 app.listen(port,'0.0.0.0',()=>console.log('TrainerX HTTP server listening on port '+port));
