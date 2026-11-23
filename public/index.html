@@ -205,7 +205,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
   .insight .dashboard-clock{padding:4px 14px 4px 0}
   .dashboard-clock-date{font-size:clamp(21px,1.7vw,25px)}
   .dashboard-clock-time{font-size:clamp(52px,4.2vw,62px)}
-  .insight-attendance-stack{align-self:stretch;grid-template-rows:auto 1fr}
+  .insight-attendance-stack{align-self:stretch;grid-template-rows:auto auto 1fr}
   .insight-attendance-stack .attendance-trends-card{display:flex;flex-direction:column}
   .insight-attendance-stack .attendance-trends-card .dash-chart{flex:1;height:auto;min-height:112px}
 }
@@ -227,8 +227,6 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .dashboard-check-in-history ul{margin:8px 0 0;padding:0;list-style:none;max-height:180px;overflow:auto;scrollbar-width:thin}
 .dashboard-check-in-history li{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid var(--tx-line);overflow-wrap:anywhere}
 .dashboard-check-in-history time{white-space:nowrap}
-.dashboard-attendance-trends{margin-top:13px;padding-top:10px;border-top:1px solid var(--tx-line)}
-.dashboard-attendance-trends summary{font-size:13px;color:var(--tx-muted);cursor:pointer}
 </style></head><body>
 <div class="shell"><header><div><div class="logo">TRAINER<span>X</span><small>.io</small></div><div class="sub">GYM MANAGEMENT SUITE</div></div><div class="row"><span id="identity" class="sub"></span><button id="logout" class="secondary hidden">Log out</button></div></header>
 <section id="setup" class="card hidden" style="max-width:500px;margin:5vh auto"><h1>Set up TrainerX</h1><p>Create the first platform administrator. Enter the BOOTSTRAP_TOKEN from your Railway service variables, along with your administrator credentials.</p><form id="setupForm" class="form"><label>Admin email<input name="email" type="email" required autocomplete="email"></label><label>Admin password (12+ characters)<input name="password" type="password" minlength="12" required autocomplete="new-password"></label><label>Setup token<input name="token" type="password" required autocomplete="off"></label><button class="primary" type="submit">Create administrator</button></form><p id="setupNotice" role="status"></p></section><section id="login" class="card"><div class="sub" style="letter-spacing:.08em;color:var(--tx-accent)">TRAINERX ACCESS PORTAL</div><h1 id="portalTitle">Welcome to TrainerX.</h1><p id="portalDescription">Sign in to access your gym management dashboard.</p><form id="loginForm" class="form"><label>Email<input name="email" type="email" required autocomplete="username"></label><label>Password<input name="password" type="password" required autocomplete="current-password"></label><button class="primary" type="submit">Sign in</button><p id="loginNotice" role="status" style="grid-column:1/-1"></p></form><div style="margin-top:24px;display:flex;flex-direction:column;align-items:flex-start;gap:12px"><a id="adminAccess" href="/admin" style="font-size:13px;color:var(--tx-muted);text-decoration:underline;text-underline-offset:4px">Super Admin access</a><a id="backToGym" href="/gym" class="hidden" style="font-size:13px;color:var(--tx-muted);text-decoration:underline;text-underline-offset:4px">Back to gym owner sign in</a><button id="recoverToggle" type="button" style="font-size:12px;font-weight:400;background:transparent;color:var(--tx-muted);padding:0;text-decoration:underline;text-underline-offset:3px" class="hidden">Forgot Super Admin password?</button></div><form id="recoverForm" class="form hidden" style="margin-top:18px"><label>Super Admin email<input name="email" type="email" required></label><label>New password (12+ characters)<input name="password" type="password" minlength="12" required autocomplete="new-password"></label><label>Railway BOOTSTRAP_TOKEN<input name="token" type="password" required autocomplete="off"></label><button class="primary" type="submit">Reset Super Admin password</button></form><p id="recoverNotice" role="status"></p></section>
@@ -522,15 +520,23 @@ function renderInsight(el,report,insights,trends){
         <button type="button" class="money-toggle" data-money-toggle="${key}" data-money-label="${safe(label)}"
           aria-label="${safe('Show '+label.toLowerCase())}">${eye}</button>`:`<strong${metric?' data-'+metric:''}>${safe(value)}</strong>`}
     </div>${target?`<button type="button" class="insight-stat-link" data-insight-view="${target}">${link}<span aria-hidden="true">→</span></button>`:''}</div>`;
-  const weeklyChart=(field,format,label)=>{
-    const max=Math.max(1,...report.trend.map(day=>Number(day[field])));
-    const summary=report.trend.map(day=>day.label+' '+format(day[field])).join(', ');
-    return `<div class="dash-chart" role="img" aria-label="${safe(label+': '+summary)}">`+report.trend.map(day=>
-      `<div class="bar-col${Number(day[field])===max?' is-peak':''}" aria-hidden="true" title="${safe(format(day[field]))}">
-        <div class="bar" style="height:${Math.round(Number(day[field])/max*100)}%"></div>
-        <span>${safe(day.label)}</span>
+  const barChart=(points,format,label)=>{
+    const max=Math.max(1,...points.map(point=>Number(point.value)));
+    const summary=points.map(point=>(point.fullLabel||point.label)+' '+format(point.value)).join(', ');
+    return `<div class="dash-chart" role="img" aria-label="${safe(label+': '+summary)}">`+points.map(point=>
+      `<div class="bar-col${Number(point.value)===max?' is-peak':''}" aria-hidden="true" title="${safe((point.fullLabel||point.label)+': '+format(point.value))}">
+        <div class="bar" style="height:${Math.round(Number(point.value)/max*100)}%"></div>
+        <span>${safe(point.label)}</span>
       </div>`).join('')+'</div>';
   };
+  const weeklyChart=(field,format,label)=>barChart(report.trend.map(day=>({label:day.label,value:day[field]})),format,label);
+  const monthName=new Intl.DateTimeFormat(undefined,{month:'short',timeZone:'UTC'});
+  const monthlyAttendance=trends.map(row=>({
+    label:monthName.format(new Date(row.month+'-01T00:00:00Z')),
+    fullLabel:row.month,
+    value:row.visits
+  }));
+  const visits=value=>value+(Number(value)===1?' visit':' visits');
   const monthlyChart=(label,key)=>{
     const max=Math.max(1,...trends.map(row=>row[key]));
     return `<div class="insight-months"><h3>${label} · 6 months</h3>`+trends.map(row=>`<div class="insight-month">
@@ -571,11 +577,11 @@ function renderInsight(el,report,insights,trends){
                 ${stat('Check-ins · 30 days',insights.visits_30d)}
                 ${stat('Unique visitors · 30 days',insights.visitors_30d)}
               </div>
-              ${weeklyChart('attendance',value=>value+' visits','Check-ins for the last seven days')}
-              <details class="dashboard-attendance-trends">
-                <summary>Six-month attendance trend</summary>
-                ${monthlyChart('Check-ins','visits')}
-              </details>
+              ${weeklyChart('attendance',visits,'Check-ins for the last seven days')}
+          </section>
+          <section class="card attendance-trends-card">
+            <div class="insight-panel-head"><h2>Monthly attendance</h2><span class="insight-period">Last 6 months</span></div>
+            ${barChart(monthlyAttendance,visits,'Check-ins for the last six months')}
           </section>
       </div>
         <div class="insight-panels">
