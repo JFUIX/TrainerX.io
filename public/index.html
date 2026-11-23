@@ -42,7 +42,7 @@ header:after,.member-mini .card:after,.dash-kpi:after,#login:before{background:v
 .dashboard-hero{background:radial-gradient(circle at 90% 12%,color-mix(in srgb,var(--tx-accent) 15%,transparent),transparent 48%),linear-gradient(130deg,var(--tx-panel),var(--tx-control))}
 .dash-chart .bar{background:var(--tx-accent)}.dash-kpi:before{background:color-mix(in srgb,var(--tx-accent) 6%,transparent)}
 button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline-color:var(--tx-accent)}
-.insight{display:grid;gap:16px}
+.insight{display:grid;gap:16px;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"lead clock" "summary summary" "attendance attendance" "panels panels" "content content"}
 .insight-header{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .insight-header h1{margin:0 0 3px;font-size:clamp(30px,3.5vw,43px)}
 .insight-period{margin:0;color:var(--tx-muted);font-size:13px}
@@ -152,8 +152,15 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .analytics-legend li>span,.analytics-keys span{display:flex;align-items:center;gap:6px}
 .analytics-swatch{width:8px;height:8px;background:var(--swatch);border-radius:50%;flex:none}
 .analytics-keys{display:flex;flex-wrap:wrap;gap:12px;color:var(--tx-muted);font-size:12px}
-.analytics-plot{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:5px;margin-top:12px}
-.analytics-plot-bars{display:flex;align-items:end;justify-content:center;gap:3px;height:170px;padding:0 3px;background:repeating-linear-gradient(to top,transparent 0 32px,#ffffff10 32px 33px);border-bottom:1px solid var(--tx-line)}
+.analytics-chart{--plot-height:170px;margin-top:12px}
+.analytics-chart-details{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;min-height:42px;font-size:12px;color:var(--tx-muted)}
+.analytics-chart-details strong{color:inherit}
+.analytics-chart-body{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px}
+.analytics-chart-axis{display:flex;flex-direction:column;justify-content:space-between;align-items:end;height:var(--plot-height);position:relative;font-size:11px;color:var(--tx-muted);font-variant-numeric:tabular-nums}.analytics-chart-axis span:last-child{position:absolute;top:100%;padding-top:5px}
+.analytics-plot{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);background:repeating-linear-gradient(to top,transparent 0 calc(25% - 1px),#ffffff16 calc(25% - 1px) 25%) top / 100% var(--plot-height) no-repeat}
+.analytics-plot-bucket{min-width:0;border-radius:4px;outline-offset:-2px}
+.analytics-plot-bucket:hover,.analytics-plot-bucket:focus-visible{background:#ffffff0c}
+.analytics-plot-bars{display:flex;align-items:end;justify-content:center;gap:3px;height:var(--plot-height);padding:0 3px;border-bottom:1px solid var(--tx-line)}
 .analytics-plot-bars span{width:min(43%,24px);border-radius:4px 4px 0 0}
 .analytics-revenue{--swatch:#ff865a;background:linear-gradient(#ff9f7b,#a84c37)}
 .analytics-expense{--swatch:#c6adf2;background:linear-gradient(#c6adf2,#70608d)}
@@ -166,10 +173,14 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .analytics-table td:nth-child(4){overflow-wrap:anywhere;min-width:8rem}
 .analytics .analytics-table-note{margin-top:10px}
 @media(max-width:1000px){.analytics-grid{grid-template-columns:minmax(0,1fr)}}
-@media(max-width:480px){.analytics-totals{grid-template-columns:minmax(0,1fr)}.analytics .card{padding:12px}.analytics-plot-bars{height:140px}}
+@media(max-width:480px){.analytics-totals{grid-template-columns:minmax(0,1fr)}.analytics .card{padding:12px}.analytics-chart{--plot-height:140px}}
 .insight-lead,.insight-content,.insight-attendance-stack{min-width:0;display:grid;gap:12px}
-.insight-lead{padding-top:2px}
-.insight .dashboard-clock{border-right:3px solid var(--tx-accent);padding-right:12px}
+.insight-lead{grid-area:lead;align-self:center}
+.insight-summary{grid-area:summary}
+.insight-panels{grid-area:panels}
+.insight-attendance-stack{grid-area:attendance}
+.insight-content{grid-area:content}
+.insight .dashboard-clock{grid-area:clock;align-self:center;border-right:3px solid var(--tx-accent);padding-right:12px}
 .insight .dashboard-clock-time{color:#ffe9df}
 .insight .insight-summary .card:not(.insight-featured){background:linear-gradient(155deg,#302b2e,var(--tx-panel) 75%)}
 .insight .insight-summary .insight-featured{background:radial-gradient(ellipse at 10% 0,#af4d2e,transparent 75%),linear-gradient(130deg,#713221,#472625)}
@@ -190,13 +201,13 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 }
 @media(min-width:1240px){
   .shell:has(.dashboard-attendance-rail){max-width:1680px;padding-inline:clamp(22px,2.1vw,36px)}
-  .insight:has(.dashboard-attendance-rail){grid-template-columns:minmax(0,1fr) minmax(245px,286px);grid-template-areas:"lead attendance" "panels attendance" "content content";align-items:start;grid-template-rows:auto 1fr auto}
-  .insight-lead{grid-area:lead}
-  .insight-panels{grid-area:panels}
-  .insight-attendance-stack{grid-area:attendance;align-self:stretch;grid-template-rows:auto 1fr}
+  .insight{grid-template-columns:minmax(0,1fr) minmax(245px,286px);grid-template-areas:"lead clock" "summary attendance" "panels attendance" "content content";align-items:start;grid-template-rows:auto auto 1fr auto}
+  .insight .dashboard-clock{padding:4px 14px 4px 0}
+  .dashboard-clock-date{font-size:clamp(21px,1.7vw,25px)}
+  .dashboard-clock-time{font-size:clamp(52px,4.2vw,62px)}
+  .insight-attendance-stack{align-self:stretch;grid-template-rows:auto 1fr}
   .insight-attendance-stack .attendance-trends-card{display:flex;flex-direction:column}
   .insight-attendance-stack .attendance-trends-card .dash-chart{flex:1;height:auto;min-height:112px}
-  .insight-content{grid-area:content}
 }
 .dashboard-check-in{display:grid;gap:8px}
 .dashboard-check-in-form{display:grid;gap:5px}
@@ -269,7 +280,7 @@ function stopView(){
 }
 function showShell(){const logged=!!me;$('#setup').classList.add('hidden');$('#login').classList.toggle('hidden',logged);$('#workspace').classList.toggle('hidden',!logged);$('#loginFooter').classList.toggle('hidden',logged);$('#logout').classList.toggle('hidden',!logged);$('#identity').textContent=logged?me.role+' · '+me.email:'';if(logged){view=views[me.role][0];render()}else{stopView();financeDates=null}}
 const request=api;
-async function render(){
+async function render({enrollMember=false}={}){
   stopView();
   const {signal}=renderController=new AbortController();
   const api=async(url,method='GET',body)=>{
@@ -339,7 +350,7 @@ if(view==='Financials'){
           <div class="analytics-keys"><span><i class="analytics-swatch analytics-revenue" aria-hidden="true"></i>Revenue</span>
           <span><i class="analytics-swatch analytics-expense" aria-hidden="true"></i>Expenses</span></div>
         </div>
-        ${renderFinancialActivity(report.entries,dates,money)}
+        ${renderFinancialActivity(report.entries,dates,money,account.currency)}
       </section>
     </div>
     <section class="card">
@@ -362,6 +373,25 @@ if(view==='Financials'){
       ${report.entries.length>100?`<p class="sub analytics-table-note">Showing 100 transactions. The CSV includes all ${report.entries.length}.</p>`:''}
     </section>
   </div>`;
+  const chart=$('.analytics-chart');
+  if(chart){
+    const details=chart.querySelector('.analytics-chart-details');
+    const showPeriod=bucket=>{
+      details.querySelector('strong').textContent=bucket.dataset.range;
+      details.querySelector('span').textContent=bucket.dataset.values;
+    };
+    const buckets=chart.querySelectorAll('.analytics-plot-bucket');
+    for(const bucket of buckets){
+      bucket.onpointerenter=()=>showPeriod(bucket);
+      bucket.onfocus=()=>showPeriod(bucket);
+      bucket.onclick=()=>showPeriod(bucket);
+    }
+    chart.onpointerleave=()=>showPeriod(chart.querySelector('.analytics-plot-bucket:focus')||buckets[buckets.length-1]);
+    chart.onfocusout=event=>{
+      if(!chart.contains(event.relatedTarget))showPeriod(chart.querySelector('.analytics-plot-bucket:hover')||buckets[buckets.length-1]);
+    };
+    showPeriod(buckets[buckets.length-1]);
+  }
   $('#financialDates').onsubmit=e=>{
     e.preventDefault();
     const next=formData(e.currentTarget);
@@ -383,7 +413,7 @@ if(view==='Insight'){
   renderInsight(el,report,insights,trends);
   startDashboardClock(el.querySelector('.dashboard-clock'),signal);
   renderDashboardAccount($('#dashboardAccount'),account,api,signal);
-  renderDashboardCheckIn($('#dashboardCheckIn'),attendance,api,signal);
+  renderDashboardCheckIn($('#dashboardCheckIn'),attendance,api,signal,report.active);
 }
 if(view==='Gyms'){const gyms=await api('/gyms');el.innerHTML='<h1>Gym management</h1><p>Manage gym accounts and reset owner passwords securely.</p><div class="card">'+rows(gyms,g=>'<div class="item"><strong>'+safe(g.name)+'</strong><p>'+safe(g.owner_email||'No owner')+' · '+safe(g.currency)+'</p><form class="row" data-reset-gym="'+safe(g.id)+'"><label style="flex:1;min-width:210px">New owner password<input type="password" name="password" minlength="12" maxlength="128" autocomplete="new-password" placeholder="12+ characters" required></label><button class="secondary" type="submit">Reset owner password</button></form>'+subscriptionForm(g)+'</div>')+'</div><h2>Add gym</h2>'+form([['name','Gym name'],['currency','Currency (e.g. PKR)'],['email','Owner email','email'],['password','Owner password (12+ characters)','password']],'gymForm','Create gym');bind('gymForm',async d=>{await api('/gyms','POST',{...d,currency:(d.currency||'PKR').trim().toUpperCase()})});el.querySelectorAll('[data-reset-gym]').forEach(form=>form.addEventListener('submit',async e=>{e.preventDefault();const gym=gyms.find(g=>g.id===form.dataset.resetGym);if(!confirm('Reset the owner password for '+gym.name+'? Existing owner sessions will be signed out.'))return;try{await api('/gyms/'+encodeURIComponent(gym.id)+'/reset-owner-password','POST',{password:form.elements.password.value});form.reset();notice('Owner password reset. Sign in with the new password.')}catch(err){notice(err.message,true)}}));el.querySelectorAll('[data-subscription]').forEach(node=>bindForm(node,data=>
     api('/gyms/'+node.dataset.subscription+'/subscription','PATCH',{plan:data.plan,paid_through:data.paid_through||null,active:data.active==='true'})))}
@@ -399,7 +429,15 @@ const [m,trainers,plans,memberships]=await Promise.all([
 ]);
 memberData={members:m,plans,memberships};
 const enrollmentPlans=plans;
-const today=new Date().toISOString().slice(0,10);const status=x=>!x.active?'Inactive':x.frozen?'Frozen':!x.ends_on?'No Plan':String(x.starts_on).slice(0,10)>today?'Upcoming':String(x.ends_on).slice(0,10)<today?'Expired':'Active';const initials=x=>(x.full_name||x.email||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();const active=m.filter(x=>status(x)==='Active').length,expired=m.filter(x=>status(x)==='Expired').length;const urgent=m.filter(x=>x.active&&x.ends_on&&String(x.ends_on).slice(0,10)<=new Date(Date.now()+7*86400000).toISOString().slice(0,10));el.innerHTML='<div class="row" style="justify-content:space-between"><div><h1>'+safe(pageLabel(view))+'</h1><p>Manage members, memberships and renewals.</p></div>'+(canCreate?'<button id="addMember" class="primary">+ Add Member</button>':'')+'</div><div class="member-mini"><div class="card"><span class="sub">Total</span><strong>'+m.length+'</strong></div><div class="card"><span class="sub">Active</span><strong>'+active+'</strong></div><div class="card"><span class="sub">Expired</span><strong>'+expired+'</strong></div></div>'+(canCreate?'<div class="member-form-wrap" id="enrollWrap"><form id="memberForm" class="card form"><label>Member ID<input value="Automatically generated" disabled></label><label>Join Date<input name="joined_on" type="date" required></label><label>Full Name<input name="full_name" maxlength="150" required></label><label>Phone<input name="phone" type="tel" maxlength="40" required></label><label>Age<input name="age" type="number" min="1" max="120" required></label><label>Email<input name="email" type="email" required></label><label>Address<input name="residential_address" maxlength="500" required></label><label>Plan<select name="plan_id" required><option value="">Select plan</option>'+enrollmentPlans.map(p=>'<option value="'+safe(p.id)+'">'+safe(p.name)+' · '+safe(p.months)+' mo · '+safe(p.price)+' PKR</option>').join('')+'</select></label><label>Fee (PKR)<input name="amount" type="number" readonly required></label><label>Duration (months)<input name="membership_months" type="number" min="1" max="120" step="1" required placeholder="Enter months"></label><label>Trainer<select name="trainer_id"><option value="">Unassigned / General Training</option>'+trainers.map(t=>'<option value="'+safe(t.id)+'">'+safe(t.email)+'</option>').join('')+'</select></label><button class="primary" type="submit" >Enroll Member</button></form></div>':'')+'<div class="member-toolbar"><input id="memberSearch" placeholder="Search name, ID, phone or email"><select id="memberFilter"><option value="All">All statuses</option><option>Active</option><option>Expired</option><option>Inactive</option><option>Frozen</option><option>Upcoming</option><option>No Plan</option></select><button class="secondary" id="exportMembers">Export CSV</button></div><div class="card member-list" id="memberList"></div><div id="memberDetail"></div>'+'<section class="card" id="memberAttention"><h2>Needs attention · '+urgent.length+'</h2>'+(urgent.length?urgent.map(x=>'<div class="item row" style="justify-content:space-between"><div><b>'+safe(x.full_name||x.email)+'</b><p>Membership ends '+safe(String(x.ends_on).slice(0,10))+'</p></div>'+(canCreate?'<button class="secondary" data-renew="'+safe(x.id)+'">Renew</button>':'')+'</div>').join(''):'<p>No memberships expiring within 7 days.</p>')+'</section>';const list=()=>{const q=$('#memberSearch').value.toLowerCase().trim(),filter=$('#memberFilter').value;const shown=m.filter(x=>(filter==='All'||status(x)===filter)&&[x.full_name,x.email,x.phone,x.membership_no].some(v=>String(v||'').toLowerCase().includes(q)));$('#memberList').innerHTML=rows(shown,x=>'<div class="item"><div class="member-person"><div class="member-avatar">'+safe(initials(x))+'</div><div><b>'+safe(x.full_name||x.email)+'</b><p>#'+safe(x.membership_no||'—')+' · '+safe(x.plan||'No plan')+' · '+safe(x.phone||'No phone')+'</p></div></div><div class="member-actions"><span class="member-status '+(status(x)==='Expired'?'expired':status(x)==='Inactive'?'inactive':'')+'">'+status(x)+'</span><button class="secondary" data-member="'+safe(x.id)+'">View</button></div></div>');$('#memberList').querySelectorAll('[data-member]').forEach(b=>b.onclick=()=>showMember(m.find(x=>x.id===b.dataset.member)))};let historyRequest=0;const showMember=async x=>{if(!x)return;const requestId=++historyRequest;let h;try{h=await api('/members/'+encodeURIComponent(x.id)+'/history')}catch(err){if(!signal.aborted&&requestId===historyRequest)notice(err.message,true);return}if(requestId!==historyRequest)return;const d=$('#memberDetail');const tabs=['Profile','Memberships','Payments','Attendance','Notes',...(canCreate?['Access & reminders']:[])];d.innerHTML='<section class="card member-detail"><div class="row" style="justify-content:space-between"><div><h2>'+safe(x.full_name||x.email)+'</h2><p>Member #'+safe(x.membership_no||'—')+' · '+status(x)+'</p></div><button class="secondary" id="closeMember">Close</button></div><div class="member-tabs">'+tabs.map((t,i)=>'<button data-tab="'+t+'" class="'+(!i?'active':'')+'">'+t+'</button>').join('')+'</div><div id="memberTabContent"></div></section>';$('#closeMember').onclick=()=>{historyRequest++;d.innerHTML=''};const renderTab=t=>{d.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));const content=$('#memberTabContent');if(t==='Profile'){content.innerHTML='<div class="member-data">'+[['Attendance Code',x.attendance_code||'Not assigned'],['Email',x.email],['Phone',x.phone],['Age',x.age],['Address',x.residential_address],['Joined',String(x.joined_on||'').slice(0,10)],['Trainer',x.trainer_email||'Unassigned'],['Emergency Contact',x.emergency_name||'—'],['Emergency Phone',x.emergency_phone||'—']].map(a=>'<div><small>'+a[0]+'</small>'+safe(a[1]||'—')+'</div>').join('')+'</div>'+(canCreate?'<button class="secondary" id="editMember" style="margin-top:15px">Edit Profile</button><form id="editMemberForm" class="form card hidden"><label>Name<input name="full_name" required maxlength="150" value="'+safe(x.full_name||'')+'"></label><label>Phone<input name="phone" maxlength="40" value="'+safe(x.phone||'')+'"></label><label>Age<input name="age" type="number" min="1" max="120" value="'+safe(x.age||'')+'"></label><label>Address<input name="residential_address" maxlength="500" value="'+safe(x.residential_address||'')+'"></label><label>Trainer<select name="trainer_id"><option value="">Unassigned</option>'+trainers.map(t=>'<option value="'+safe(t.id)+'" '+(x.trainer_id===t.id?'selected':'')+'>'+safe(t.email)+'</option>').join('')+'</select></label><label>Emergency Name<input name="emergency_name" maxlength="150" value="'+safe(x.emergency_name||'')+'"></label><label>Emergency Phone<input name="emergency_phone" maxlength="150" value="'+safe(x.emergency_phone||'')+'"></label><button class="primary" type="submit">Save Changes</button></form>':'');if(canCreate){$('#editMember').onclick=()=>$('#editMemberForm').classList.toggle('hidden');$('#editMemberForm').onsubmit=async e=>{e.preventDefault();try{const data=formData(e.target);data.age=Number(data.age);const saved=await api('/members/'+encodeURIComponent(x.id),'PATCH',data);Object.assign(x,saved);notice('Member updated');renderTab('Profile');list()}catch(err){notice(err.message,true)}}}}else if(t==='Memberships'){content.innerHTML=rows(h.memberships,v=>'<div class="item"><b>'+safe(v.plan)+'</b><p>'+safe(String(v.starts_on).slice(0,10))+' → '+safe(String(v.ends_on).slice(0,10))+' · PKR '+safe(v.price)+'</p>'+(canCreate?'<button class="secondary" data-edit-membership="'+safe(v.id)+'">Edit membership</button>':'')+'</div>')+(canCreate?'<button class="secondary" id="renewMember">Renew / Change Plan</button>':'');if(canCreate){$('#renewMember').onclick=()=>window.openRenewalFor(x.id);content.querySelectorAll('[data-edit-membership]').forEach(button=>button.onclick=async()=>{const v=h.memberships.find(item=>item.id===button.dataset.editMembership);const plans=enrollmentPlans;const current=plans.find(p=>p.id===v.plan_id);content.innerHTML='<form id="editMembershipForm" class="card form"><h3>Edit existing membership</h3><label>Plan<select name="plan_id" required>'+plans.map(p=>'<option value="'+safe(p.id)+'" '+(p.id===v.plan_id?'selected':'')+'>'+safe(p.name)+'</option>').join('')+'</select></label><label>Start date<input name="starts_on" type="date" value="'+safe(String(v.starts_on).slice(0,10))+'" required></label><label>Duration (months)<input name="months" type="number" min="1" max="120" required></label><label>Total fee (PKR)<input id="editMembershipTotal" readonly></label><button class="primary" type="submit">Save membership changes</button><button class="secondary" type="button" id="cancelMembershipEdit">Cancel</button></form>';const fm=$('#editMembershipForm');fm.elements.months.value=current?Math.max(1,Math.round(Number(v.price)/Number(current.price)))||current.months:1;const update=()=>{const p=plans.find(p=>p.id===fm.elements.plan_id.value);$('#editMembershipTotal').value=p?(Number(p.price)*Number(fm.elements.months.value)).toFixed(2):''};fm.elements.plan_id.onchange=update;fm.elements.months.oninput=update;update();$('#cancelMembershipEdit').onclick=()=>renderTab('Memberships');fm.onsubmit=async e=>{e.preventDefault();try{await api('/memberships/'+encodeURIComponent(v.id),'PATCH',{plan_id:fm.elements.plan_id.value,starts_on:fm.elements.starts_on.value,months:Number(fm.elements.months.value)});notice('Membership updated');await render()}catch(err){notice(err.message,true)}}})}}else if(t==='Payments'){content.innerHTML=rows(h.payments,v=>'<div class="item"><b>PKR '+safe(v.amount)+'</b><p>'+safe(v.method)+' · '+safe(new Date(v.paid_at).toLocaleDateString())+'</p></div>')+'<button class="secondary" id="payMember">Record Payment</button>';$('#payMember').onclick=()=>{view='Fees';render()}}else if(t==='Attendance'){content.innerHTML='<p>'+h.attendance.length+' recent check-ins</p>'+rows(h.attendance,v=>'<div class="item">'+safe(new Date(v.checked_at).toLocaleString())+'</div>')}else if(t==='Access & reminders'){renderMemberAccess(content,x,api,signal,list)}else{content.innerHTML='<p>Private staff notes</p>'+(canCreate?'<form id="memberNotes"><textarea name="staff_notes" maxlength="2000" rows="5" style="width:100%;background:var(--tx-control);color:#fff;border:1px solid var(--tx-line);border-radius:10px;padding:12px">'+safe(x.staff_notes||'')+'</textarea><button class="primary" type="submit">Save Notes</button></form>':'<p>'+safe(x.staff_notes||'No notes')+'</p>');if(canCreate)$('#memberNotes').onsubmit=async e=>{e.preventDefault();try{const saved=await api('/members/'+encodeURIComponent(x.id),'PATCH',{staff_notes:e.target.elements.staff_notes.value});Object.assign(x,saved);notice('Notes saved')}catch(err){notice(err.message,true)}}}};d.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>renderTab(b.dataset.tab));renderTab('Profile');d.scrollIntoView({behavior:'smooth',block:'nearest'})};$('#memberSearch').oninput=list;$('#memberFilter').onchange=list;$('#exportMembers').onclick=()=>{const columns=['membership_no','attendance_code','full_name','email','phone','age','residential_address','joined_on','plan','trainer_email','ends_on'];downloadCsv('trainerx-members.csv',columns,m.map(x=>columns.map(k=>x[k])))};list();if(canCreate){$('#addMember').onclick=()=>{$('#enrollWrap').classList.toggle('open');if($('#enrollWrap').classList.contains('open'))$('#enrollWrap').scrollIntoView({behavior:'smooth',block:'start'})};const memberForm=$('#memberForm');const updateEnrollmentFee=()=>{const p=enrollmentPlans.find(p=>p.id===memberForm.elements.plan_id.value);const months=Number(memberForm.elements.membership_months.value);memberForm.elements.amount.value=p&&Number.isInteger(months)&&months>0&&months<=120&&true?(Number(p.price)*months).toFixed(2):'';memberForm.elements.membership_months.setCustomValidity('')};memberForm.elements.plan_id.addEventListener('change',()=>{updateEnrollmentFee()});memberForm.elements.membership_months.addEventListener('input',updateEnrollmentFee);$('#memberForm').elements.joined_on.value=today;bind('memberForm',async d=>api('/members/register','POST',{...d,age:Number(d.age),amount:Number(d.amount),membership_months:Number(d.membership_months)}))}}
+const today=new Date().toISOString().slice(0,10);const status=x=>!x.active?'Inactive':x.frozen?'Frozen':!x.ends_on?'No Plan':String(x.starts_on).slice(0,10)>today?'Upcoming':String(x.ends_on).slice(0,10)<today?'Expired':'Active';const initials=x=>(x.full_name||x.email||'?').trim().split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();const active=m.filter(x=>status(x)==='Active').length,expired=m.filter(x=>status(x)==='Expired').length;const urgent=m.filter(x=>x.active&&x.ends_on&&String(x.ends_on).slice(0,10)<=new Date(Date.now()+7*86400000).toISOString().slice(0,10));el.innerHTML='<div class="row" style="justify-content:space-between"><div><h1>'+safe(pageLabel(view))+'</h1><p>Manage members, memberships and renewals.</p></div>'+(canCreate?'<button id="addMember" class="primary" aria-expanded="false" aria-controls="enrollWrap">+ Add Member</button>':'')+'</div><div class="member-mini"><div class="card"><span class="sub">Total</span><strong>'+m.length+'</strong></div><div class="card"><span class="sub">Active</span><strong>'+active+'</strong></div><div class="card"><span class="sub">Expired</span><strong>'+expired+'</strong></div></div>'+(canCreate?'<div class="member-form-wrap" id="enrollWrap"><form id="memberForm" class="card form"><label>Member ID<input value="Automatically generated" disabled></label><label>Join Date<input name="joined_on" type="date" required></label><label>Full Name<input name="full_name" maxlength="150" required></label><label>Phone<input name="phone" type="tel" maxlength="40" required></label><label>Age<input name="age" type="number" min="1" max="120" required></label><label>Email<input name="email" type="email" required></label><label>Address<input name="residential_address" maxlength="500" required></label><label>Plan<select name="plan_id" required><option value="">Select plan</option>'+enrollmentPlans.map(p=>'<option value="'+safe(p.id)+'">'+safe(p.name)+' · '+safe(p.months)+' mo · '+safe(p.price)+' PKR</option>').join('')+'</select></label><label>Fee (PKR)<input name="amount" type="number" readonly required></label><label>Duration (months)<input name="membership_months" type="number" min="1" max="120" step="1" required placeholder="Enter months"></label><label>Trainer<select name="trainer_id"><option value="">Unassigned / General Training</option>'+trainers.map(t=>'<option value="'+safe(t.id)+'">'+safe(t.email)+'</option>').join('')+'</select></label><button class="primary" type="submit" >Enroll Member</button></form></div>':'')+'<div class="member-toolbar"><input id="memberSearch" placeholder="Search name, ID, phone or email"><select id="memberFilter"><option value="All">All statuses</option><option>Active</option><option>Expired</option><option>Inactive</option><option>Frozen</option><option>Upcoming</option><option>No Plan</option></select><button class="secondary" id="exportMembers">Export CSV</button></div><div class="card member-list" id="memberList"></div><div id="memberDetail"></div>'+'<section class="card" id="memberAttention"><h2>Needs attention · '+urgent.length+'</h2>'+(urgent.length?urgent.map(x=>'<div class="item row" style="justify-content:space-between"><div><b>'+safe(x.full_name||x.email)+'</b><p>Membership ends '+safe(String(x.ends_on).slice(0,10))+'</p></div>'+(canCreate?'<button class="secondary" data-renew="'+safe(x.id)+'">Renew</button>':'')+'</div>').join(''):'<p>No memberships expiring within 7 days.</p>')+'</section>';const list=()=>{const q=$('#memberSearch').value.toLowerCase().trim(),filter=$('#memberFilter').value;const shown=m.filter(x=>(filter==='All'||status(x)===filter)&&[x.full_name,x.email,x.phone,x.membership_no].some(v=>String(v||'').toLowerCase().includes(q)));$('#memberList').innerHTML=rows(shown,x=>'<div class="item"><div class="member-person"><div class="member-avatar">'+safe(initials(x))+'</div><div><b>'+safe(x.full_name||x.email)+'</b><p>#'+safe(x.membership_no||'—')+' · '+safe(x.plan||'No plan')+' · '+safe(x.phone||'No phone')+'</p></div></div><div class="member-actions"><span class="member-status '+(status(x)==='Expired'?'expired':status(x)==='Inactive'?'inactive':'')+'">'+status(x)+'</span><button class="secondary" data-member="'+safe(x.id)+'">View</button></div></div>');$('#memberList').querySelectorAll('[data-member]').forEach(b=>b.onclick=()=>showMember(m.find(x=>x.id===b.dataset.member)))};let historyRequest=0;const showMember=async x=>{if(!x)return;const requestId=++historyRequest;let h;try{h=await api('/members/'+encodeURIComponent(x.id)+'/history')}catch(err){if(!signal.aborted&&requestId===historyRequest)notice(err.message,true);return}if(requestId!==historyRequest)return;const d=$('#memberDetail');const tabs=['Profile','Memberships','Payments','Attendance','Notes',...(canCreate?['Access & reminders']:[])];d.innerHTML='<section class="card member-detail"><div class="row" style="justify-content:space-between"><div><h2>'+safe(x.full_name||x.email)+'</h2><p>Member #'+safe(x.membership_no||'—')+' · '+status(x)+'</p></div><button class="secondary" id="closeMember">Close</button></div><div class="member-tabs">'+tabs.map((t,i)=>'<button data-tab="'+t+'" class="'+(!i?'active':'')+'">'+t+'</button>').join('')+'</div><div id="memberTabContent"></div></section>';$('#closeMember').onclick=()=>{historyRequest++;d.innerHTML=''};const renderTab=t=>{d.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));const content=$('#memberTabContent');if(t==='Profile'){content.innerHTML='<div class="member-data">'+[['Attendance Code',x.attendance_code||'Not assigned'],['Email',x.email],['Phone',x.phone],['Age',x.age],['Address',x.residential_address],['Joined',String(x.joined_on||'').slice(0,10)],['Trainer',x.trainer_email||'Unassigned'],['Emergency Contact',x.emergency_name||'—'],['Emergency Phone',x.emergency_phone||'—']].map(a=>'<div><small>'+a[0]+'</small>'+safe(a[1]||'—')+'</div>').join('')+'</div>'+(canCreate?'<button class="secondary" id="editMember" style="margin-top:15px">Edit Profile</button><form id="editMemberForm" class="form card hidden"><label>Name<input name="full_name" required maxlength="150" value="'+safe(x.full_name||'')+'"></label><label>Phone<input name="phone" maxlength="40" value="'+safe(x.phone||'')+'"></label><label>Age<input name="age" type="number" min="1" max="120" value="'+safe(x.age||'')+'"></label><label>Address<input name="residential_address" maxlength="500" value="'+safe(x.residential_address||'')+'"></label><label>Trainer<select name="trainer_id"><option value="">Unassigned</option>'+trainers.map(t=>'<option value="'+safe(t.id)+'" '+(x.trainer_id===t.id?'selected':'')+'>'+safe(t.email)+'</option>').join('')+'</select></label><label>Emergency Name<input name="emergency_name" maxlength="150" value="'+safe(x.emergency_name||'')+'"></label><label>Emergency Phone<input name="emergency_phone" maxlength="150" value="'+safe(x.emergency_phone||'')+'"></label><button class="primary" type="submit">Save Changes</button></form>':'');if(canCreate){$('#editMember').onclick=()=>$('#editMemberForm').classList.toggle('hidden');$('#editMemberForm').onsubmit=async e=>{e.preventDefault();try{const data=formData(e.target);data.age=Number(data.age);const saved=await api('/members/'+encodeURIComponent(x.id),'PATCH',data);Object.assign(x,saved);notice('Member updated');renderTab('Profile');list()}catch(err){notice(err.message,true)}}}}else if(t==='Memberships'){content.innerHTML=rows(h.memberships,v=>'<div class="item"><b>'+safe(v.plan)+'</b><p>'+safe(String(v.starts_on).slice(0,10))+' → '+safe(String(v.ends_on).slice(0,10))+' · PKR '+safe(v.price)+'</p>'+(canCreate?'<button class="secondary" data-edit-membership="'+safe(v.id)+'">Edit membership</button>':'')+'</div>')+(canCreate?'<button class="secondary" id="renewMember">Renew / Change Plan</button>':'');if(canCreate){$('#renewMember').onclick=()=>window.openRenewalFor(x.id);content.querySelectorAll('[data-edit-membership]').forEach(button=>button.onclick=async()=>{const v=h.memberships.find(item=>item.id===button.dataset.editMembership);const plans=enrollmentPlans;const current=plans.find(p=>p.id===v.plan_id);content.innerHTML='<form id="editMembershipForm" class="card form"><h3>Edit existing membership</h3><label>Plan<select name="plan_id" required>'+plans.map(p=>'<option value="'+safe(p.id)+'" '+(p.id===v.plan_id?'selected':'')+'>'+safe(p.name)+'</option>').join('')+'</select></label><label>Start date<input name="starts_on" type="date" value="'+safe(String(v.starts_on).slice(0,10))+'" required></label><label>Duration (months)<input name="months" type="number" min="1" max="120" required></label><label>Total fee (PKR)<input id="editMembershipTotal" readonly></label><button class="primary" type="submit">Save membership changes</button><button class="secondary" type="button" id="cancelMembershipEdit">Cancel</button></form>';const fm=$('#editMembershipForm');fm.elements.months.value=current?Math.max(1,Math.round(Number(v.price)/Number(current.price)))||current.months:1;const update=()=>{const p=plans.find(p=>p.id===fm.elements.plan_id.value);$('#editMembershipTotal').value=p?(Number(p.price)*Number(fm.elements.months.value)).toFixed(2):''};fm.elements.plan_id.onchange=update;fm.elements.months.oninput=update;update();$('#cancelMembershipEdit').onclick=()=>renderTab('Memberships');fm.onsubmit=async e=>{e.preventDefault();try{await api('/memberships/'+encodeURIComponent(v.id),'PATCH',{plan_id:fm.elements.plan_id.value,starts_on:fm.elements.starts_on.value,months:Number(fm.elements.months.value)});notice('Membership updated');await render()}catch(err){notice(err.message,true)}}})}}else if(t==='Payments'){content.innerHTML=rows(h.payments,v=>'<div class="item"><b>PKR '+safe(v.amount)+'</b><p>'+safe(v.method)+' · '+safe(new Date(v.paid_at).toLocaleDateString())+'</p></div>')+'<button class="secondary" id="payMember">Record Payment</button>';$('#payMember').onclick=()=>{view='Fees';render()}}else if(t==='Attendance'){content.innerHTML='<p>'+h.attendance.length+' recent check-ins</p>'+rows(h.attendance,v=>'<div class="item">'+safe(new Date(v.checked_at).toLocaleString())+'</div>')}else if(t==='Access & reminders'){renderMemberAccess(content,x,api,signal,list)}else{content.innerHTML='<p>Private staff notes</p>'+(canCreate?'<form id="memberNotes"><textarea name="staff_notes" maxlength="2000" rows="5" style="width:100%;background:var(--tx-control);color:#fff;border:1px solid var(--tx-line);border-radius:10px;padding:12px">'+safe(x.staff_notes||'')+'</textarea><button class="primary" type="submit">Save Notes</button></form>':'<p>'+safe(x.staff_notes||'No notes')+'</p>');if(canCreate)$('#memberNotes').onsubmit=async e=>{e.preventDefault();try{const saved=await api('/members/'+encodeURIComponent(x.id),'PATCH',{staff_notes:e.target.elements.staff_notes.value});Object.assign(x,saved);notice('Notes saved')}catch(err){notice(err.message,true)}}}};d.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>renderTab(b.dataset.tab));renderTab('Profile');d.scrollIntoView({behavior:'smooth',block:'nearest'})};$('#memberSearch').oninput=list;$('#memberFilter').onchange=list;$('#exportMembers').onclick=()=>{const columns=['membership_no','attendance_code','full_name','email','phone','age','residential_address','joined_on','plan','trainer_email','ends_on'];downloadCsv('trainerx-members.csv',columns,m.map(x=>columns.map(k=>x[k])))};list();if(canCreate){const addMember=$('#addMember'),enrollWrap=$('#enrollWrap'),memberForm=$('#memberForm');
+const showEnrollment=open=>{
+  enrollWrap.classList.toggle('open',open);
+  addMember.setAttribute('aria-expanded',String(open));
+  if(open)memberForm.elements.full_name.focus();
+};
+addMember.onclick=()=>showEnrollment(!enrollWrap.classList.contains('open'));
+if(enrollMember)showEnrollment(true);
+const updateEnrollmentFee=()=>{const p=enrollmentPlans.find(p=>p.id===memberForm.elements.plan_id.value);const months=Number(memberForm.elements.membership_months.value);memberForm.elements.amount.value=p&&Number.isInteger(months)&&months>0&&months<=120&&true?(Number(p.price)*months).toFixed(2):'';memberForm.elements.membership_months.setCustomValidity('')};memberForm.elements.plan_id.addEventListener('change',()=>{updateEnrollmentFee()});memberForm.elements.membership_months.addEventListener('input',updateEnrollmentFee);$('#memberForm').elements.joined_on.value=today;bind('memberForm',async d=>api('/members/register','POST',{...d,age:Number(d.age),amount:Number(d.amount),membership_months:Number(d.membership_months)}))}}
 if(view==='Trainer Clients'){const members=await api('/members');el.innerHTML='<h1>Trainer clients</h1><p>Member directory for assigning workout and diet plans.</p><div class="card">'+rows(members,x=>'<div class="item"><b>'+safe(x.full_name||x.email)+'</b><p>#'+safe(x.membership_no||'—')+' · '+safe(x.phone||'')+'</p></div>')+'</div>'}
 if(view==='Attendance'||view==='My attendance'){const a=await api('/attendance');el.innerHTML='<h1>Today’s attendance</h1>'+((me.role==='owner'||me.role==='reception')?'<form id="codeCheckinForm" class="card form"><label>4-digit member attendance code<input name="code" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" minlength="4" autocomplete="off" required placeholder="0000"></label><button class="primary">Check In</button></form>':'')+'<div class="card">'+rows(a,x=>'<div class="item">'+safe(x.email)+' <span class="badge">'+safe(new Date(x.checked_at).toLocaleTimeString())+'</span></div>')+'</div>';if($('#codeCheckinForm'))bind('codeCheckinForm',async d=>{const result=await api('/attendance/code','POST',d);notice(result.name+' checked in')})}
 
@@ -413,7 +451,7 @@ if(view==='Renewals'){const r=await api('/renewals');el.innerHTML='<h1>Upcoming 
 
 if(view==='My plans'){const p=await api('/plans');el.innerHTML='<h1>Available plans</h1><div class="card">'+rows(p,x=>'<div class="item"><b>'+safe(x.name)+'</b> · '+safe(x.months)+' months · '+safe(x.price)+'</div>')+'</div>'}
 }catch(e){if(!signal.aborted)el.innerHTML='<p class="error">'+safe(e.message)+'</p>'}}
-function renderFinancialActivity(entries,dates,money){
+function renderFinancialActivity(entries,dates,money,currency){
   if(!entries.length)return '<p class="sub">No revenue or expenses recorded for this period.</p>';
   const day=86400000;
   const from=Date.parse(dates.from);
@@ -424,20 +462,33 @@ function renderFinancialActivity(entries,dates,money){
     const index=Math.floor((Date.parse(row.date)-from)/(day*span));
     periods[index][row.type]+=Math.round(Number(row.amount)*100);
   }
-  const max=Math.max(1,...periods.map(period=>Math.max(period.Payment,period.Expense)));
+  const peak=Math.max(0,...periods.map(period=>Math.max(period.Payment,period.Expense)));
+  const targetStep=Math.max(1,peak/4);
+  const magnitude=10**Math.floor(Math.log10(targetStep));
+  const step=Math.ceil([1,2,2.5,5,10].find(multiplier=>multiplier*magnitude>=targetStep)*magnitude);
+  const axisAmount=new Intl.NumberFormat(undefined,{notation:'compact',maximumFractionDigits:3});
+  const ticks=[4,3,2,1,0].map(tick=>`<span>${safe(axisAmount.format(tick*step/100))}</span>`).join('');
   const dateFormat=new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric',timeZone:'UTC'});
   const bars=periods.map((period,index)=>{
     const start=dateFormat.format(from+index*span*day);
     const end=dateFormat.format(from+Math.min(days-1,(index+1)*span-1)*day);
-    const label=(start===end?start:start+' – '+end)+': revenue '+money(period.Payment/100)+', expenses '+money(period.Expense/100);
-    const html=`<div title="${safe(label)}" aria-hidden="true"><div class="analytics-plot-bars">
-      <span class="analytics-revenue" style="height:${period.Payment/max*100}%"></span>
-      <span class="analytics-expense" style="height:${period.Expense/max*100}%"></span>
-    </div><div class="analytics-plot-day">${safe(start)}</div></div>`;
-    return {label,html};
-  });
-  return '<div class="analytics-plot" role="img" aria-label="'+safe(bars.map(bar=>bar.label).join('. '))+'">'+
-    bars.map(bar=>bar.html).join('')+'</div>';
+    const range=start===end?start:start+' – '+end;
+    const values='Revenue '+money(period.Payment/100)+' · Expenses '+money(period.Expense/100);
+    return `<div class="analytics-plot-bucket" role="group" tabindex="0" aria-label="${safe(range+': '+values)}"
+      data-range="${safe(range)}" data-values="${safe(values)}">
+      <div class="analytics-plot-bars" aria-hidden="true">
+        <span class="analytics-revenue" style="height:${period.Payment/(4*step)*100}%"></span>
+        <span class="analytics-expense" style="height:${period.Expense/(4*step)*100}%"></span>
+      </div><div class="analytics-plot-day" aria-hidden="true">${safe(start)}</div>
+    </div>`;
+  }).join('');
+  return `<div class="analytics-chart" role="group" aria-label="Financial activity in ${safe(currency)}">
+    <div class="analytics-chart-details" aria-hidden="true"><strong></strong><span></span></div>
+    <div class="analytics-chart-body">
+      <div class="analytics-chart-axis" aria-hidden="true">${ticks}<span>${safe(currency)}</span></div>
+      <div class="analytics-plot">${bars}</div>
+    </div>
+  </div>`;
 }
 
 function startDashboardClock(clock,signal){
@@ -464,12 +515,12 @@ function startDashboardClock(clock,signal){
 function renderInsight(el,report,insights,trends){
   const money=value=>(report.currency||'PKR')+' '+Number(value||0).toLocaleString('en-PK',{maximumFractionDigits:0});
   const eye='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
-  const stat=(label,value,{key,target,link}={})=>`<div class="insight-stat${target?' card':''}${key==='today'?' insight-featured':''}">
+  const stat=(label,value,{key,target,link,metric}={})=>`<div class="insight-stat${target?' card':''}${key==='today'?' insight-featured':''}">
     <span class="insight-stat-label">${safe(label)}</span>
     <div class="money-line">
       ${key?`<strong class="money-value" data-money="${key}" data-amount="${safe(money(value))}">••••••</strong>
         <button type="button" class="money-toggle" data-money-toggle="${key}" data-money-label="${safe(label)}"
-          aria-label="${safe('Show '+label.toLowerCase())}">${eye}</button>`:`<strong>${safe(value)}</strong>`}
+          aria-label="${safe('Show '+label.toLowerCase())}">${eye}</button>`:`<strong${metric?' data-'+metric:''}>${safe(value)}</strong>`}
     </div>${target?`<button type="button" class="insight-stat-link" data-insight-view="${target}">${link}<span aria-hidden="true">→</span></button>`:''}</div>`;
   const weeklyChart=(field,format,label)=>{
     const max=Math.max(1,...report.trend.map(day=>Number(day[field])));
@@ -494,20 +545,20 @@ function renderInsight(el,report,insights,trends){
       <div class="insight-lead">
         <div class="insight-header">
           <h1>Dashboard</h1>
-          <div class="dashboard-clock" aria-label="Local date and time">
-            <time class="dashboard-clock-date"></time>
-            <time class="dashboard-clock-time"></time>
-          </div>
         </div>
         <div class="insight-shortcuts">
-          <button type="button" class="primary" data-insight-view="Members">+ Add member</button>
+          <button type="button" class="primary" data-insight-view="Members" data-enroll-member>+ Add member</button>
         </div>
-        <section class="insight-summary" aria-label="Key metrics">
+      </div>
+      <div class="dashboard-clock" aria-label="Local date and time">
+        <time class="dashboard-clock-date"></time>
+        <time class="dashboard-clock-time"></time>
+      </div>
+      <section class="insight-summary" aria-label="Key metrics">
           ${stat('Collected today',report.revenue_today,{key:'today',target:'Financials',link:'View analytics'})}
           ${stat('Registered members',report.members,{target:'Members',link:'View members'})}
-          ${stat('Today’s check-ins',report.attendance,{target:'Attendance',link:'Open check-in'})}
-        </section>
-      </div>
+          ${stat('Today’s check-ins',report.attendance,{target:'Attendance',link:'Open check-in',metric:'today-check-ins'})}
+      </section>
       <div class="insight-attendance-stack">
       <aside class="card dashboard-attendance-rail" aria-labelledby="dashboardAttendanceHeading">
         <div class="insight-panel-head"><h2 id="dashboardAttendanceHeading">Today’s attendance</h2></div>
@@ -516,7 +567,7 @@ function renderInsight(el,report,insights,trends){
           <section class="card attendance-trends-card">
             <div class="insight-panel-head"><h2>Attendance trends</h2><span class="insight-period">Last 7 days</span></div>
               <div class="insight-attendance-stats">
-                ${stat('Today’s attendance rate',attendanceRate+'%')}
+                ${stat('Today’s attendance rate',attendanceRate+'%',{metric:'today-attendance-rate'})}
                 ${stat('Check-ins · 30 days',insights.visits_30d)}
                 ${stat('Unique visitors · 30 days',insights.visitors_30d)}
               </div>
@@ -592,7 +643,7 @@ function renderInsight(el,report,insights,trends){
       return;
     }
     view=button.dataset.insightView;
-    render();
+    render({enrollMember:button.hasAttribute('data-enroll-member')});
   });
   const privacyKey='tx-money-hidden-'+me.id;
   let hiddenAmounts={};
@@ -617,7 +668,9 @@ function renderInsight(el,report,insights,trends){
     };
   });
 }
-function renderDashboardCheckIn(panel,attendance,api,signal){
+function renderDashboardCheckIn(panel,attendance,api,signal,activeMembers){
+  const checkInTotal=$('[data-today-check-ins]');
+  const attendanceRate=$('[data-today-attendance-rate]');
   const timeFormat=new Intl.DateTimeFormat(undefined,{hour:'2-digit',minute:'2-digit'});
   panel.innerHTML=`<form id="dashboardCheckInForm" class="dashboard-check-in-form">
     <label for="dashboardCheckInCode">4-digit member attendance code</label>
@@ -626,12 +679,16 @@ function renderDashboardCheckIn(panel,attendance,api,signal){
       <button class="primary" type="submit">Check In</button></div>
   </form>
   <p class="dashboard-check-in-status" role="status"></p>
-  <section class="dashboard-check-in-history">
-    <h3>Latest check-ins ${attendance?`<span>${attendance.length}</span>`:''}</h3>
-    ${attendance?.length?`<ul>${attendance.map(entry=>`<li><span>${safe(entry.full_name||entry.email)}</span>
+  <section class="dashboard-check-in-history"></section>`;
+
+  const history=panel.querySelector('.dashboard-check-in-history');
+  function showHistory(count=attendance?.length){
+    history.innerHTML=`<h3>Latest check-ins ${count==null?'':`<span>${count}</span>`}</h3>
+      ${attendance?.length?`<ul>${attendance.map(entry=>`<li><span>${safe(entry.full_name||entry.email)}</span>
       <time datetime="${safe(entry.checked_at)}">${safe(timeFormat.format(new Date(entry.checked_at)))}</time></li>`).join('')}</ul>`:
-      `<p class="insight-period">${attendance?'No check-ins yet today.':'Unable to load today’s check-ins.'}</p>`}
-  </section>`;
+      `<p class="insight-period">${attendance?'No check-ins yet today.':'Unable to load today’s check-ins.'}</p>`}`;
+  }
+  showHistory();
 
   const form=panel.querySelector('form');
   const code=form.elements.code;
@@ -645,18 +702,22 @@ function renderDashboardCheckIn(panel,attendance,api,signal){
     status.textContent='Checking in…';
     try{
       const result=await api('/attendance/code','POST',{code:code.value});
-      const refresh=render();
-      const refreshedSignal=renderController.signal;
-      await refresh;
-      if(refreshedSignal.aborted)return;
-      const refreshedStatus=$('#dashboardCheckIn [role="status"]');
-      if(refreshedStatus){
-        refreshedStatus.classList.add('success');
-        refreshedStatus.textContent=result.name+' checked in.';
-        $('#dashboardCheckInCode').focus();
-      }else{
-        notice(result.name+' checked in.');
-      }
+      status.classList.add('success');
+      status.textContent=result.name+' checked in.';
+      code.value='';
+      if(document.activeElement===submit||document.activeElement===document.body||document.activeElement===code)code.focus();
+
+      const count=Number(checkInTotal.textContent)+1;
+      checkInTotal.textContent=count;
+      attendanceRate.textContent=(activeMembers?Math.round(count/activeMembers*100):0)+'%';
+      attendance=[{full_name:result.name,checked_at:result.checked_at},...(attendance||[])];
+      showHistory(count);
+      const latest=await api('/attendance').catch(()=>null);
+      if(signal.aborted||!latest)return;
+      attendance=latest;
+      checkInTotal.textContent=latest.length;
+      attendanceRate.textContent=(activeMembers?Math.round(latest.length/activeMembers*100):0)+'%';
+      showHistory();
     }catch(error){
       if(signal.aborted)return;
       status.classList.add('error');
