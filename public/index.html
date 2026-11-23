@@ -212,6 +212,10 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
   .insight .dashboard-clock{padding:4px 14px 4px 0}
   .dashboard-clock-date{font-size:clamp(21px,1.7vw,25px)}
   .dashboard-clock-time{font-size:clamp(52px,4.2vw,62px)}
+  .insight-panels{align-self:stretch}
+  .insight-panels > .card{display:flex;flex-direction:column}
+  .insight-panels .dash-chart{flex:1 0 145px;height:auto}
+  .insight-panels .insight-months{flex:1;grid-template-rows:auto;grid-auto-rows:1fr}
   .insight-attendance-stack{align-self:stretch;grid-template-rows:auto auto 1fr}
 }
 .dashboard-check-in{display:grid;gap:8px}
