@@ -191,7 +191,14 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .insight-attendance-stack .insight-attendance-stats{gap:7px}
 .insight-attendance-stack .insight-attendance-stats strong{font-size:19px}
 .insight-attendance-stack .insight-attendance-stats .insight-stat+.insight-stat{padding-left:7px}
-.insight-attendance-stack .dash-chart{height:112px}
+.insight .attendance-trends-card{align-self:start}
+.attendance-trends-card .insight-disclosure-body{padding-top:10px;margin-top:10px}
+.attendance-line-chart svg{display:block;width:100%;height:auto;overflow:visible}
+.attendance-line-guides{fill:none;stroke:var(--tx-line);stroke-width:1}
+.attendance-line-trace{fill:none;stroke:var(--tx-accent);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.attendance-line-trace,.attendance-line-guides{vector-effect:non-scaling-stroke}
+.attendance-line-dot{fill:var(--tx-panel);stroke:var(--tx-accent);stroke-width:2}
+.attendance-line-chart text{fill:var(--tx-muted);font-size:11px;text-anchor:middle}
 .insight-front-desk{display:grid;gap:16px;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
 .insight-front-desk .insight-activity-list{max-height:224px;overflow:auto;scrollbar-width:thin}
 .insight-front-desk .insight-activity{border:0;border-left:1px solid var(--tx-line);padding:0 0 0 16px;margin:0}
@@ -206,8 +213,6 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
   .dashboard-clock-date{font-size:clamp(21px,1.7vw,25px)}
   .dashboard-clock-time{font-size:clamp(52px,4.2vw,62px)}
   .insight-attendance-stack{align-self:stretch;grid-template-rows:auto auto 1fr}
-  .insight-attendance-stack .attendance-trends-card{display:flex;flex-direction:column}
-  .insight-attendance-stack .attendance-trends-card .dash-chart{flex:1;height:auto;min-height:112px}
 }
 .dashboard-check-in{display:grid;gap:8px}
 .dashboard-check-in-form{display:grid;gap:5px}
@@ -536,7 +541,23 @@ function renderInsight(el,report,insights,trends){
     fullLabel:row.month,
     value:row.visits
   }));
-  const visits=value=>value+(Number(value)===1?' visit':' visits');
+  const attendanceLine=(points,label)=>{
+    const max=Math.max(1,...points.map(point=>Number(point.value)));
+    const plotted=points.map((point,index)=>({
+      ...point,
+      x:260*(index+.5)/points.length,
+      y:96-80*Number(point.value)/max
+    }));
+    const describe=point=>(point.fullLabel||point.label)+': '+point.value+' check-ins';
+    return `<div class="attendance-line-chart" role="img" aria-label="${safe(label+': '+plotted.map(describe).join(', '))}">
+      <svg viewBox="0 0 260 117" aria-hidden="true">
+        <path class="attendance-line-guides" d="M0 16H260 M0 56H260 M0 96H260"/>
+        <polyline class="attendance-line-trace" points="${plotted.map(({x,y})=>x+','+y).join(' ')}"/>
+        ${plotted.map(point=>`<circle class="attendance-line-dot" cx="${point.x}" cy="${point.y}" r="3.5">
+          <title>${safe(describe(point))}</title></circle><text x="${point.x}" y="113">${safe(point.label)}</text>`).join('')}
+      </svg>
+    </div>`;
+  };
   const monthlyChart=(label,key)=>{
     const max=Math.max(1,...trends.map(row=>row[key]));
     return `<div class="insight-months"><h3>${label} · 6 months</h3>`+trends.map(row=>`<div class="insight-month">
@@ -570,19 +591,23 @@ function renderInsight(el,report,insights,trends){
         <div class="insight-panel-head"><h2 id="dashboardAttendanceHeading">Today’s attendance</h2></div>
         <div class="dashboard-check-in" id="dashboardCheckIn"></div>
       </aside>
-          <section class="card attendance-trends-card">
-            <div class="insight-panel-head"><h2>Attendance trends</h2><span class="insight-period">Last 7 days</span></div>
+          <details class="card insight-disclosure attendance-trends-card" open>
+            <summary><div><span class="insight-disclosure-title">Attendance trends</span><span class="insight-period">Last 7 days</span></div></summary>
+            <div class="insight-disclosure-body">
               <div class="insight-attendance-stats">
                 ${stat('Today’s attendance rate',attendanceRate+'%',{metric:'today-attendance-rate'})}
                 ${stat('Check-ins · 30 days',insights.visits_30d)}
                 ${stat('Unique visitors · 30 days',insights.visitors_30d)}
               </div>
-              ${weeklyChart('attendance',visits,'Check-ins for the last seven days')}
-          </section>
-          <section class="card attendance-trends-card">
-            <div class="insight-panel-head"><h2>Monthly attendance</h2><span class="insight-period">Last 6 months</span></div>
-            ${barChart(monthlyAttendance,visits,'Check-ins for the last six months')}
-          </section>
+              ${attendanceLine(report.trend.map(day=>({label:day.label,value:day.attendance})),'Check-ins for the last seven days')}
+            </div>
+          </details>
+          <details class="card insight-disclosure attendance-trends-card" open>
+            <summary><div><span class="insight-disclosure-title">Monthly attendance</span><span class="insight-period">Last 6 months</span></div></summary>
+            <div class="insight-disclosure-body">
+              ${attendanceLine(monthlyAttendance,'Check-ins for the last six months')}
+            </div>
+          </details>
       </div>
         <div class="insight-panels">
             <section class="card">
