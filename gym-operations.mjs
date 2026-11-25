@@ -22,7 +22,15 @@ export function registerGymOperations(app,db,auth) {
     const {rows:reminders} = await db.query(`SELECT status,count(*)::int AS total FROM whatsapp_deliveries
       WHERE gym_id=$1 AND attempted_at>=now()-interval '30 days' GROUP BY status`,[req.user.gym_id]);
     const config=whatsappConfig();
-    res.json({...gym,reminders,whatsapp_configured:Boolean(config),whatsapp_fee_due_configured:Boolean(config?.fee_due)});
+    res.json({...gym,reminders,whatsapp_configured:Boolean(config),whatsapp_fee_due_configured:Boolean(config?.templates.fee_due)});
+  });
+
+  app.patch('/gym-account',auth,owner,privateData,async (req,res) => {
+    const name=typeof req.body?.name==='string'?req.body.name.trim():'';
+    if(!name||name.length>120||/[\r\n\t]/.test(name))return res.status(400).json({error:'Enter a gym name up to 120 characters.'});
+    const {rows:[gym]}=await db.query('UPDATE gyms SET name=$2 WHERE id=$1 RETURNING name',[req.user.gym_id,name]);
+    if(!gym)return res.sendStatus(404);
+    res.json(gym);
   });
 
   app.patch('/gyms/:id/subscription',auth,platform,async (req,res) => {
@@ -192,9 +200,11 @@ export function registerGymOperations(app,db,auth) {
 function whatsappConfig() {
   const {WHATSAPP_TOKEN:token,WHATSAPP_PHONE_ID:phone,WHATSAPP_API_VERSION:version,
     WHATSAPP_EXPIRY_TEMPLATE:expiry,WHATSAPP_OVERDUE_TEMPLATE:overdue,WHATSAPP_FEE_DUE_TEMPLATE:fee_due,
-    WHATSAPP_TEMPLATE_LANGUAGE:language='en'} = process.env;
-  if (!token || !/^\d+$/.test(phone||'') || !/^v\d+\.\d+$/.test(version||'') || !expiry || !overdue) return null;
-  return {token,phone,version,expiry,overdue,fee_due,language};
+    WHATSAPP_PERSONALIZED_FEE_DUE_TEMPLATE:personalizedFee,WHATSAPP_TEMPLATE_LANGUAGE:language='en'} = process.env;
+  const templates={expiry,overdue,fee_due:personalizedFee||fee_due};
+  const kinds=Object.keys(templates).filter(kind=>templates[kind]);
+  if (!token || !/^\d+$/.test(phone||'') || !/^v\d+\.\d+$/.test(version||'') || !kinds.length) return null;
+  return {token,phone,version,templates,kinds,personalizedFee:Boolean(personalizedFee),language};
 }
 
 export function startWhatsAppReminders(db) {
@@ -207,10 +217,10 @@ export function startWhatsAppReminders(db) {
     try {
       const {rows} = await db.query(`SELECT a.*,a.due_on::text AS due_date,g.name,g.currency FROM gym_whatsapp_alerts a
         JOIN gyms g ON g.id=a.gym_id AND ${gymAccess} AND g.whatsapp_enabled
-        WHERE a.whatsapp_phone IS NOT NULL AND ($1::boolean OR a.kind<>'fee_due') AND NOT EXISTS (
+        WHERE a.whatsapp_phone IS NOT NULL AND a.kind=ANY($1::text[]) AND NOT EXISTS (
           SELECT 1 FROM whatsapp_deliveries d WHERE (d.gym_id,d.membership_id,d.kind,d.due_on)=
             (a.gym_id,a.membership_id,a.kind,a.due_on)
-        ) ORDER BY a.due_on,a.membership_id LIMIT 50`,[Boolean(config.fee_due)]);
+        ) ORDER BY a.due_on,a.membership_id LIMIT 50`,[config.kinds]);
       for (const alert of rows) {
         const key = [alert.gym_id,alert.membership_id,alert.kind,alert.due_date];
         const claim = await db.query(`INSERT INTO whatsapp_deliveries(gym_id,membership_id,kind,due_on)
@@ -222,13 +232,17 @@ export function startWhatsAppReminders(db) {
         let status = 'failed';
         try {
           const amount=alert.currency+' '+Number(alert.amount).toFixed(2);
-          const details=alert.kind==='expiry'?[alert.due_date]:alert.kind==='fee_due'?[alert.due_date,amount]:[amount];
+          const gymName=alert.name.trim().replace(/\s+/g,' ');
+          const memberName=alert.full_name?.trim().replace(/\s+/g,' ')||'member';
+          const values=alert.kind==='fee_due'&&config.personalizedFee?
+            [memberName,amount,alert.due_date,gymName]:
+            [gymName,...(alert.kind==='expiry'?[alert.due_date]:alert.kind==='fee_due'?[alert.due_date,amount]:[amount])];
           const result = await fetch(`https://graph.facebook.com/${config.version}/${config.phone}/messages`,{
             method:'POST',signal:AbortSignal.timeout(10000),
             headers:{Authorization:'Bearer '+config.token,'Content-Type':'application/json'},
             body:JSON.stringify({messaging_product:'whatsapp',to:alert.whatsapp_phone.slice(1),type:'template',
-              template:{name:config[alert.kind],language:{code:config.language},
-                components:[{type:'body',parameters:[alert.name,...details].map(text=>({type:'text',text}))}]}})
+              template:{name:config.templates[alert.kind],language:{code:config.language},
+                components:[{type:'body',parameters:values.map(text=>({type:'text',text}))}]}})
           });
           status = result.ok ? 'sent' : 'failed';
           await result.body?.cancel();

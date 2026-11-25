@@ -1047,11 +1047,14 @@ function renderDashboardAccount(panel,account,api,signal){
   const whatsappState=enabled=>account.whatsapp_configured?(enabled?'On':'Off'):'Setup needed';
   panel.innerHTML='<details class="insight-disclosure">'+
     '<summary><div><span class="insight-disclosure-title">Gym account</span><span class="insight-period">'+
-    safe(account.name)+' · '+safe(account.subscription_plan)+' plan · '+
+    '<span data-gym-account-name>'+safe(account.name)+'</span> · '+safe(account.subscription_plan)+' plan · '+
     (account.subscription_until?'Paid through '+safe(account.subscription_until):'No expiry set')+'</span></div>'+
     '<span class="insight-account-state" data-state="'+(account.whatsapp_configured&&account.whatsapp_enabled?'on':'off')+'">WhatsApp · '+whatsappState(account.whatsapp_enabled)+'</span></summary>'+
-    '<div class="insight-disclosure-body"><h3>WhatsApp reminders</h3>'+
-    '<p>Membership expiry reminders start three days before expiry. Reminders go only to opted-in members.</p>'+
+    '<div class="insight-disclosure-body"><form id="gymAccountName" class="insight-account-form">'+
+    '<label>Gym name<input name="name" maxlength="120" value="'+safe(account.name)+'" required></label>'+
+    '<button class="secondary">Save gym name</button></form><p data-gym-name-status role="status"></p>'+
+    '<h3>WhatsApp reminders</h3>'+
+    '<p>Configured reminders go only to opted-in members.</p>'+
     (account.whatsapp_fee_due_configured?
       '<p>Unpaid fees get a reminder within three days before the billing period ends, followed by overdue reminders when applicable.</p>':
       '<p>Add the approved fee-due template to send reminders before a payment is due.</p>')+
@@ -1063,9 +1066,24 @@ function renderDashboardAccount(panel,account,api,signal){
       '<option value="true" disabled '+(account.whatsapp_enabled?'selected':'')+'>On</option>')+
     '</select></label><button class="secondary">Save settings</button></form>'+
     '<p class="dashboard-setting-status" role="status" aria-live="polite"></p></div></details>';
+  const nameForm=panel.querySelector('#gymAccountName');
+  const nameStatus=panel.querySelector('[data-gym-name-status]');
+  nameForm.onsubmit=async event=>{
+    event.preventDefault();
+    const save=nameForm.querySelector('button');
+    save.disabled=true;
+    nameStatus.textContent='Saving…';
+    try{
+      const {name}=await api('/gym-account','PATCH',{name:nameForm.elements.name.value});
+      panel.querySelector('[data-gym-account-name]').textContent=name;
+      nameForm.elements.name.value=name;
+      nameStatus.textContent='Gym name saved.';
+    }catch(error){if(!signal.aborted)nameStatus.textContent=error.message}
+    finally{save.disabled=false}
+  };
   const badge=panel.querySelector('.insight-account-state');
   const form=panel.querySelector('#whatsappSettings');
-  const status=panel.querySelector('[role="status"]');
+  const status=panel.querySelector('.dashboard-setting-status');
   const submit=form.querySelector('button');
   form.onsubmit=async event=>{
     event.preventDefault();

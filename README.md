@@ -50,10 +50,11 @@ To use the Meta WhatsApp Business Cloud API, configure these application environ
 - `WHATSAPP_TOKEN` and `WHATSAPP_PHONE_ID` for the business sender
 - `WHATSAPP_API_VERSION` for the supported Graph API version in use, in `vNN.N` format
 - `WHATSAPP_EXPIRY_TEMPLATE` and `WHATSAPP_OVERDUE_TEMPLATE` for approved template names
-- `WHATSAPP_FEE_DUE_TEMPLATE` for an approved upcoming payment reminder template
+- `WHATSAPP_PERSONALIZED_FEE_DUE_TEMPLATE` for the approved four-field payment reminder
+- `WHATSAPP_FEE_DUE_TEMPLATE` for an existing three-field upcoming payment reminder
 - `WHATSAPP_TEMPLATE_LANGUAGE` for the approved locale, defaulting to `en`
 
-The expiry and overdue templates each take two body parameters. Supply the gym name first and the expiry date or overdue amount second. The upcoming fee template takes three parameters in order: gym name, billing period end date, and outstanding amount with currency. Upcoming reminders can be sent from three days before the due date through the due date. Enable reminders under **Dashboard → Gym account** and record each member's opt-in and international phone number in the member profile. The sender is shared by the installation. Use a sender approved to represent all participating gyms. The job checks for alerts every minute and attempts each membership and due period once. Delivery attempts are recorded to avoid duplicates across restarts and replicas. A failed or interrupted attempt is visible in the 30-day count and is not retried automatically.
+Configure at least one approved template. The personalized fee template takes the member name, outstanding amount, billing period end date, and saved gym name, in that order. Owners can update the gym name under **Dashboard → Gym account**. The expiry and overdue templates each take two body parameters. Supply the gym name first and the expiry date or overdue amount second. The upcoming fee template takes three parameters in order: gym name, billing period end date, and outstanding amount with currency. Upcoming reminders can be sent from three days before the due date through the due date. Enable reminders under **Dashboard → Gym account** and record each member's opt-in and international phone number in the member profile. The sender is shared by the installation. Use a sender approved to represent all participating gyms. The job checks for alerts every minute and attempts each membership and due period once. Delivery attempts are recorded to avoid duplicates across restarts and replicas. A failed or interrupted attempt is visible in the 30-day count and is not retried automatically.
 
 ## Encrypted Google Sheets backups
 
