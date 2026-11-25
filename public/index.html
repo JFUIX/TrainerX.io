@@ -462,20 +462,29 @@ const memberCard=member=>{
   const state=status(member);
   const phone=(member.phone||'').replace(/[^+0-9]/g,'');
   const contact=/^\+?[0-9]{3,}$/.test(phone)?'tel:'+phone:member.email?'mailto:'+encodeURIComponent(member.email).replace(/%40/g,'@'):'';
-  const info=[['Phone',member.phone],['Email',member.email],['Plan',member.plan],['Membership ends',member.cancelled_on?'Cancelled '+termDate(member.cancelled_on):termDate(member.ends_on)]];
+  const info=[
+    ['Age',member.age],
+    ['Phone number',member.phone],
+    ['Emergency contact',member.emergency_name],
+    ['Emergency phone',member.emergency_phone],
+    ['Email address',member.email],
+    ['Plan',member.plan],
+    ['Membership ends',member.cancelled_on?'Cancelled '+termDate(member.cancelled_on):termDate(member.ends_on)],
+    ['Address',member.residential_address]
+  ];
   return `<article class="card member-card" data-card-member="${safe(member.id)}">
     <div class="member-card-head">
       <div class="member-person"><div class="member-avatar" aria-hidden="true">${safe(initials(member))}</div>
-        <div><h2>${safe(name)}</h2><p>Member #${safe(member.membership_no||'—')}</p></div></div>
+        <div><h2>${safe(name)}</h2><p>Membership #${safe(member.membership_no||'—')}</p></div></div>
       <span class="member-status ${state==='Active'?'':state==='Expired'?'expired':'inactive'}">${safe(state)}</span>
     </div>
     <dl class="member-card-info">${info.map(([label,value])=>`<div><dt>${label}</dt><dd>${safe(value||'—')}</dd></div>`).join('')}</dl>
     <div class="member-card-actions">
       ${contact?`<a class="member-contact" href="${safe(contact)}" aria-label="Contact ${safe(name)}">Contact now</a>`:''}
       <button type="button" class="secondary" data-member-action="profile">Profile</button>
-      ${canCreate?`<button type="button" class="secondary" data-member-action="freeze">${member.frozen?'Manage freeze':'Freeze access'}</button>
+      ${canCreate?`<button type="button" class="secondary" data-member-action="freeze">${member.frozen?'Manage freeze':'Freeze'}</button>
       <button type="button" class="secondary" data-member-action="renew">Renew plan</button>
-      ${hasCurrentTerm(member)?`<button type="button" class="secondary" data-member-action="change">Change plan</button>
+      ${hasCurrentTerm(member)?`<button type="button" class="secondary" data-member-action="change">Upgrade</button>
       <button type="button" class="secondary member-cancel" data-member-action="cancel">Cancel membership</button>`:''}`:''}
     </div>
     ${canCreate?`<details class="member-card-records"><summary>Payment history &amp; monthly fees</summary><div data-member-records></div></details>`:''}
