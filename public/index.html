@@ -14,6 +14,7 @@
 .member-card-toggle::after{content:'';display:inline-block;width:6px;height:6px;margin:0 2px 2px 7px;border:solid currentColor;border-width:0 1.5px 1.5px 0;transform:rotate(45deg)}
 .member-card-toggle[aria-expanded="true"]::after{transform:rotate(225deg)}
 .member-card-state button{padding:6px 10px;font-size:12px}
+.member-card-state button.member-status:hover{box-shadow:0 0 0 1px var(--tx-accent-soft)}
 .member-card-joined{color:var(--tx-muted);font-size:12px}
 .member-card-attendance{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin:0;padding:10px 0;border-block:1px solid var(--tx-line)}
 .member-card-attendance div+div{padding-left:14px;border-left:1px solid var(--tx-line)}
@@ -506,6 +507,8 @@ const memberCard=member=>{
   const name=member.full_name||member.email;
   const state=status(member);
   const frozen=state==='Frozen';
+  const canToggleFreeze=canCreate&&(state==='Active'||frozen);
+  const statusClass='member-status '+(state==='Active'?'':state==='Expired'?'expired':'inactive');
   const expanded=expandedMembers.has(member.id);
   const bodyId='member-body-'+member.id;
   const info=[
@@ -527,8 +530,11 @@ const memberCard=member=>{
           <p class="member-card-joined">Joined ${safe(termDate(member.joined_on))}</p></div>
       </div>
       <div class="member-card-state">
-        <span class="member-status ${state==='Active'?'':state==='Expired'?'expired':'inactive'}">${safe(frozen?'Inactive':state)}</span>
-        ${canCreate&&(state==='Active'||frozen)?`<button type="button" class="secondary" data-member-action="freeze"
+        ${canToggleFreeze?`<button type="button" class="${statusClass}" data-member-action="freeze"
+          aria-label="${safe((frozen?'Inactive. Unfreeze ':'Active. Freeze ')+name)}"
+          title="${frozen?'Unfreeze member':'Freeze member'}">${frozen?'Inactive':'Active'}</button>`:
+          `<span class="${statusClass}">${safe(state)}</span>`}
+        ${canToggleFreeze?`<button type="button" class="secondary member-card-freeze" data-member-action="freeze"
           ${expanded?'':'hidden'} title="${frozen?'Resume check-in access':'Pause check-ins through the end of the current membership'}">${frozen?'Unfreeze':'Freeze'}</button>`:''}
         <button type="button" class="secondary member-card-toggle" data-member-action="toggle"
           aria-controls="${safe(bodyId)}" aria-expanded="${expanded}" aria-label="Details for ${safe(name)}">Details</button>
@@ -579,7 +585,7 @@ memberList.addEventListener('click',async event=>{
       else expandedMembers.delete(member.id);
       button.setAttribute('aria-expanded',String(expanded));
       card.querySelector('.member-card-body').hidden=!expanded;
-      const freeze=card.querySelector('[data-member-action="freeze"]');
+      const freeze=card.querySelector('.member-card-freeze');
       if(freeze)freeze.hidden=!expanded;
       return;
     }
@@ -591,7 +597,8 @@ memberList.addEventListener('click',async event=>{
         await api('/members/'+encodeURIComponent(member.id)+'/freeze','PATCH',{frozen});
         member.frozen=frozen;
         list();
-        const nextButton=memberList.querySelector('[data-card-member="'+CSS.escape(member.id)+'"] [data-member-action="freeze"]');
+        const selector=button.classList.contains('member-card-freeze')?'.member-card-freeze':'button.member-status';
+        const nextButton=memberList.querySelector('[data-card-member="'+CSS.escape(member.id)+'"] '+selector);
         (nextButton||$('#memberFilter')).focus({preventScroll:true});
         notice(frozen?'Member frozen. Check-in access paused.':'Member unfrozen. Check-in access restored.');
       }catch(error){if(!signal.aborted)notice(error.message,true)}

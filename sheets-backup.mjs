@@ -180,6 +180,10 @@ async function backUp(db,date){
 const today=()=>new Date().toISOString().slice(0,10);
 export function startSheetsBackup(db){
   if(!process.env.GOOGLE_BACKUP_SHEET_ID)return;
+  if(!process.env.GOOGLE_BACKUP_SERVICE_ACCOUNT||!process.env.GOOGLE_BACKUP_KEY){
+    console.warn('Google Sheets backup is waiting for credentials and an encryption key');
+    return;
+  }
   let lastBackup;
   let running=false;
   async function tick(){
