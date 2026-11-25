@@ -172,18 +172,19 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .analytics-totals{grid-template-columns:repeat(3,minmax(0,1fr))}
 .analytics-grid{grid-template-columns:minmax(0,2fr) minmax(0,3fr)}
 .analytics .card{margin:0;border-radius:14px;padding:16px;min-width:0;box-shadow:none}
-.analytics .analytics-total{display:grid;gap:8px}
-.analytics-total span{color:var(--tx-muted);font-size:13px}
-.analytics-total strong,.analytics-ring strong{font-size:clamp(19px,2.4vw,29px);line-height:1.1;letter-spacing:-.035em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.analytics .analytics-total{display:grid;align-content:start;gap:10px;padding:22px 18px}
+.analytics-total span{color:var(--tx-muted);font-size:14px;font-weight:600}
+.analytics-total strong,.analytics-ring strong{line-height:1.1;letter-spacing:-.035em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.analytics-total strong{font-size:clamp(25px,3vw,42px)}
 .analytics-total:first-child{background:linear-gradient(135deg,#743323,#362326);border-color:#9a4d3c}
 .analytics-total:first-child span{color:#ffe5d9}
 .analytics-panel-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:14px}
 .analytics-panel-head h2{margin:0;font-size:18px}
 .analytics .sub{color:var(--tx-muted)}
-.analytics-ring{display:grid;place-items:center;position:relative;width:min(178px,68%);aspect-ratio:1;margin:12px auto 18px;border-radius:50%;background:conic-gradient(var(--expense-segments))}
+.analytics-ring{display:grid;place-items:center;position:relative;width:min(132px,68%);aspect-ratio:1;margin:8px auto 12px;border-radius:50%;background:conic-gradient(var(--expense-segments))}
 .analytics-ring::before{content:'';position:absolute;inset:18%;border-radius:50%;background:var(--tx-panel)}
 .analytics-ring-label{position:relative;display:grid;gap:5px;width:63%;text-align:center}
-.analytics-ring strong{font-size:clamp(14px,1.45vw,21px)}
+.analytics-ring strong{font-size:clamp(13px,1.15vw,16px)}
 .analytics-ring-label span{font-size:11px;color:var(--tx-muted)}
 .analytics-legend{display:grid;gap:8px;list-style:none;margin:0;padding:0}
 .analytics-legend li{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px}
@@ -191,8 +192,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .analytics-legend li>span,.analytics-keys span{display:flex;align-items:center;gap:6px}
 .analytics-swatch{width:8px;height:8px;background:var(--swatch);border-radius:50%;flex:none}
 .analytics-keys{display:flex;flex-wrap:wrap;gap:12px;color:var(--tx-muted);font-size:12px}
-.analytics-chart{--plot-height:170px;margin-top:12px}
-.analytics-chart-details{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;min-height:42px;font-size:12px;color:var(--tx-muted)}
+.analytics-chart{--plot-height:124px;margin-top:8px}
+.analytics-chart-details{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;min-height:32px;font-size:12px;color:var(--tx-muted)}
 .analytics-chart-details strong{color:inherit}
 .analytics-chart-body{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px}
 .analytics-chart-axis{display:flex;flex-direction:column;justify-content:space-between;align-items:end;height:var(--plot-height);position:relative;font-size:11px;color:var(--tx-muted);font-variant-numeric:tabular-nums}.analytics-chart-axis span:last-child{position:absolute;top:100%;padding-top:5px}
@@ -212,7 +213,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .analytics-table td:nth-child(4){overflow-wrap:anywhere;min-width:8rem}
 .analytics .analytics-table-note{margin-top:10px}
 @media(max-width:1000px){.analytics-grid{grid-template-columns:minmax(0,1fr)}}
-@media(max-width:480px){.analytics-totals{grid-template-columns:minmax(0,1fr)}.analytics .card{padding:12px}.analytics-chart{--plot-height:140px}}
+@media(max-width:480px){.analytics-totals{grid-template-columns:minmax(0,1fr)}.analytics .card{padding:12px}}
 .insight-lead,.insight-content,.insight-attendance-stack{min-width:0;display:grid;gap:12px}
 .insight-lead{grid-area:lead;align-self:center}
 .insight-summary{grid-area:summary}
