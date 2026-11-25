@@ -505,7 +505,7 @@ const memberCard=member=>{
     </dl>
     <dl class="member-card-info">${info.map(([label,value])=>`<div><dt>${label}</dt><dd>${safe(value||'—')}</dd></div>`).join('')}</dl>
     <div class="member-card-actions">
-      <button type="button" class="secondary" data-member-action="profile">Profile &amp; Contact</button>
+      <button type="button" class="secondary" data-member-action="profile">Edit profile</button>
       ${canCreate?`<button type="button" class="secondary" data-member-action="renew">Renew plan</button>
       ${hasCurrentTerm(member)?`<button type="button" class="secondary" data-member-action="change">Upgrade</button>
       <button type="button" class="secondary member-cancel" data-member-action="cancel">Cancel membership</button>`:''}`:''}
