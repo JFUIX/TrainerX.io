@@ -120,6 +120,21 @@ test('health and role-isolated membership and payment journey',async()=>{
  assert.equal(attendance.status,200);
  assert.equal(attendance.data.find(entry=>entry.member_id===enrolled.data.id)?.full_name,'Enrolled Member');
 
+ const enrolledPath='/members/'+enrolled.data.id;
+ assert.equal((await request(enrolledPath,'PATCH',{weight_kg:72.55},ownerToken)).status,400);
+ const weight=await request(enrolledPath,'PATCH',{weight_kg:72.5},ownerToken);
+ assert.equal(weight.status,200);
+ assert.equal(Number(weight.data.weight_kg),72.5);
+ assert.equal((await request(enrolledPath,'PATCH',{weight_kg:60},otherOwner.data.token)).status,404);
+ const daysAgo=days=>new Date(Date.parse(today)-days*86400000).toISOString().slice(0,10);
+ const earlierTerm={plan_id:plan.data.id,starts_on:daysAgo(3),months:1};
+ assert.equal((await request('/memberships/'+enrolled.data.membership.id,'PATCH',earlierTerm,ownerToken)).status,200);
+ const pastFreeze={starts_on:daysAgo(1),ends_on:daysAgo(1)};
+ assert.equal((await request(enrolledFreeze,'PUT',pastFreeze,ownerToken)).status,200);
+ const enrollmentHistory=await request(enrolledPath+'/history','GET',null,ownerToken);
+ assert.deepEqual(enrollmentHistory.data.attendance_summary,{attended:1,skipped:2});
+ assert.equal((await request(enrolledPath,'PATCH',{weight_kg:null},ownerToken)).data.weight_kg,null);
+
  const cancelPath='/memberships/'+membership.data.id+'/cancel';
  const billingPath='/fees/billing?membership_id='+membership.data.id;
  const billingBefore=await request(billingPath,'GET',null,ownerToken);
