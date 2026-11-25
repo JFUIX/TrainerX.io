@@ -232,6 +232,22 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .insight-attendance-stack .insight-attendance-stats .insight-stat+.insight-stat{padding-left:7px}
 .insight .attendance-trends-card{align-self:start}
 .attendance-trends-card .insight-disclosure-body{padding-top:10px;margin-top:10px}
+.attendance-week-summary{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.attendance-week-total{display:grid;gap:3px}
+.attendance-week-total strong{font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
+.attendance-peak{display:grid;gap:2px;padding:8px 10px;border:1px solid #745047;border-radius:10px;background:#382723;font-size:12px}
+.attendance-peak strong{color:var(--tx-accent-soft)}
+.attendance-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.attendance-day{display:grid;grid-template-rows:90px auto;gap:4px;text-align:center;font-size:10px;color:var(--tx-muted)}
+.attendance-day-plot{display:flex;align-items:end;border-bottom:1px solid var(--tx-line);min-width:0}
+.attendance-day-fill{display:flex;justify-content:center;width:100%;height:var(--height);min-height:18px;align-items:start;padding-top:2px;border-radius:6px 6px 0 0;background:color-mix(in srgb,var(--bar) 24%,var(--tx-panel));border-top:2px solid var(--bar);color:var(--tx-text);font-size:10px;font-variant-numeric:tabular-nums;overflow:hidden}
+.attendance-day-fill.is-zero{background:transparent;border-color:transparent;color:var(--tx-muted)}
+.attendance-hourly{margin-top:13px;padding-top:10px;border-top:1px solid var(--tx-line)}
+.attendance-hourly h3{margin:0 0 7px;font-size:12px}
+.attendance-hour-bars{display:grid;grid-template-columns:repeat(24,minmax(0,1fr));align-items:end;gap:2px;height:40px;border-bottom:1px solid var(--tx-line)}
+.attendance-hour-bars span{height:var(--height);min-height:2px;background:#685652;border-radius:2px 2px 0 0}
+.attendance-hour-bars .is-peak{background:var(--tx-accent)}
+.attendance-hour-labels{display:flex;justify-content:space-between;margin-top:5px;color:var(--tx-muted);font-size:10px}
 .attendance-line-chart svg{display:block;width:100%;height:auto;overflow:visible}
 .attendance-line-guides{fill:none;stroke:var(--tx-line);stroke-width:1}
 .attendance-line-trace{fill:none;stroke:var(--tx-accent);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
@@ -452,15 +468,21 @@ if(view==='Financials'){
   bind('expenseForm',data=>api('/expenses','POST',{...data,amount:Number(data.amount)}));
 }
 if(view==='Insight'){
-  const [report,insights,trends,account,attendance]=await Promise.all([
+  const attendanceTrendUrl='/attendance-trends?'+new URLSearchParams({timezone:Intl.DateTimeFormat().resolvedOptions().timeZone});
+  const [report,insights,trends,account,attendance,attendanceTrend]=await Promise.all([
     api('/report'),api('/business-insights'),api('/membership-trends'),
-    api('/gym-account').catch(()=>null),api('/attendance').catch(()=>null)
+    api('/gym-account').catch(()=>null),api('/attendance').catch(()=>null),api(attendanceTrendUrl).catch(()=>null)
   ]);
   signal.throwIfAborted();
-  renderInsight(el,report,insights,trends);
+  renderInsight(el,report,insights,trends,attendanceTrend);
   startDashboardClock(el.querySelector('.dashboard-clock'),signal);
   renderDashboardAccount($('#dashboardAccount'),account,api,signal);
-  renderDashboardCheckIn($('#dashboardCheckIn'),attendance,api,signal,report.active);
+  let trendRequest=0;
+  renderDashboardCheckIn($('#dashboardCheckIn'),attendance,api,signal,report.active,async()=>{
+    const request=++trendRequest;
+    const trend=await api(attendanceTrendUrl);
+    if(request===trendRequest)$('#weeklyAttendanceChart').innerHTML=renderWeeklyAttendance(trend);
+  });
 }
 if(view==='Gyms'){const gyms=await api('/gyms');el.innerHTML='<h1>Gym management</h1><p>Manage gym accounts and reset owner passwords securely.</p><div class="card">'+rows(gyms,g=>'<div class="item"><strong>'+safe(g.name)+'</strong><p>'+safe(g.owner_email||'No owner')+' · '+safe(g.currency)+'</p><form class="row" data-reset-gym="'+safe(g.id)+'"><label style="flex:1;min-width:210px">New owner password<input type="password" name="password" minlength="12" maxlength="128" autocomplete="new-password" placeholder="12+ characters" required></label><button class="secondary" type="submit">Reset owner password</button></form>'+subscriptionForm(g)+'</div>')+'</div><h2>Add gym</h2>'+form([['name','Gym name'],['currency','Currency (e.g. PKR)'],['email','Owner email','email'],['password','Owner password (12+ characters)','password']],'gymForm','Create gym');bind('gymForm',async d=>{await api('/gyms','POST',{...d,currency:(d.currency||'PKR').trim().toUpperCase()})});el.querySelectorAll('[data-reset-gym]').forEach(form=>form.addEventListener('submit',async e=>{e.preventDefault();const gym=gyms.find(g=>g.id===form.dataset.resetGym);if(!confirm('Reset the owner password for '+gym.name+'? Existing owner sessions will be signed out.'))return;try{await api('/gyms/'+encodeURIComponent(gym.id)+'/reset-owner-password','POST',{password:form.elements.password.value});form.reset();notice('Owner password reset. Sign in with the new password.')}catch(err){notice(err.message,true)}}));el.querySelectorAll('[data-subscription]').forEach(node=>bindForm(node,data=>
     api('/gyms/'+node.dataset.subscription+'/subscription','PATCH',{plan:data.plan,paid_through:data.paid_through||null,active:data.active==='true'})))}
@@ -736,7 +758,40 @@ function startDashboardClock(clock,signal){
   tick();
 }
 
-function renderInsight(el,report,insights,trends){
+function renderWeeklyAttendance(trend){
+  if(!trend)return '<p class="insight-period">Attendance trends are temporarily unavailable.</p>';
+  const {days,hours,timezone}=trend;
+  const total=days.reduce((sum,day)=>sum+day.visits,0);
+  const dailyMax=Math.max(1,...days.map(day=>day.visits));
+  const hourlyMax=Math.max(...hours);
+  const peak=hours.indexOf(hourlyMax);
+  const colors=['#f6c54e','#ff9751','#7899ff','#ad91ff','#54cfa2','#e883a1','#65bed1'];
+  const clock=new Intl.DateTimeFormat(undefined,{hour:'numeric',timeZone:'UTC'});
+  const hourLabel=hour=>clock.format(new Date(Date.UTC(2020,0,1,hour%24)));
+  const hourRange=hour=>hourLabel(hour)+' – '+hourLabel(hour+1);
+  const visitLabel=count=>count+(count===1?' check-in':' check-ins');
+  const dayLabel=day=>day.label+': '+visitLabel(day.visits);
+  return `<div class="attendance-week-summary">
+    <div class="attendance-week-total"><strong>${total.toLocaleString()}</strong><span class="insight-period">Check-ins · Last 7 days</span></div>
+    <div class="attendance-peak" title="${safe(timezone)}"><strong>Peak hour</strong>
+      <span>${hourlyMax?safe(hourRange(peak)+' · '+visitLabel(hourlyMax)):'No check-ins yet'}</span></div>
+  </div>
+  <div class="attendance-days" role="img" aria-label="${safe(days.map(dayLabel).join(', '))}">
+    ${days.map((day,i)=>`<div class="attendance-day" aria-hidden="true" title="${safe(dayLabel(day))}">
+      <div class="attendance-day-plot"><span class="attendance-day-fill${day.visits?'':' is-zero'}"
+        style="--bar:${colors[i]};--height:${day.visits/dailyMax*100}%">${day.visits}</span></div><span>${safe(day.label)}</span></div>`).join('')}
+  </div>
+  <div class="attendance-hourly">
+    <h3>Check-ins by hour</h3>
+    <div class="attendance-hour-bars" role="img" aria-label="${safe(timezone+': '+hours.map((count,hour)=>hourRange(hour)+' '+visitLabel(count)).join(', '))}">
+      ${hours.map((count,hour)=>`<span aria-hidden="true" class="${hourlyMax&&count===hourlyMax?'is-peak':''}"
+        title="${safe(hourRange(hour)+' · '+visitLabel(count))}" style="--height:${count/Math.max(1,hourlyMax)*100}%"></span>`).join('')}
+    </div>
+    <div class="attendance-hour-labels" aria-hidden="true">${[0,6,12,18,23].map(hour=>`<span>${safe(hourLabel(hour))}</span>`).join('')}</div>
+  </div>`;
+}
+
+function renderInsight(el,report,insights,trends,attendanceTrend){
   const money=value=>(report.currency||'PKR')+' '+Number(value||0).toLocaleString('en-PK',{maximumFractionDigits:0});
   const eye='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
   const stat=(label,value,{key,target,link,metric}={})=>`<div class="insight-stat${target?' card':''}${key==='today'?' insight-featured':''}">
@@ -820,7 +875,7 @@ function renderInsight(el,report,insights,trends){
                 ${stat('Check-ins · 30 days',insights.visits_30d)}
                 ${stat('Unique visitors · 30 days',insights.visitors_30d)}
               </div>
-              ${attendanceLine(report.trend.map(day=>({label:day.label,value:day.attendance})),'Check-ins for the last seven days')}
+              <div id="weeklyAttendanceChart">${renderWeeklyAttendance(attendanceTrend)}</div>
             </div>
           </details>
           <details class="card insight-disclosure attendance-trends-card" open>
@@ -920,7 +975,7 @@ function renderInsight(el,report,insights,trends){
     };
   });
 }
-function renderDashboardCheckIn(panel,attendance,api,signal,activeMembers){
+function renderDashboardCheckIn(panel,attendance,api,signal,activeMembers,refreshTrend){
   const checkInTotal=$('[data-today-check-ins]');
   const attendanceRate=$('[data-today-attendance-rate]');
   const timeFormat=new Intl.DateTimeFormat(undefined,{hour:'2-digit',minute:'2-digit'});
@@ -964,6 +1019,7 @@ function renderDashboardCheckIn(panel,attendance,api,signal,activeMembers){
       attendanceRate.textContent=(activeMembers?Math.round(count/activeMembers*100):0)+'%';
       attendance=[{full_name:result.name,checked_at:result.checked_at},...(attendance||[])];
       showHistory(count);
+      refreshTrend().catch(()=>{});
       const latest=await api('/attendance').catch(()=>null);
       if(signal.aborted||!latest)return;
       attendance=latest;

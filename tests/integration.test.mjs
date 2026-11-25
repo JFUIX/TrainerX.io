@@ -120,6 +120,20 @@ test('health and role-isolated membership and payment journey',async()=>{
  assert.equal(attendance.status,200);
  assert.equal(attendance.data.find(entry=>entry.member_id===enrolled.data.id)?.full_name,'Enrolled Member');
 
+ const trendPath='/attendance-trends?timezone=Asia%2FKarachi';
+ const weekly=await request(trendPath,'GET',null,ownerToken);
+ assert.equal(weekly.status,200);
+ assert.equal(weekly.data.timezone,'Asia/Karachi');
+ assert.equal(weekly.data.days.length,7);
+ assert.equal(weekly.data.hours.length,24);
+ assert.equal(weekly.data.days.reduce((total,day)=>total+day.visits,0),attendance.data.length);
+ const expectedHours=Array(24).fill(0);
+ const hourInKarachi=new Intl.DateTimeFormat('en-GB',{hour:'numeric',hourCycle:'h23',timeZone:'Asia/Karachi'});
+ attendance.data.forEach(row=>expectedHours[Number(hourInKarachi.format(new Date(row.checked_at)))]++);
+ assert.deepEqual(weekly.data.hours,expectedHours);
+ assert.deepEqual((await request(trendPath,'GET',null,otherOwner.data.token)).data.hours,Array(24).fill(0));
+ assert.equal((await request(trendPath,'GET',null,memberLogin.data.token)).status,403);
+
  const enrolledPath='/members/'+enrolled.data.id;
  assert.equal((await request(enrolledPath,'PATCH',{weight_kg:72.55},ownerToken)).status,400);
  const weight=await request(enrolledPath,'PATCH',{weight_kg:72.5},ownerToken);

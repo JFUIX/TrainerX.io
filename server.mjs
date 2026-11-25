@@ -79,6 +79,38 @@ app.post('/attendance/code',auth,limiter,async(req,res)=>{if(!staff(req.user))re
 app.get('/attendance',auth,async(req,res)=>{if(!req.user.gym_id)return res.sendStatus(403);const r=await db.query("SELECT a.member_id,u.email,a.checked_at,mp.full_name FROM attendance a JOIN users u ON u.id=a.member_id AND u.gym_id=a.gym_id LEFT JOIN member_profiles mp ON mp.user_id=a.member_id AND mp.gym_id=a.gym_id WHERE a.gym_id=$1 AND a.attended_on=CURRENT_DATE AND ($2::uuid IS NULL OR a.member_id=$2::uuid) ORDER BY a.checked_at DESC",[req.user.gym_id,req.user.role==='member'?req.user.id:null]);res.json(r.rows)});
 app.post('/attendance',auth,async(req,res)=>{if(!staff(req.user))return res.sendStatus(403);const {member_id}=req.body||{};if(!/^[0-9a-f-]{36}$/i.test(member_id||''))return res.sendStatus(400);const r=await db.query(`INSERT INTO attendance(gym_id,member_id,attended_on) SELECT $1,u.id,CURRENT_DATE FROM users u WHERE u.id=$2 AND u.gym_id=$1 AND u.role='member' AND u.active AND EXISTS (SELECT 1 FROM memberships m WHERE m.member_id=u.id AND m.gym_id=$1 AND m.cancelled_on IS NULL AND CURRENT_DATE BETWEEN m.starts_on AND m.ends_on) AND ${memberCanCheckIn('$1','u.id')} ON CONFLICT DO NOTHING RETURNING *`,[req.user.gym_id,member_id]);if(!r.rowCount)return res.status(409).json({error:'Already checked in or no active membership'});res.status(201).json(r.rows[0])});
 app.get('/renewals',auth,async(req,res)=>{if(!staff(req.user))return res.sendStatus(403);res.json((await db.query("SELECT u.email,m.ends_on,p.name AS plan FROM users u JOIN LATERAL (SELECT * FROM memberships WHERE member_id=u.id AND gym_id=$1 AND cancelled_on IS NULL ORDER BY ends_on DESC LIMIT 1) m ON true JOIN plans p ON p.id=m.plan_id WHERE u.gym_id=$1 AND u.role='member' AND m.ends_on BETWEEN CURRENT_DATE AND CURRENT_DATE+interval '7 days' ORDER BY m.ends_on",[req.user.gym_id])).rows)});
+app.get('/attendance-trends',auth,async(req,res)=>{
+  if(req.user.role!=='owner')return res.sendStatus(403);
+  const zone=req.query.timezone??'UTC';
+  if(typeof zone!=='string'||!/^([A-Za-z_][A-Za-z0-9_+-]*)(\/[A-Za-z0-9_+-]+)*$/.test(zone)||zone.length>80)return res.sendStatus(400);
+  const {rows}=await db.query(`WITH zone AS (
+    SELECT COALESCE((SELECT name FROM pg_timezone_names WHERE name=$2),'UTC') AS name
+  ), bounds AS (
+    SELECT name,(now() AT TIME ZONE name)::date AS today FROM zone
+  ), days AS (
+    SELECT b.today-n AS day,b.name FROM bounds b CROSS JOIN generate_series(0,6) AS offsets(n)
+  ), visits AS (
+    SELECT (a.checked_at AT TIME ZONE b.name)::date AS day,
+      extract(hour FROM a.checked_at AT TIME ZONE b.name)::int AS hour,
+      count(*)::int AS visits
+    FROM attendance a CROSS JOIN bounds b
+    WHERE a.gym_id=$1 AND a.attended_on BETWEEN b.today-7 AND b.today+1
+      AND a.checked_at >= ((b.today-6)::timestamp AT TIME ZONE b.name)
+      AND a.checked_at < ((b.today+1)::timestamp AT TIME ZONE b.name)
+    GROUP BY 1,2
+  )
+  SELECT d.day::text,to_char(d.day,'Dy') AS label,v.hour,COALESCE(v.visits,0) AS visits,d.name AS timezone
+  FROM days d LEFT JOIN visits v USING (day)
+  ORDER BY d.day,v.hour`,[req.user.gym_id,zone]);
+  const days=new Map(),hours=Array(24).fill(0);
+  for(const row of rows){
+    if(!days.has(row.day))days.set(row.day,{label:row.label,date:row.day,visits:0});
+    days.get(row.day).visits+=row.visits;
+    if(row.hour!==null)hours[row.hour]+=row.visits;
+  }
+  res.set('Cache-Control','no-store').json({days:[...days.values()],hours,timezone:rows[0].timezone});
+});
+
 app.get('/report',auth,async(req,res)=>{if(req.user.role!=='owner')return res.sendStatus(403);const g=req.user.gym_id;const [stats,trend,activity]=await Promise.all([db.query(`SELECT
 (SELECT currency FROM gyms WHERE id=$1) AS currency,
 (SELECT count(*)::int FROM users WHERE gym_id=$1 AND role='member') AS members,
