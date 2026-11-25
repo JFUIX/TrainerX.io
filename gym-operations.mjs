@@ -67,6 +67,44 @@ export function registerGymOperations(app,db,auth) {
     res.json(result.rows[0]);
   });
 
+  app.patch('/members/:id/freeze',auth,staff,async (req,res) => {
+    const {frozen}=req.body||{};
+    if (!uuid(req.params.id) || typeof frozen!=='boolean') return res.sendStatus(400);
+    const args=[req.user.gym_id,req.params.id];
+    if (frozen) {
+      const result=await db.query(`WITH eligible AS (
+        SELECT u.gym_id,u.id,max(m.ends_on) AS ends_on
+        FROM users u JOIN memberships m ON m.gym_id=u.gym_id AND m.member_id=u.id
+        WHERE u.gym_id=$1 AND u.id=$2 AND u.role='member' AND u.active
+          AND m.cancelled_on IS NULL AND CURRENT_DATE BETWEEN m.starts_on AND m.ends_on
+        GROUP BY u.gym_id,u.id
+      ), archived AS (
+        INSERT INTO member_freeze_history(gym_id,member_id,starts_on,ends_on)
+        SELECT f.gym_id,f.member_id,f.starts_on,f.ends_on
+        FROM member_freezes f JOIN eligible e ON e.gym_id=f.gym_id AND e.id=f.member_id
+        WHERE f.ends_on<CURRENT_DATE
+        ON CONFLICT DO NOTHING
+      )
+        INSERT INTO member_freezes(gym_id,member_id,starts_on,ends_on)
+        SELECT gym_id,id,CURRENT_DATE,ends_on FROM eligible
+        ON CONFLICT (gym_id,member_id) DO UPDATE SET
+          starts_on=CASE WHEN CURRENT_DATE BETWEEN member_freezes.starts_on AND member_freezes.ends_on
+            THEN member_freezes.starts_on ELSE EXCLUDED.starts_on END,
+          ends_on=GREATEST(member_freezes.ends_on,EXCLUDED.ends_on)`,args);
+      if (!result.rowCount) return res.status(404).json({error:'No active membership to freeze'});
+    } else {
+      const result=await db.query(`WITH shortened AS (
+        UPDATE member_freezes SET ends_on=CURRENT_DATE-1
+        WHERE gym_id=$1 AND member_id=$2 AND starts_on<CURRENT_DATE AND ends_on>=CURRENT_DATE
+      ), cleared AS (
+        DELETE FROM member_freezes WHERE gym_id=$1 AND member_id=$2 AND starts_on=CURRENT_DATE
+      )
+      SELECT 1 FROM users WHERE gym_id=$1 AND id=$2 AND role='member'`,args);
+      if (!result.rowCount) return res.sendStatus(404);
+    }
+    res.json({frozen});
+  });
+
   app.delete('/members/:id/freeze',auth,staff,async (req,res) => {
     if (!uuid(req.params.id)) return res.sendStatus(400);
     await db.query('DELETE FROM member_freezes WHERE gym_id=$1 AND member_id=$2',[req.user.gym_id,req.params.id]);
