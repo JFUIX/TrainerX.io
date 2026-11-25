@@ -1,3 +1,4 @@
+import {startSheetsBackup} from './sheets-backup.mjs';
 import {gymAccess,memberCanCheckIn,registerGymOperations,startWhatsAppReminders} from './gym-operations.mjs';
 import express from 'express';
 import compression from 'compression';
@@ -139,6 +140,7 @@ app.get('/business-insights',auth,async(req,res)=>{
 
 registerGymOperations(app,db,auth);
 startWhatsAppReminders(db);
+startSheetsBackup(db);
 
 app.use((err,req,res,next)=>{console.error(err.code||'request error');res.sendStatus(err.code==='23505'?409:500)});
 const port=Number(process.env.PORT)||3000;

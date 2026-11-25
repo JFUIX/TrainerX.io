@@ -53,3 +53,28 @@ To use the Meta WhatsApp Business Cloud API, configure these application environ
 - `WHATSAPP_TEMPLATE_LANGUAGE` for the approved locale, defaulting to `en`
 
 Each template takes two body text parameters. The first is the gym name and the second is the expiry date or overdue amount including currency. Enable reminders in the owner's Account screen and record each member's opt-in and international phone number in the member profile. The sender is shared by the installation. Use a sender approved to represent all participating gyms. The job checks for alerts every minute and attempts each membership and due period once. Delivery attempts are recorded to avoid duplicates across restarts and replicas. A failed or interrupted attempt is visible in the 30-day count and is not retried automatically.
+
+## Encrypted Google Sheets backups
+
+TrainerX can write a full PostgreSQL snapshot to a dedicated Google Sheets workbook once per UTC day. The server tries shortly after startup and retries failed jobs every 30 minutes. Seven rotating tabs retain up to seven daily snapshots. The workbook contains encrypted archive chunks and snapshot dates.
+
+Enable the Google Sheets API in a Google Cloud project, create a service account, and give it Editor access to a private workbook dedicated to this backup. Set the following variables on the TrainerX backend. Use sealed Railway variables for the service account key and encryption key.
+
+| Variable | Value |
+| --- | --- |
+| `GOOGLE_BACKUP_SHEET_ID` | Spreadsheet ID from the workbook URL |
+| `GOOGLE_BACKUP_SERVICE_ACCOUNT` | Service account JSON containing `client_email` and `private_key` |
+| `GOOGLE_BACKUP_KEY` | Independent 32-byte encryption key encoded in base64. Generate one with `openssl rand -base64 32`. |
+
+Store a separate secure copy of the encryption key to make disaster recovery possible. Replacing it makes snapshots encrypted with the old key unreadable without that old key. When the sheet ID is unset, scheduled backups are disabled. A compressed database archive over 20 MiB exceeds this Sheets integration’s limit and produces a backend error.
+
+To run or recover a snapshot with the configured environment, use these commands. Omit the date to recover the newest completed snapshot.
+
+```sh
+node sheets-backup.mjs run
+node sheets-backup.mjs restore ./trainerx-recovery.dump 2026-11-25
+pg_restore --list ./trainerx-recovery.dump
+pg_restore --exit-on-error --no-owner --no-acl --dbname=trainerx_recovery ./trainerx-recovery.dump
+```
+
+Run the last command with PostgreSQL 18 tools against a fresh PostgreSQL 18 or newer recovery database. The backup includes PostgreSQL data and schema. Keep the deployment variables and repository available separately to recreate the application environment.

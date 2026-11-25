@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.mjs",
     "reset:once": "node reset-once.mjs",
-    "test": "node --test tests/static.test.mjs"
+    "test": "node --test tests/static.test.mjs tests/sheets-backup.test.mjs"
   },
   "dependencies": {
     "compression": "^1.8.1",
