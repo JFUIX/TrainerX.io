@@ -163,6 +163,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .analytics-header{justify-content:space-between;align-items:center}
 .analytics-controls label{gap:4px}
 .analytics-controls input,.analytics-controls button{padding:8px 11px;font-size:13px}
+.plan-templates{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,165px),1fr));gap:8px}
+.plan-templates button{display:flex;align-items:center;gap:10px;min-height:48px;text-align:left;padding:10px 12px}
+.plan-templates svg{width:20px;height:20px;flex:none;fill:none;stroke:var(--tx-accent-soft);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 .analytics-grid,.analytics-totals{display:grid;gap:12px}
 .analytics-totals{grid-template-columns:repeat(3,minmax(0,1fr))}
 .analytics-grid{grid-template-columns:minmax(0,2fr) minmax(0,3fr)}
@@ -461,7 +464,31 @@ if(view==='Insight'){
 if(view==='Gyms'){const gyms=await api('/gyms');el.innerHTML='<h1>Gym management</h1><p>Manage gym accounts and reset owner passwords securely.</p><div class="card">'+rows(gyms,g=>'<div class="item"><strong>'+safe(g.name)+'</strong><p>'+safe(g.owner_email||'No owner')+' · '+safe(g.currency)+'</p><form class="row" data-reset-gym="'+safe(g.id)+'"><label style="flex:1;min-width:210px">New owner password<input type="password" name="password" minlength="12" maxlength="128" autocomplete="new-password" placeholder="12+ characters" required></label><button class="secondary" type="submit">Reset owner password</button></form>'+subscriptionForm(g)+'</div>')+'</div><h2>Add gym</h2>'+form([['name','Gym name'],['currency','Currency (e.g. PKR)'],['email','Owner email','email'],['password','Owner password (12+ characters)','password']],'gymForm','Create gym');bind('gymForm',async d=>{await api('/gyms','POST',{...d,currency:(d.currency||'PKR').trim().toUpperCase()})});el.querySelectorAll('[data-reset-gym]').forEach(form=>form.addEventListener('submit',async e=>{e.preventDefault();const gym=gyms.find(g=>g.id===form.dataset.resetGym);if(!confirm('Reset the owner password for '+gym.name+'? Existing owner sessions will be signed out.'))return;try{await api('/gyms/'+encodeURIComponent(gym.id)+'/reset-owner-password','POST',{password:form.elements.password.value});form.reset();notice('Owner password reset. Sign in with the new password.')}catch(err){notice(err.message,true)}}));el.querySelectorAll('[data-subscription]').forEach(node=>bindForm(node,data=>
     api('/gyms/'+node.dataset.subscription+'/subscription','PATCH',{plan:data.plan,paid_through:data.paid_through||null,active:data.active==='true'})))}
 
-if(view==='Plans'){const p=await api('/plans');el.innerHTML='<h1>'+safe(pageLabel(view))+'</h1><p>Create and manage the plans offered to your members.</p>'+form([['name','Plan name'],['months','Duration (months)','number','min="1" max="120" required'],['price','Fee (PKR)','number','min="0" step="0.01" required']],'planForm','Create plan')+'<div class="card"><h2>Available plans</h2>'+rows(p,x=>'<div class="item"><strong>'+safe(x.name)+'</strong><p>'+safe(x.months)+' months · PKR '+safe(x.price)+'</p></div>')+'</div>';bind('planForm',async d=>api('/plans','POST',{...d,months:Number(d.months),price:Number(d.price)}))}
+if(view==='Plans'){
+  const plans=await api('/plans');
+  const templates=[
+    ['Fitness Clubs','M8 8v8m8-8v8M5 9v6m14-6v6M8 12h8'],
+    ['Multi-Sport Facilities','M4 5h16v14H4zM12 5v14m-8-7h16'],
+    ['Swimming Clubs','M3 16c2 0 2-2 4-2s2 2 5 2 3-2 5-2 2 2 4 2M3 20c2 0 2-2 4-2s2 2 5 2 3-2 5-2 2 2 4 2m-9-7 3-4 3 1M7 7h.01'],
+    ['Sports Clubs','M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM4 9c4 1 7 5 7 12m9-6c-5 0-9-4-9-12'],
+    ['CrossFit Gyms','M13 3l-7 11h5l-1 7 8-11h-5z'],
+    ['Yoga Studios','M12 21C5 21 3 16 3 11c5 0 9 3 9 10zm0 0c7 0 9-5 9-10-5 0-9 3-9 10zm-4-8c0-4 2-7 4-9 2 2 4 5 4 9'],
+    ['Zumba Clubs','M9 18V6l11-2v12M9 18c0 2-5 3-5 1s5-3 5-1zm11-2c0 2-5 3-5 1s5-3 5-1z']
+  ];
+  const templateButtons=templates.map(([label,icon])=>`<button type="button" class="secondary" data-plan-template="${safe(label)}">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="${icon}"/></svg>${safe(label)}</button>`).join('');
+  el.innerHTML='<h1>'+safe(pageLabel(view))+'</h1><p>Create and manage the plans offered to your members.</p>'+
+    '<section class="card"><h2>Plan templates by facility type</h2><p>Choose a template to fill in the plan name, then set the duration and fee.</p><div class="plan-templates">'+templateButtons+'</div></section>'+
+    form([['name','Plan name'],['months','Duration (months)','number','min="1" max="120" required'],['price','Fee (PKR)','number','min="0" step="0.01" required']],'planForm','Create plan')+
+    '<div class="card"><h2>Available plans</h2>'+rows(plans,x=>'<div class="item"><strong>'+safe(x.name)+'</strong><p>'+safe(x.months)+' months · PKR '+safe(x.price)+'</p></div>')+'</div>';
+  const planForm=$('#planForm');
+  el.querySelectorAll('[data-plan-template]').forEach(button=>button.onclick=()=>{
+    planForm.elements.name.value=button.dataset.planTemplate+' Membership';
+    planForm.elements.months.focus();
+  });
+  bind('planForm',async d=>api('/plans','POST',{...d,months:Number(d.months),price:Number(d.price)}));
+}
+
 if(view==='Members'){
 const canCreate=['owner','reception'].includes(me.role);
 const [m,trainers,plans,memberships]=await Promise.all([
