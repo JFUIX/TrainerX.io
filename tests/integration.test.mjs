@@ -120,6 +120,22 @@ test('health and role-isolated membership and payment journey',async()=>{
  assert.equal(attendance.status,200);
  assert.equal(attendance.data.find(entry=>entry.member_id===enrolled.data.id)?.full_name,'Enrolled Member');
 
+ const cancelPath='/memberships/'+membership.data.id+'/cancel';
+ const billingPath='/fees/billing?membership_id='+membership.data.id;
+ const billingBefore=await request(billingPath,'GET',null,ownerToken);
+ assert.equal((await request(cancelPath,'POST',null,otherOwner.data.token)).status,404);
+ assert.equal((await request(cancelPath,'POST',null,memberLogin.data.token)).status,403);
+ const activeBefore=(await request('/report','GET',null,ownerToken)).data.active;
+ const cancelled=await request(cancelPath,'POST',null,ownerToken);
+ assert.equal(cancelled.status,200);
+ assert.equal(cancelled.data.cancelled_on,today);
+ assert.deepEqual(await request(cancelPath,'POST',null,ownerToken),cancelled);
+ assert.equal((await request('/report','GET',null,ownerToken)).data.active,activeBefore-1);
+ assert.deepEqual(await request(billingPath,'GET',null,ownerToken),billingBefore);
+ const history=await request('/members/'+member.data.id+'/history','GET',null,ownerToken);
+ assert.ok(history.data.memberships.some(term=>term.id===membership.data.id&&term.cancelled_on));
+ assert.equal(history.data.payments.find(entry=>entry.id===payment.data.receipts[0].id)?.billing_month,today.slice(0,7)+'-01');
+
  const subscriptionPath='/gyms/'+gym.data.id+'/subscription';
  const expired={plan:'Professional',paid_through:'2000-01-01',active:true};
  assert.equal((await request(subscriptionPath,'PATCH',expired,ownerToken)).status,403);

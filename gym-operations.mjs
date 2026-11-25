@@ -124,8 +124,8 @@ export function registerGymOperations(app,db,auth) {
              count(*) FILTER (WHERE at_open AND at_close)::int AS retained
       FROM (
         SELECT m.member_id,
-               bool_or(d.opening BETWEEN m.starts_on AND m.ends_on) AS at_open,
-               bool_or(d.closing BETWEEN m.starts_on AND m.ends_on) AS at_close
+               bool_or(d.opening BETWEEN m.starts_on AND m.ends_on AND (m.cancelled_on IS NULL OR d.opening<m.cancelled_on)) AS at_open,
+               bool_or(d.closing BETWEEN m.starts_on AND m.ends_on AND (m.cancelled_on IS NULL OR d.closing<m.cancelled_on)) AS at_close
         FROM memberships m WHERE m.gym_id=$1 AND m.ends_on>=d.opening AND m.starts_on<=d.closing
         GROUP BY m.member_id
       ) active

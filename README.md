@@ -41,7 +41,7 @@ For an existing Docker Compose database, apply the operations migration before s
 docker compose exec -T db psql -v ON_ERROR_STOP=1 -U trainerx -d trainerx < migrations/005-gym-operations.sql
 ```
 
-New Compose databases apply it automatically. Railway applies it through `init-db.mjs` before deploying.
+New Compose databases apply it automatically. Railway applies it through `init-db.mjs` before deploying. Existing Compose databases can apply membership cancellation with `docker compose exec -T db psql -v ON_ERROR_STOP=1 -U trainerx -d trainerx < migrations/006-membership-cancellation.sql`.
 
 ### WhatsApp reminders
 
