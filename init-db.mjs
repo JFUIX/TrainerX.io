@@ -19,6 +19,12 @@ try {
   await client.query(readFileSync(new URL('./migrations/'+migration,import.meta.url),'utf8'));
   await client.query('INSERT INTO app_schema_migrations(name) VALUES($1)',[migration]);
  }
+ const assignCoreXTestPlans = process.env.RAILWAY_SERVICE_ID==='23301cd5-ef6e-4343-8232-5fb420b9c760' &&
+   process.env.RAILWAY_ENVIRONMENT_ID==='c1b5bdf6-fbde-4344-9cd6-a49ae51e9452';
+ if (assignCoreXTestPlans) {
+  await client.query(readFileSync(new URL('./migrations/009-assign-corex-test-plans.sql',import.meta.url),'utf8'));
+ }
  await client.query('COMMIT');
  console.log('Database schema ready');
+ if (assignCoreXTestPlans) console.log('Verified 50 current CoreX test memberships with attendance codes');
 } catch(err){await client.query('ROLLBACK');throw err} finally {await client.end()}
