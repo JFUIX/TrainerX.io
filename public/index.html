@@ -9,7 +9,10 @@
 .member-card .member-person{min-width:0}
 .member-card .member-person div:last-child,.member-card dd{overflow-wrap:anywhere}
 .member-card-head{display:flex;justify-content:space-between;align-items:start;gap:12px}
-.member-card-state{display:grid;justify-items:end;align-content:start;gap:6px;flex:none}
+.member-card-state{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:6px}
+.member-card-body:not([hidden]){display:grid;gap:14px}
+.member-card-toggle::after{content:'';display:inline-block;width:6px;height:6px;margin:0 2px 2px 7px;border:solid currentColor;border-width:0 1.5px 1.5px 0;transform:rotate(45deg)}
+.member-card-toggle[aria-expanded="true"]::after{transform:rotate(225deg)}
 .member-card-state button{padding:6px 10px;font-size:12px}
 .member-card-joined{color:var(--tx-muted);font-size:12px}
 .member-card-attendance{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin:0;padding:10px 0;border-block:1px solid var(--tx-line)}
@@ -471,10 +474,13 @@ memberData={members:m,plans,memberships};
 const enrollmentPlans=plans;
 const today=localDay();const status=x=>!x.active?'Inactive':x.cancelled_on?'Cancelled':!x.ends_on?'No Plan':String(x.starts_on).slice(0,10)>today?'Upcoming':String(x.ends_on).slice(0,10)<today?'Expired':x.frozen?'Frozen':'Active';const active=m.filter(x=>status(x)==='Active').length,expired=m.filter(x=>status(x)==='Expired').length;const urgent=m.filter(x=>x.active&&!x.cancelled_on&&x.ends_on&&String(x.ends_on).slice(0,10)<=new Date(Date.now()+7*86400000).toISOString().slice(0,10));el.innerHTML='<div class="row" style="justify-content:space-between"><div><h1>'+safe(pageLabel(view))+'</h1><p>Manage members, memberships and renewals.</p></div>'+(canCreate?'<button id="addMember" class="primary" aria-expanded="false" aria-controls="enrollWrap">+ Add Member</button>':'')+'</div><div class="member-mini"><div class="card"><span class="sub">Total</span><strong>'+m.length+'</strong></div><div class="card"><span class="sub">Active</span><strong id="memberActiveTotal">'+active+'</strong></div><div class="card"><span class="sub">Expired</span><strong>'+expired+'</strong></div></div>'+(canCreate?'<div class="member-form-wrap" id="enrollWrap"><form id="memberForm" class="card form"><label>Member ID<input value="Automatically generated" disabled></label><label>Join Date<input name="joined_on" type="date" required></label><label>Full Name<input name="full_name" maxlength="150" required></label><label>Phone<input name="phone" type="tel" maxlength="40" required></label><label>Age<input name="age" type="number" min="1" max="120" required></label><label>Email<input name="email" type="email" required></label><label>Address<input name="residential_address" maxlength="500" required></label><label>Plan<select name="plan_id" required><option value="">Select plan</option>'+enrollmentPlans.map(p=>'<option value="'+safe(p.id)+'">'+safe(p.name)+' · '+safe(p.months)+' mo · '+safe(p.price)+' PKR</option>').join('')+'</select></label><label>Fee (PKR)<input name="amount" type="number" readonly required></label><label>Duration (months)<input name="membership_months" type="number" min="1" max="120" step="1" required placeholder="Enter months"></label><label>Trainer<select name="trainer_id"><option value="">Unassigned / General Training</option>'+trainers.map(t=>'<option value="'+safe(t.id)+'">'+safe(t.email)+'</option>').join('')+'</select></label><button class="primary" type="submit" >Enroll Member</button></form></div>':'')+'<div class="member-toolbar"><input id="memberSearch" placeholder="Search name, ID, phone or email"><select id="memberFilter"><option value="All">All statuses</option><option>Active</option><option>Expired</option><option>Inactive</option><option>Cancelled</option><option>Frozen</option><option>Upcoming</option><option>No Plan</option></select><button class="secondary" id="exportMembers">Export CSV</button></div><div id="memberList"></div>'+'<section class="card" id="memberAttention"><h2>Needs attention · '+urgent.length+'</h2>'+(urgent.length?urgent.map(x=>'<div class="item row" style="justify-content:space-between"><div><b>'+safe(x.full_name||x.email)+'</b><p>Membership ends '+safe(String(x.ends_on).slice(0,10))+'</p></div>'+(canCreate?'<button class="secondary" data-renew="'+safe(x.id)+'">Renew</button>':'')+'</div>').join(''):'<p>No memberships expiring within 7 days.</p>')+'</section>';const termDate=value=>value?String(value).slice(0,10):'—';
 const hasCurrentTerm=member=>member.membership_id&&!member.cancelled_on&&termDate(member.ends_on)>=today;
+const expandedMembers=new Set();
 const memberCard=member=>{
   const name=member.full_name||member.email;
   const state=status(member);
   const frozen=state==='Frozen';
+  const expanded=expandedMembers.has(member.id);
+  const bodyId='member-body-'+member.id;
   const info=[
     ['Age',member.age],
     ['Weight',member.weight_kg==null?null:Number(member.weight_kg)+' kg'],
@@ -496,9 +502,12 @@ const memberCard=member=>{
       <div class="member-card-state">
         <span class="member-status ${state==='Active'?'':state==='Expired'?'expired':'inactive'}">${safe(frozen?'Inactive':state)}</span>
         ${canCreate&&(state==='Active'||frozen)?`<button type="button" class="secondary" data-member-action="freeze"
-          title="${frozen?'Resume check-in access':'Pause check-ins through the end of the current membership'}">${frozen?'Unfreeze':'Freeze'}</button>`:''}
+          ${expanded?'':'hidden'} title="${frozen?'Resume check-in access':'Pause check-ins through the end of the current membership'}">${frozen?'Unfreeze':'Freeze'}</button>`:''}
+        <button type="button" class="secondary member-card-toggle" data-member-action="toggle"
+          aria-controls="${safe(bodyId)}" aria-expanded="${expanded}" aria-label="Details for ${safe(name)}">Details</button>
       </div>
     </div>
+    <div class="member-card-body" id="${safe(bodyId)}" ${expanded?'':'hidden'}>
     <dl class="member-card-attendance" aria-label="Attendance for the last 30 calendar days">
       <div><dt>Days attended</dt><dd>${safe(member.attended)}</dd></div>
       <div><dt>Days skipped</dt><dd>${safe(member.skipped)}</dd></div>
@@ -511,6 +520,7 @@ const memberCard=member=>{
       <button type="button" class="secondary member-cancel" data-member-action="cancel">Cancel membership</button>`:''}`:''}
     </div>
     ${canCreate?`<details class="member-card-records"><summary>Payment history &amp; monthly fees</summary><div data-member-records></div></details>`:''}
+    </div>
   </article>`;
 };
 const memberDetail=document.createElement('section');
@@ -524,7 +534,7 @@ const list=()=>{
   memberList.innerHTML=rows(shown,memberCard);
   if(selectedMemberId){
     const selected=memberList.querySelector('[data-card-member="'+CSS.escape(selectedMemberId)+'"]');
-    if(selected)selected.append(memberDetail);
+    if(selected)selected.querySelector('.member-card-body').append(memberDetail);
     else{selectedMemberId=null;memberDetail.replaceChildren()}
   }
   $('#memberActiveTotal').textContent=m.filter(member=>status(member)==='Active').length;
@@ -533,8 +543,19 @@ const memberList=$('#memberList');
 memberList.addEventListener('click',async event=>{
   const button=event.target.closest('[data-member-action]');
   if(!button)return;
-  const member=m.find(item=>item.id===button.closest('[data-card-member]').dataset.cardMember);
+  const card=button.closest('[data-card-member]');
+  const member=m.find(item=>item.id===card.dataset.cardMember);
   switch(button.dataset.memberAction){
+    case 'toggle': {
+      const expanded=!expandedMembers.has(member.id);
+      if(expanded)expandedMembers.add(member.id);
+      else expandedMembers.delete(member.id);
+      button.setAttribute('aria-expanded',String(expanded));
+      card.querySelector('.member-card-body').hidden=!expanded;
+      const freeze=card.querySelector('[data-member-action="freeze"]');
+      if(freeze)freeze.hidden=!expanded;
+      return;
+    }
     case 'profile':return showMember(member,button);
     case 'freeze': {
       const frozen=!member.frozen;
@@ -587,7 +608,7 @@ memberList.addEventListener('toggle',async event=>{
 let historyRequest=0;const showMember=async (x,trigger,initialTab='Details',editMembershipId)=>{if(!x)return;const requestId=++historyRequest;let h;try{h=await api('/members/'+encodeURIComponent(x.id)+'/history')}catch(err){if(!signal.aborted&&requestId===historyRequest)notice(err.message,true);return}if(requestId!==historyRequest||!trigger.isConnected)return;
 const d=memberDetail;
 selectedMemberId=x.id;
-trigger.closest('[data-card-member]').append(d);
+trigger.closest('.member-card-body').append(d);
 const tabs=['Details','Memberships','Attendance','Notes',...(canCreate?['Access & reminders']:[])];
 d.innerHTML='<div class="member-profile-actions">'+memberContactLink(x)+'<button class="secondary" id="closeMember">Close</button></div><div class="member-tabs">'+tabs.map(t=>'<button data-tab="'+t+'">'+t+'</button>').join('')+'</div><div id="memberTabContent"></div>';
 $('#closeMember').onclick=()=>{
