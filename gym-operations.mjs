@@ -21,7 +21,8 @@ export function registerGymOperations(app,db,auth) {
       subscription_until::text,whatsapp_enabled FROM gyms WHERE id=$1`,[req.user.gym_id]);
     const {rows:reminders} = await db.query(`SELECT status,count(*)::int AS total FROM whatsapp_deliveries
       WHERE gym_id=$1 AND attempted_at>=now()-interval '30 days' GROUP BY status`,[req.user.gym_id]);
-    res.json({...gym,reminders,whatsapp_configured:Boolean(whatsappConfig())});
+    const config=whatsappConfig();
+    res.json({...gym,reminders,whatsapp_configured:Boolean(config),whatsapp_fee_due_configured:Boolean(config?.fee_due)});
   });
 
   app.patch('/gyms/:id/subscription',auth,platform,async (req,res) => {
@@ -190,10 +191,10 @@ export function registerGymOperations(app,db,auth) {
 
 function whatsappConfig() {
   const {WHATSAPP_TOKEN:token,WHATSAPP_PHONE_ID:phone,WHATSAPP_API_VERSION:version,
-    WHATSAPP_EXPIRY_TEMPLATE:expiry,WHATSAPP_OVERDUE_TEMPLATE:overdue,
+    WHATSAPP_EXPIRY_TEMPLATE:expiry,WHATSAPP_OVERDUE_TEMPLATE:overdue,WHATSAPP_FEE_DUE_TEMPLATE:fee_due,
     WHATSAPP_TEMPLATE_LANGUAGE:language='en'} = process.env;
   if (!token || !/^\d+$/.test(phone||'') || !/^v\d+\.\d+$/.test(version||'') || !expiry || !overdue) return null;
-  return {token,phone,version,expiry,overdue,language};
+  return {token,phone,version,expiry,overdue,fee_due,language};
 }
 
 export function startWhatsAppReminders(db) {
@@ -204,30 +205,30 @@ export function startWhatsAppReminders(db) {
     if (running) return;
     running = true;
     try {
-      const {rows} = await db.query(`SELECT a.*,a.due_on::text AS due_date,g.name,g.currency FROM gym_member_alerts a
+      const {rows} = await db.query(`SELECT a.*,a.due_on::text AS due_date,g.name,g.currency FROM gym_whatsapp_alerts a
         JOIN gyms g ON g.id=a.gym_id AND ${gymAccess} AND g.whatsapp_enabled
-        WHERE a.whatsapp_phone IS NOT NULL AND NOT EXISTS (
+        WHERE a.whatsapp_phone IS NOT NULL AND ($1::boolean OR a.kind<>'fee_due') AND NOT EXISTS (
           SELECT 1 FROM whatsapp_deliveries d WHERE (d.gym_id,d.membership_id,d.kind,d.due_on)=
             (a.gym_id,a.membership_id,a.kind,a.due_on)
-        ) ORDER BY a.due_on,a.membership_id LIMIT 50`);
+        ) ORDER BY a.due_on,a.membership_id LIMIT 50`,[Boolean(config.fee_due)]);
       for (const alert of rows) {
         const key = [alert.gym_id,alert.membership_id,alert.kind,alert.due_date];
         const claim = await db.query(`INSERT INTO whatsapp_deliveries(gym_id,membership_id,kind,due_on)
-          SELECT a.gym_id,a.membership_id,a.kind,a.due_on FROM gym_member_alerts a
+          SELECT a.gym_id,a.membership_id,a.kind,a.due_on FROM gym_whatsapp_alerts a
           JOIN gyms g ON g.id=a.gym_id AND ${gymAccess} AND g.whatsapp_enabled
           WHERE (a.gym_id,a.membership_id,a.kind,a.due_on)=($1,$2,$3,$4) AND a.whatsapp_phone=$5
           ON CONFLICT DO NOTHING`,[...key,alert.whatsapp_phone]);
         if (!claim.rowCount) continue;
         let status = 'failed';
         try {
-          const detail = alert.kind === 'expiry' ? alert.due_date
-            : alert.currency+' '+Number(alert.amount).toFixed(2);
+          const amount=alert.currency+' '+Number(alert.amount).toFixed(2);
+          const details=alert.kind==='expiry'?[alert.due_date]:alert.kind==='fee_due'?[alert.due_date,amount]:[amount];
           const result = await fetch(`https://graph.facebook.com/${config.version}/${config.phone}/messages`,{
             method:'POST',signal:AbortSignal.timeout(10000),
             headers:{Authorization:'Bearer '+config.token,'Content-Type':'application/json'},
             body:JSON.stringify({messaging_product:'whatsapp',to:alert.whatsapp_phone.slice(1),type:'template',
               template:{name:config[alert.kind],language:{code:config.language},
-                components:[{type:'body',parameters:[alert.name,detail].map(text=>({type:'text',text}))}]}})
+                components:[{type:'body',parameters:[alert.name,...details].map(text=>({type:'text',text}))}]}})
           });
           status = result.ok ? 'sent' : 'failed';
           await result.body?.cancel();

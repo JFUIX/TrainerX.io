@@ -13,6 +13,7 @@ services:
       - ./migrations/006-membership-cancellation.sql:/docker-entrypoint-initdb.d/06-membership-cancellation.sql:ro
       - ./migrations/007-member-weight.sql:/docker-entrypoint-initdb.d/07-member-weight.sql:ro
       - ./migrations/008-member-freeze-history.sql:/docker-entrypoint-initdb.d/08-member-freeze-history.sql:ro
+      - ./migrations/009-whatsapp-due-reminders.sql:/docker-entrypoint-initdb.d/09-whatsapp-due-reminders.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U trainerx"]
       interval: 5s
@@ -27,6 +28,7 @@ services:
       WHATSAPP_PHONE_ID: ${WHATSAPP_PHONE_ID:-}
       WHATSAPP_API_VERSION: ${WHATSAPP_API_VERSION:-}
       WHATSAPP_EXPIRY_TEMPLATE: ${WHATSAPP_EXPIRY_TEMPLATE:-}
+      WHATSAPP_FEE_DUE_TEMPLATE: ${WHATSAPP_FEE_DUE_TEMPLATE:-}
       WHATSAPP_OVERDUE_TEMPLATE: ${WHATSAPP_OVERDUE_TEMPLATE:-}
       WHATSAPP_TEMPLATE_LANGUAGE: ${WHATSAPP_TEMPLATE_LANGUAGE:-en}
     ports:

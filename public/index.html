@@ -1051,7 +1051,10 @@ function renderDashboardAccount(panel,account,api,signal){
     (account.subscription_until?'Paid through '+safe(account.subscription_until):'No expiry set')+'</span></div>'+
     '<span class="insight-account-state" data-state="'+(account.whatsapp_configured&&account.whatsapp_enabled?'on':'off')+'">WhatsApp · '+whatsappState(account.whatsapp_enabled)+'</span></summary>'+
     '<div class="insight-disclosure-body"><h3>WhatsApp reminders</h3>'+
-    '<p>Opted-in members receive reminders for expiring memberships and overdue payments.</p>'+
+    '<p>Membership expiry reminders start three days before expiry. Reminders go only to opted-in members.</p>'+
+    (account.whatsapp_fee_due_configured?
+      '<p>Unpaid fees get a reminder within three days before the billing period ends, followed by overdue reminders when applicable.</p>':
+      '<p>Add the approved fee-due template to send reminders before a payment is due.</p>')+
     (account.reminders.length?'<p>Last 30 days · '+account.reminders.map(r=>safe(r.total)+' '+safe(deliveryStatus[r.status])).join(' · ')+'</p>':'')+
     (account.whatsapp_configured?'':'<p>Connect a WhatsApp Business sender and approved templates to turn on reminders.</p>')+
     '<form id="whatsappSettings" class="insight-account-form"><label>Automated reminders<select name="enabled">'+
