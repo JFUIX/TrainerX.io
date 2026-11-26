@@ -96,10 +96,13 @@ function row(values,kind,index=0){
 export async function writeReadableSnapshot(sheet,sheetId,{gym,tables},now=new Date()){
   const meta=await sheet('?fields=sheets(properties(sheetId,title,gridProperties))');
   const properties=meta.sheets?.find(tab=>tab.properties.sheetId===sheetId)?.properties;
-  if(properties?.title!==title)throw new Error('The configured tab does not match '+title);
-  const range=encodeURIComponent("'"+title+"'");
+  if(!properties)throw new Error('The linked tab was not found');
+  if(/^TrainerX Backup [1-7]$/.test(properties.title))throw new Error('The linked tab belongs to the encrypted backup');
+  if(properties.title!==title&&meta.sheets.some(tab=>tab.properties.title===title))
+    throw new Error('The requested title already belongs to a different tab');
+  const range=encodeURIComponent("'"+properties.title.replaceAll("'","''")+"'");
   const preview=await sheet('/values/'+range+'!A1:A2');
-  if(preview.values?.[0]?.[0]!==title||preview.values?.[1]?.[0]!=='Managed by TrainerX'){
+  if(properties.title!==title||preview.values?.[0]?.[0]!==title||preview.values?.[1]?.[0]!=='Managed by TrainerX'){
     const existing=await sheet('/values/'+range);
     const occupied=existing.values?.some((row,i)=>row.some((value,j)=>value!==''&&!(i===0&&j===0&&value===title)));
     if(occupied)throw new Error('The target tab already has content. Sync requires a blank tab.');
@@ -120,8 +123,8 @@ export async function writeReadableSnapshot(sheet,sheetId,{gym,tables},now=new D
   const rowCount=Math.max(properties.gridProperties.rowCount,rows.length);
   const columnCount=Math.max(properties.gridProperties.columnCount,width);
   await sheet(':batchUpdate','POST',{requests:[
-    {updateSheetProperties:{properties:{sheetId,gridProperties:{rowCount,columnCount,frozenRowCount:3}},
-      fields:'gridProperties(rowCount,columnCount,frozenRowCount)'}},
+    {updateSheetProperties:{properties:{sheetId,title,gridProperties:{rowCount,columnCount,frozenRowCount:3}},
+      fields:'title,gridProperties.rowCount,gridProperties.columnCount,gridProperties.frozenRowCount'}},
     {updateDimensionProperties:{range:{sheetId,dimension:'COLUMNS',startIndex:0,endIndex:width},
       properties:{pixelSize:165},fields:'pixelSize'}},
     {updateCells:{range:{sheetId,startRowIndex:0,endRowIndex:rowCount,startColumnIndex:0,endColumnIndex:width},
