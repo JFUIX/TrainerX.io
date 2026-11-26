@@ -54,7 +54,9 @@ async function snapshot(db,gymName){
   const client=await db.connect();
   try{
     await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY');
-    const {rows}=await client.query('SELECT id,name,currency,timezone FROM gyms WHERE lower(btrim(name))=lower($1)',[gymName]);
+    const identity=name=>name.toLowerCase().replace(/[^a-z0-9]/g,'').replace(/gym$/,'');
+    const {rows:gyms}=await client.query('SELECT id,name,currency,timezone FROM gyms');
+    const rows=gyms.filter(gym=>identity(gym.name)===identity(gymName));
     if(rows.length!==1)throw new Error('Expected exactly one gym matching the configured name');
     const gym=rows[0],tables=[];
     for(const [name,headers,sql] of sections){
