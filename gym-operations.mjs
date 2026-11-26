@@ -7,22 +7,52 @@ const platform = (req,res,next) => req.user.role === 'superadmin' ? next() : res
 const categories = ['Rent','Payroll','Utilities','Equipment','Marketing','Other'];
 const phoneNumber = value => typeof value === 'string' && /^\+[1-9]\d{7,14}$/.test(value);
 
-export const gymAccess = 'g.active AND (g.subscription_until IS NULL OR g.subscription_until >= CURRENT_DATE)';
+export const gymAccess = 'g.active AND (g.subscription_until IS NULL OR g.subscription_until >= (now() AT TIME ZONE g.timezone)::date)';
 export const memberCanCheckIn = (gym,member) => `NOT EXISTS (
   SELECT 1 FROM member_freezes f
-  WHERE f.gym_id=${gym} AND f.member_id=${member} AND CURRENT_DATE BETWEEN f.starts_on AND f.ends_on
+  WHERE f.gym_id=${gym} AND f.member_id=${member} AND gym_today(${gym}) BETWEEN f.starts_on AND f.ends_on
 )`;
+
+// The claim and the financial write must commit in the same transaction.
+export async function claimFinancialRequest(client,req,operation,payload){
+  const requestId=req.body.request_id;
+  if(requestId===undefined)return {};
+  const key=[req.user.gym_id,operation,requestId,req.user.id,JSON.stringify(payload)];
+  const claim=await client.query(
+    `INSERT INTO financial_requests(gym_id,operation,request_id,actor_id,payload)
+     VALUES($1,$2,$3,$4,$5::jsonb) ON CONFLICT DO NOTHING`, key);
+  if(claim.rowCount)return {key:key.slice(0,3)};
+  const {rows:[previous]}=await client.query(
+    `SELECT response,actor_id=$4 AND payload=$5::jsonb AS matches FROM financial_requests
+     WHERE gym_id=$1 AND operation=$2 AND request_id=$3`,key);
+  return previous?.matches?{response:previous.response}:{conflict:true};
+}
+
+export async function completeFinancialRequest(client,claim,response){
+  if(claim.key)await client.query(
+    'UPDATE financial_requests SET response=$4::jsonb WHERE gym_id=$1 AND operation=$2 AND request_id=$3',
+    [...claim.key,JSON.stringify(response)]);
+}
 
 export function registerGymOperations(app,db,auth) {
   const privateData = (req,res,next) => {res.set('Cache-Control','no-store');next()};
 
   app.get('/gym-account',auth,owner,privateData,async (req,res) => {
-    const {rows:[gym]} = await db.query(`SELECT name,currency,subscription_plan,
+    const {rows:[gym]} = await db.query(`SELECT name,currency,timezone,subscription_plan,
       subscription_until::text,whatsapp_enabled FROM gyms WHERE id=$1`,[req.user.gym_id]);
-    const {rows:reminders} = await db.query(`SELECT status,count(*)::int AS total FROM whatsapp_deliveries
-      WHERE gym_id=$1 AND attempted_at>=now()-interval '30 days' GROUP BY status`,[req.user.gym_id]);
+    res.json({...gym,...await reminderStatus(req.user.gym_id)});
+  });
+
+  async function reminderStatus(gymId){
+    const {rows:reminders}=await db.query(`SELECT CASE WHEN status='failed' AND next_attempt_at IS NOT NULL
+      THEN 'retrying' ELSE status END AS status,count(*)::int AS total FROM whatsapp_deliveries
+      WHERE gym_id=$1 AND attempted_at>=now()-interval '30 days' GROUP BY 1 ORDER BY 1`,[gymId]);
     const config=whatsappConfig();
-    res.json({...gym,reminders,whatsapp_configured:Boolean(config),whatsapp_fee_due_configured:Boolean(config?.templates.fee_due)});
+    return {reminders,whatsapp_configured:Boolean(config),whatsapp_fee_due_configured:Boolean(config?.templates.fee_due)};
+  }
+
+  app.get('/reminder-status',auth,staff,privateData,async (req,res)=>{
+    res.json(await reminderStatus(req.user.gym_id));
   });
 
   app.patch('/gym-account',auth,owner,privateData,async (req,res) => {
@@ -31,6 +61,15 @@ export function registerGymOperations(app,db,auth) {
     const {rows:[gym]}=await db.query('UPDATE gyms SET name=$2 WHERE id=$1 RETURNING name',[req.user.gym_id,name]);
     if(!gym)return res.sendStatus(404);
     res.json(gym);
+  });
+
+  app.put('/gym-account/timezone',auth,owner,privateData,async (req,res) => {
+    const {timezone}=req.body||{};
+    if(typeof timezone!=='string'||timezone.length>80)return res.status(400).json({error:'Enter a valid time zone.'});
+    const result=await db.query(`UPDATE gyms SET timezone=$2 WHERE id=$1
+      AND EXISTS (SELECT 1 FROM pg_timezone_names WHERE name=$2) RETURNING timezone`,[req.user.gym_id,timezone]);
+    if(!result.rowCount)return res.status(400).json({error:'Enter an IANA time zone, such as Asia/Karachi.'});
+    res.json(result.rows[0]);
   });
 
   app.patch('/gyms/:id/subscription',auth,platform,async (req,res) => {
@@ -85,28 +124,28 @@ export function registerGymOperations(app,db,auth) {
         SELECT u.gym_id,u.id,max(m.ends_on) AS ends_on
         FROM users u JOIN memberships m ON m.gym_id=u.gym_id AND m.member_id=u.id
         WHERE u.gym_id=$1 AND u.id=$2 AND u.role='member' AND u.active
-          AND m.cancelled_on IS NULL AND CURRENT_DATE BETWEEN m.starts_on AND m.ends_on
+          AND m.cancelled_on IS NULL AND gym_today($1) BETWEEN m.starts_on AND m.ends_on
         GROUP BY u.gym_id,u.id
       ), archived AS (
         INSERT INTO member_freeze_history(gym_id,member_id,starts_on,ends_on)
         SELECT f.gym_id,f.member_id,f.starts_on,f.ends_on
         FROM member_freezes f JOIN eligible e ON e.gym_id=f.gym_id AND e.id=f.member_id
-        WHERE f.ends_on<CURRENT_DATE
+        WHERE f.ends_on<gym_today($1)
         ON CONFLICT DO NOTHING
       )
         INSERT INTO member_freezes(gym_id,member_id,starts_on,ends_on)
-        SELECT gym_id,id,CURRENT_DATE,ends_on FROM eligible
+        SELECT gym_id,id,gym_today($1),ends_on FROM eligible
         ON CONFLICT (gym_id,member_id) DO UPDATE SET
-          starts_on=CASE WHEN CURRENT_DATE BETWEEN member_freezes.starts_on AND member_freezes.ends_on
+          starts_on=CASE WHEN gym_today($1) BETWEEN member_freezes.starts_on AND member_freezes.ends_on
             THEN member_freezes.starts_on ELSE EXCLUDED.starts_on END,
           ends_on=GREATEST(member_freezes.ends_on,EXCLUDED.ends_on)`,args);
       if (!result.rowCount) return res.status(404).json({error:'No active membership to freeze'});
     } else {
       const result=await db.query(`WITH shortened AS (
-        UPDATE member_freezes SET ends_on=CURRENT_DATE-1
-        WHERE gym_id=$1 AND member_id=$2 AND starts_on<CURRENT_DATE AND ends_on>=CURRENT_DATE
+        UPDATE member_freezes SET ends_on=gym_today($1)-1
+        WHERE gym_id=$1 AND member_id=$2 AND starts_on<gym_today($1) AND ends_on>=gym_today($1)
       ), cleared AS (
-        DELETE FROM member_freezes WHERE gym_id=$1 AND member_id=$2 AND starts_on=CURRENT_DATE
+        DELETE FROM member_freezes WHERE gym_id=$1 AND member_id=$2 AND starts_on=gym_today($1)
       )
       SELECT 1 FROM users WHERE gym_id=$1 AND id=$2 AND role='member'`,args);
       if (!result.rowCount) return res.sendStatus(404);
@@ -131,19 +170,40 @@ export function registerGymOperations(app,db,auth) {
     if (!isoDate(incurred_on) || !categories.includes(category) || typeof description !== 'string' ||
         description.length > 500 || typeof amount !== 'number' || !Number.isFinite(amount) ||
         amount < 0.01 || amount > 100000000 || Number(amount.toFixed(2)) !== amount) return res.sendStatus(400);
-    const {rows:[expense]} = await db.query(`INSERT INTO gym_expenses(gym_id,recorded_by,incurred_on,category,description,amount)
-      VALUES ($1,$2,$3,$4,$5,$6) RETURNING id`,[req.user.gym_id,req.user.id,incurred_on,category,description.trim(),amount]);
-    res.status(201).json(expense);
+    if(req.body.request_id!==undefined&&!uuid(req.body.request_id))return res.sendStatus(400);
+    const payload={incurred_on,category,description:description.trim(),amount};
+    const client=await db.connect();
+    try{
+      await client.query('BEGIN');
+      const claim=await claimFinancialRequest(client,req,'expense',payload);
+      if(claim.conflict){
+        await client.query('ROLLBACK');
+        return res.status(409).json({error:'This submission ID was already used for a different expense.'});
+      }
+      if(claim.response){
+        await client.query('COMMIT');
+        return res.status(201).json(claim.response);
+      }
+      const {rows:[expense]}=await client.query(`INSERT INTO gym_expenses(gym_id,recorded_by,incurred_on,category,description,amount)
+        VALUES ($1,$2,$3,$4,$5,$6) RETURNING id`,[req.user.gym_id,req.user.id,incurred_on,category,payload.description,amount]);
+      await completeFinancialRequest(client,claim,expense);
+      await client.query('COMMIT');
+      res.status(201).json(expense);
+    }catch(error){
+      await client.query('ROLLBACK');
+      throw error;
+    }finally{client.release()}
   });
 
   app.get('/financial-report',auth,owner,privateData,async (req,res) => {
     const {from,to} = req.query;
     if (!isoDate(from) || !isoDate(to) || to < from || Date.parse(to)-Date.parse(from) > 365*86400000) return res.sendStatus(400);
     const {rows} = await db.query(`SELECT * FROM (
-      SELECT f.paid_at::date::text AS date,'Payment' AS type,f.id,f.method AS category,u.email AS description,f.amount
+      SELECT (f.paid_at AT TIME ZONE gym_timezone($1))::date::text AS date,'Payment' AS type,f.id,f.method AS category,u.email AS description,f.amount
       FROM fee_payments f JOIN memberships m ON m.gym_id=f.gym_id AND m.id=f.membership_id
       JOIN users u ON u.gym_id=m.gym_id AND u.id=m.member_id
-      WHERE f.gym_id=$1 AND f.paid_at >= $2::date AND f.paid_at < $3::date+1
+      WHERE f.gym_id=$1 AND f.paid_at >= ($2::date::timestamp AT TIME ZONE gym_timezone($1))
+        AND f.paid_at < (($3::date+1)::timestamp AT TIME ZONE gym_timezone($1))
       UNION ALL
       SELECT incurred_on::text,'Expense',id,category,description,amount FROM gym_expenses
       WHERE gym_id=$1 AND incurred_on BETWEEN $2 AND $3
@@ -158,13 +218,14 @@ export function registerGymOperations(app,db,auth) {
   app.get('/membership-trends',auth,owner,privateData,async (req,res) => {
     const {rows} = await db.query(`WITH months AS (
       SELECT start::date AS month,(start-interval '1 day')::date AS opening,
-             LEAST((start+interval '1 month - 1 day')::date,CURRENT_DATE) AS closing
-      FROM generate_series(date_trunc('month',CURRENT_DATE)-interval '5 months',
-                           date_trunc('month',CURRENT_DATE),interval '1 month') start
+             LEAST((start+interval '1 month - 1 day')::date,gym_today($1)) AS closing
+      FROM generate_series(date_trunc('month',gym_today($1))-interval '5 months',
+                           date_trunc('month',gym_today($1)),interval '1 month') start
     )
     SELECT to_char(d.month,'YYYY-MM') AS month,
       (SELECT count(*)::int FROM member_profiles p WHERE p.gym_id=$1 AND p.joined_on BETWEEN d.month AND d.closing) AS joined,
-      (SELECT count(*)::int FROM attendance a WHERE a.gym_id=$1 AND a.attended_on BETWEEN d.month AND d.closing) AS visits,
+      (SELECT count(*)::int FROM attendance a WHERE a.gym_id=$1 AND a.checked_at >= (d.month::timestamp AT TIME ZONE gym_timezone($1))
+        AND a.checked_at < ((d.closing+1)::timestamp AT TIME ZONE gym_timezone($1))) AS visits,
       cohort.opening,cohort.retained
     FROM months d CROSS JOIN LATERAL (
       SELECT count(*) FILTER (WHERE at_open)::int AS opening,
@@ -210,26 +271,40 @@ function whatsappConfig() {
 export function startWhatsAppReminders(db) {
   const config = whatsappConfig();
   if (!config) return;
+  const maxAttempts=4;
+  const retryable=`d.attempts<$2 AND (
+    (d.status='failed' AND d.next_attempt_at<=now()) OR
+    (d.status='sending' AND d.attempted_at<=now()-interval '15 minutes')
+  )`;
   let running = false;
   async function run() {
     if (running) return;
     running = true;
     try {
+      await db.query(`UPDATE whatsapp_deliveries SET status='failed',next_attempt_at=NULL
+        WHERE status='sending' AND attempts>=$1 AND attempted_at<=now()-interval '15 minutes'`,[maxAttempts]);
       const {rows} = await db.query(`SELECT a.*,a.due_on::text AS due_date,g.name,g.currency FROM gym_whatsapp_alerts a
         JOIN gyms g ON g.id=a.gym_id AND ${gymAccess} AND g.whatsapp_enabled
-        WHERE a.whatsapp_phone IS NOT NULL AND a.kind=ANY($1::text[]) AND NOT EXISTS (
-          SELECT 1 FROM whatsapp_deliveries d WHERE (d.gym_id,d.membership_id,d.kind,d.due_on)=
-            (a.gym_id,a.membership_id,a.kind,a.due_on)
-        ) ORDER BY a.due_on,a.membership_id LIMIT 50`,[config.kinds]);
+        LEFT JOIN whatsapp_deliveries d ON (d.gym_id,d.membership_id,d.kind,d.due_on)=
+          (a.gym_id,a.membership_id,a.kind,a.due_on)
+        WHERE a.whatsapp_phone IS NOT NULL AND a.kind=ANY($1::text[])
+          AND (d.gym_id IS NULL OR (${retryable}))
+        ORDER BY a.due_on,a.membership_id LIMIT 50`,[config.kinds,maxAttempts]);
       for (const alert of rows) {
         const key = [alert.gym_id,alert.membership_id,alert.kind,alert.due_date];
-        const claim = await db.query(`INSERT INTO whatsapp_deliveries(gym_id,membership_id,kind,due_on)
+        const claim = await db.query(`INSERT INTO whatsapp_deliveries AS d(gym_id,membership_id,kind,due_on)
           SELECT a.gym_id,a.membership_id,a.kind,a.due_on FROM gym_whatsapp_alerts a
           JOIN gyms g ON g.id=a.gym_id AND ${gymAccess} AND g.whatsapp_enabled
           WHERE (a.gym_id,a.membership_id,a.kind,a.due_on)=($1,$2,$3,$4) AND a.whatsapp_phone=$5
-          ON CONFLICT DO NOTHING`,[...key,alert.whatsapp_phone]);
+          ON CONFLICT (gym_id,membership_id,kind,due_on) DO UPDATE
+          SET attempts=d.attempts+1,status='sending',attempted_at=now(),next_attempt_at=NULL
+          WHERE d.attempts<$6 AND (
+            (d.status='failed' AND d.next_attempt_at<=now()) OR
+            (d.status='sending' AND d.attempted_at<=now()-interval '15 minutes')
+          ) RETURNING attempts`,[...key,alert.whatsapp_phone,maxAttempts]);
         if (!claim.rowCount) continue;
-        let status = 'failed';
+        const attempt=claim.rows[0].attempts;
+        let status='failed',retryMinutes=null;
         try {
           const amount=alert.currency+' '+Number(alert.amount).toFixed(2);
           const gymName=alert.name.trim().replace(/\s+/g,' ');
@@ -244,13 +319,17 @@ export function startWhatsAppReminders(db) {
               template:{name:config.templates[alert.kind],language:{code:config.language},
                 components:[{type:'body',parameters:values.map(text=>({type:'text',text}))}]}})
           });
-          status = result.ok ? 'sent' : 'failed';
-          await result.body?.cancel();
+          if(result.ok)status='sent';
+          else if(result.status===408||result.status===429||result.status>=500)retryMinutes=5*3**(attempt-1);
+          await result.body?.cancel().catch(()=>{});
         } catch {
+          retryMinutes=5*3**(attempt-1);
           console.error('WhatsApp reminder delivery request failed');
         }
-        await db.query(`UPDATE whatsapp_deliveries SET status=$5
-          WHERE (gym_id,membership_id,kind,due_on)=($1,$2,$3,$4)`,[...key,status]);
+        await db.query(`UPDATE whatsapp_deliveries SET status=$5,
+          next_attempt_at=CASE WHEN $7::int IS NULL THEN NULL ELSE now()+make_interval(mins=>$7) END
+          WHERE (gym_id,membership_id,kind,due_on)=($1,$2,$3,$4) AND attempts=$6 AND status='sending'`,
+          [...key,status,attempt,attempt<maxAttempts?retryMinutes:null]);
       }
     } catch (error) {
       console.error('WhatsApp reminder job failed',error.code||'request error');

@@ -1,5 +1,5 @@
 import test from 'node:test';
-import {createHash,createHmac} from 'node:crypto';
+import {createHash,createHmac,randomUUID} from 'node:crypto';
 import assert from 'node:assert/strict';
 const base='http://127.0.0.1:3000';
 const request=async(path,method='GET',body,token)=>{const r=await fetch(base+path,{method,headers:{'content-type':'application/json',...(token?{'authorization':'Bearer '+token}:{})},body:body?JSON.stringify(body):undefined});let data=null;try{data=await r.json()}catch{}return {status:r.status,data}};
@@ -19,9 +19,14 @@ test('health and role-isolated membership and payment journey',async()=>{
  const plan=await request('/plans','POST',{name:'Monthly',months:1,price:2500},owner.data.token);assert.equal(plan.status,201);
  const memberEmail='member-'+Date.now()+'@example.test';
  const member=await request('/users','POST',{email:memberEmail,password,role:'member'},owner.data.token);assert.equal(member.status,201);
- const today=new Date().toISOString().slice(0,10);
+ const today=new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Karachi'}).format(new Date());
  const membership=await request('/memberships','POST',{member_id:member.data.id,plan_id:plan.data.id,starts_on:today},owner.data.token);assert.equal(membership.status,201);
- const payment=await request('/fees','POST',{membership_id:membership.data.id,amount:1000,method:'cash',billing_month:today.slice(0,7)},owner.data.token);assert.equal(payment.status,201);
+ const paymentBody={membership_id:membership.data.id,amount:1000,method:'cash',billing_month:today.slice(0,7),request_id:randomUUID()};
+ const payments=await Promise.all([1,2].map(()=>request('/fees','POST',paymentBody,owner.data.token)));
+ const [payment,retry]=payments;
+ assert.equal(payment.status,201);
+ assert.deepEqual(retry,payment);
+ assert.equal((await request('/fees','POST',{...paymentBody,amount:1100},owner.data.token)).status,409);
  const receipt=await request('/fees/'+payment.data.receipts[0].id+'/receipt','GET',null,owner.data.token);assert.equal(receipt.status,200);assert.equal(receipt.data.member,memberEmail);
  const memberLogin=await request('/login','POST',{email:memberEmail,password});assert.equal(memberLogin.status,200);
  const forbidden=await request('/fees','GET',null,memberLogin.data.token);assert.equal(forbidden.status,403);
@@ -61,8 +66,11 @@ test('health and role-isolated membership and payment journey',async()=>{
  assert.equal(trends.data.at(-1).visits,1);
  assert.equal(trends.data.at(-1).retained,1);
 
- const expense={incurred_on:today,category:'Rent',description:'Studio rent',amount:150};
- assert.equal((await request('/expenses','POST',expense,ownerToken)).status,201);
+ const expense={incurred_on:today,category:'Rent',description:'Studio rent',amount:150,request_id:randomUUID()};
+ const [expenseFirst,expenseRetry]=await Promise.all([1,2].map(()=>request('/expenses','POST',expense,ownerToken)));
+ assert.equal(expenseFirst.status,201);
+ assert.deepEqual(expenseRetry,expenseFirst);
+ assert.equal((await request('/expenses','POST',{...expense,amount:151},ownerToken)).status,409);
  const ledgerPath='/financial-report?from='+today+'&to='+today;
  const ledger=await request(ledgerPath,'GET',null,ownerToken);
  assert.equal(ledger.status,200);
@@ -78,6 +86,7 @@ test('health and role-isolated membership and payment journey',async()=>{
  const staffLogin=await request('/login','POST',{email:staffEmail,password});
  assert.equal(staffLogin.status,200);
  assert.equal((await request('/alerts','GET',null,staffLogin.data.token)).status,200);
+ assert.deepEqual((await request('/reminder-status','GET',null,staffLogin.data.token)).data.reminders,[]);
  assert.equal((await request('/expenses','POST',expense,staffLogin.data.token)).status,403);
  const staffPath='/staff/'+staff.data.id;
  assert.equal((await request(staffPath,'PATCH',{role:'trainer',active:true},ownerToken)).status,200);
@@ -99,6 +108,10 @@ test('health and role-isolated membership and payment journey',async()=>{
  const account=await request('/gym-account','GET',null,ownerToken);
  assert.equal(account.status,200);
  assert.equal(account.data.whatsapp_enabled,false);
+ assert.equal(account.data.timezone,'Asia/Karachi');
+ assert.equal((await request('/gym-account/timezone','PUT',{timezone:'invalid'},ownerToken)).status,400);
+ assert.equal((await request('/gym-account/timezone','PUT',{timezone:'UTC'},trainer.data.token)).status,403);
+ assert.equal((await request('/gym-account/timezone','PUT',{timezone:'Asia/Karachi'},ownerToken)).status,200);
  if(!account.data.whatsapp_configured){
    assert.equal((await request('/gym-account/whatsapp','PUT',{enabled:true},ownerToken)).status,409);
  }
@@ -115,12 +128,33 @@ test('health and role-isolated membership and payment journey',async()=>{
  assert.equal((await request('/public-checkin','POST',{gate,code:enrolled.data.attendance_code})).status,409);
  assert.equal((await request('/attendance/code','POST',{code:enrolled.data.attendance_code},ownerToken)).status,409);
  assert.equal((await request(enrolledFreeze,'DELETE',null,ownerToken)).status,204);
- assert.equal((await request('/public-checkin','POST',{gate,code:enrolled.data.attendance_code})).status,201);
+ const checkIns=await Promise.all([
+   request('/public-checkin','POST',{gate,code:enrolled.data.attendance_code}),
+   request('/attendance/code','POST',{code:enrolled.data.attendance_code},ownerToken)
+ ]);
+ assert.deepEqual(checkIns.map(result=>result.status).sort(),[201,409]);
  const attendance=await request('/attendance','GET',null,ownerToken);
  assert.equal(attendance.status,200);
  assert.equal(attendance.data.find(entry=>entry.member_id===enrolled.data.id)?.full_name,'Enrolled Member');
 
- const trendPath='/attendance-trends?timezone=Asia%2FKarachi';
+ const scopedMemberships=await request('/memberships?member_id='+enrolled.data.id,'GET',null,ownerToken);
+ assert.equal(scopedMemberships.status,200);
+ assert.equal(scopedMemberships.data.length,1);
+ assert.ok(scopedMemberships.data.every(row=>row.member_id===enrolled.data.id));
+ assert.deepEqual((await request('/memberships?member_id='+enrolled.data.id,'GET',null,otherOwner.data.token)).data,[]);
+ for(const [kind,field] of [['workouts','exercises'],['diets','meals']]){
+   const data={member_id:enrolled.data.id,title:'Trainer assignment test',[field]:[{name:'Test'}]};
+   assert.equal((await request('/'+kind,'POST',data,trainer.data.token)).status,404);
+   assert.equal((await request('/'+kind,'POST',data,ownerToken)).status,201);
+   assert.deepEqual((await request('/'+kind,'GET',null,trainer.data.token)).data,[]);
+   assert.equal((await request('/members/'+enrolled.data.id,'PATCH',{trainer_id:staff.data.id},ownerToken)).status,200);
+   assert.equal((await request('/'+kind,'GET',null,trainer.data.token)).data.length,1);
+   assert.equal((await request('/'+kind,'POST',data,trainer.data.token)).status,201);
+   assert.equal((await request('/members/'+enrolled.data.id,'PATCH',{trainer_id:null},ownerToken)).status,200);
+ }
+ const todayReport=await request('/report','GET',null,ownerToken);
+ assert.equal(todayReport.data.attendance,attendance.data.length);
+ const trendPath='/attendance-trends?timezone=America%2FLos_Angeles';
  const weekly=await request(trendPath,'GET',null,ownerToken);
  assert.equal(weekly.status,200);
  assert.equal(weekly.data.timezone,'Asia/Karachi');

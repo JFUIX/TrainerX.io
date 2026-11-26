@@ -314,6 +314,10 @@ const navIcons={
 const navIcon=id=>navIcons[id]?'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">'+navIcons[id]+'</svg>':'';
 const option=(value,label,selected)=>'<option value="'+safe(value)+'" '+(selected===value?'selected':'')+'>'+safe(label)+'</option>';
 function localDay(date=new Date()){
+  if(me?.timezone){
+    const parts=new Intl.DateTimeFormat('en',{timeZone:me.timezone,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(date);
+    return ['year','month','day'].map(type=>parts.find(part=>part.type===type).value).join('-');
+  }
   return [date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-');
 }
 function download(name,type,contents){
@@ -353,13 +357,14 @@ async function render({enrollMember=false}={}){
   const navView=me.role==='owner'&&['Alerts','Workouts'].includes(view)?'Insight':view;
   notice('');$('#nav').innerHTML=views[me.role].map(v=>'<button class="'+(navView===v?'active':'')+'" data-view="'+safe(v)+'"'+(navView===v?' aria-current="page"':'')+'>'+navIcon(v)+safe(pageLabel(v))+'</button>').join('');const el=$('#content');el.innerHTML='<p>Loading…</p>';try{
 if(view==='Alerts'){
-  const alerts=await api('/alerts');
+  const [alerts,delivery]=await Promise.all([api('/alerts'),api('/reminder-status').catch(()=>null)]);
   el.innerHTML='<h1>Member alerts</h1><p>Expiries in the next seven days and unpaid balances from previous billing months.</p>'+
     [['expiry','Expiring memberships'],['overdue','Overdue fees']].map(([kind,title])=>
       '<section class="card"><h2>'+title+'</h2>'+rows(alerts.filter(a=>a.kind===kind),a=>
         '<div class="item"><b>'+safe(a.full_name||a.email)+'</b><p>'+
         (kind==='expiry'?'Expires '+safe(a.due_on):'Overdue '+safe(a.currency)+' '+safe(a.amount)+' · Through '+safe(a.due_on.slice(0,7)))+
-        '</p></div>')+'</section>').join('');
+        '</p></div>')+'</section>').join('')+
+    '<section class="card"><h2>WhatsApp delivery</h2><p>'+safe(reminderSummary(delivery))+'</p></section>';
 }
 if(view==='Financials'){
   const today=localDay();
@@ -434,10 +439,10 @@ if(view==='Financials'){
   $('#exportFinance').onclick=()=>downloadCsv('trainerx-financials-'+dates.from+'-'+dates.to+'.csv',
     ['date','type','category','description','amount','currency'],
     report.entries.map(r=>[r.date,r.type,r.category,r.description,r.amount,account.currency]));
-  bind('expenseForm',data=>api('/expenses','POST',{...data,amount:Number(data.amount)}));
+  bind('expenseForm',data=>api('/expenses','POST',{...data,amount:Number(data.amount)}),{financial:true});
 }
 if(view==='Insight'){
-  const attendanceTrendUrl='/attendance-trends?'+new URLSearchParams({timezone:Intl.DateTimeFormat().resolvedOptions().timeZone});
+  const attendanceTrendUrl='/attendance-trends';
   const [report,insights,trends,account,attendance,attendanceTrend]=await Promise.all([
     api('/report'),api('/business-insights'),api('/membership-trends'),
     api('/gym-account').catch(()=>null),api('/attendance').catch(()=>null),api(attendanceTrendUrl).catch(()=>null)
@@ -657,7 +662,77 @@ if(view==='Trainer Clients'){const members=await api('/members');el.innerHTML='<
 if(view==='Attendance'||view==='My attendance'){const a=await api('/attendance');el.innerHTML='<h1>Today’s attendance</h1>'+((me.role==='owner'||me.role==='reception')?'<form id="codeCheckinForm" class="card form"><label>4-digit member attendance code<input name="code" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" minlength="4" autocomplete="off" required placeholder="0000"></label><button class="primary">Check In</button></form>':'')+'<div class="card">'+rows(a,x=>'<div class="item">'+safe(x.email)+' <span class="badge">'+safe(new Date(x.checked_at).toLocaleTimeString())+'</span></div>')+'</div>';if($('#codeCheckinForm'))bind('codeCheckinForm',async d=>{const result=await api('/attendance/code','POST',d);notice(result.name+' checked in')})}
 
 if(view==='Members'&&['owner','reception'].includes(me.role)){const {members:m,plans:p,memberships:a}=memberData;const membersById=new Map(m.map(member=>[member.id,member]));const opts=(items,label)=>items.map(x=>'<option value="'+safe(x.id)+'">'+safe(label(x))+'</option>').join('');$('#memberAttention').insertAdjacentHTML('beforebegin','<section id="renewalSection" class="hidden"><h2 style="margin-top:30px">Renew / Change Plan</h2><p>New members receive their plan automatically at enrollment. Use this form only for renewals or plan changes.</p><form id="membershipForm" class="card form"><label>Find Member<input id="renewalMemberSearch" placeholder="Name or Member ID" autocomplete="off"></label><label>Member<select name="member_id" required><option value="">Select member</option>'+opts(m,x=>(x.membership_no?'#'+x.membership_no+' · ':'')+(x.full_name||x.email))+'</select></label><label>Plan<select name="plan_id" required><option value="">Select plan</option>'+opts(p,x=>x.name+' · '+x.months+' mo · '+x.price+' PKR')+'</select></label><label>Start Date<input name="starts_on" type="date" required></label><label>Fee (PKR)<input id="renewFee" readonly></label><label>Duration<input id="renewDuration" readonly></label><button class="primary" type="submit">Renew / Change Plan</button></form><div class="card">'+rows(a,x=>'<div class="item"><b>'+safe(x.full_name||x.email)+'</b> · #'+safe(x.membership_no||'—')+' · '+safe(x.plan)+'<p>'+safe(String(x.starts_on).slice(0,10))+' to '+safe(String(x.ends_on).slice(0,10))+' · Paid '+safe(x.paid)+' / '+safe(x.price)+'</p></div>')+'</div></section>');const fm=$('#membershipForm');const updatePlan=()=>{const p0=p.find(x=>x.id===fm.elements.plan_id.value);$('#renewFee').value=p0?p0.price:'';$('#renewDuration').value=p0?p0.months+' months':''};fm.elements.plan_id.addEventListener('change',updatePlan);fm.elements.member_id.addEventListener('change',()=>{const x=a.filter(x=>x.member_id===fm.elements.member_id.value&&!x.cancelled_on).sort((a,b)=>String(b.ends_on).localeCompare(String(a.ends_on)))[0];if(x){fm.elements.plan_id.value=x.plan_id;const next=new Date(String(x.ends_on).slice(0,10)+'T12:00:00Z');next.setUTCDate(next.getUTCDate()+1);const today=new Date().toISOString().slice(0,10);fm.elements.starts_on.value=next.toISOString().slice(0,10)>today?next.toISOString().slice(0,10):today}else fm.elements.starts_on.value=new Date().toISOString().slice(0,10);updatePlan()});$('#renewalMemberSearch').addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();for(const opt of fm.elements.member_id.options){if(!opt.value)continue;const x=membersById.get(opt.value);opt.hidden=!!q&&!((x?.full_name||'').toLowerCase().includes(q)||(x?.email||'').toLowerCase().includes(q)||String(x?.membership_no||'').includes(q))}});bind('membershipForm',async d=>api('/memberships','POST',d));window.openRenewalFor=id=>{const member=membersById.get(id);if(!member)return;$('#renewalSection').classList.remove('hidden');fm.elements.member_id.value=id;fm.elements.member_id.dispatchEvent(new Event('change'));$('#renewalSection').scrollIntoView({behavior:'smooth',block:'start'})};$('#memberAttention').querySelectorAll('[data-renew]').forEach(b=>b.onclick=()=>window.openRenewalFor(b.dataset.renew))}
-if(view==='Fees'){const [members,m,fees]=await Promise.all([api('/members'),api('/memberships'),api('/fees')]);el.innerHTML='<h1>'+safe(pageLabel(view))+'</h1><p>Find a member, choose the pending billing month and record the amount received.</p><form id="feeForm" class="card form"><div style="grid-column:1/-1"><label>Find member by name, membership number or phone<input id="feeMemberSearch" type="search" autocomplete="off" placeholder="Type name, member ID or phone number" aria-controls="feeMemberResults"></label><div id="feeMemberResults" class="card" style="max-height:250px;overflow-y:auto;margin-top:8px"></div><p id="feeSelectedMember" class="sub" aria-live="polite"></p></div><input type="hidden" name="membership_id" required><label>Billing month<select name="billing_month" required disabled><option value="">Select a member first</option></select></label><label>Amount received (PKR)<input name="amount" type="number" min="0.01" step="0.01" required placeholder="Enter amount paid"></label><label>Method<select name="method"><option value="cash">Cash</option><option value="bank_transfer">Bank Transfer</option><option value="online_payment">Online Payment</option></select></label><p id="billingHint" class="sub" style="grid-column:1/-1"></p><button class="primary" type="submit">Record payment</button></form><div class="card"><h2>Recent payments</h2>'+rows(fees,x=>'<div class="item"><b>'+safe(x.email)+'</b> · PKR '+safe(x.amount)+' · '+safe(x.method)+'<p>Billing month: '+safe(x.billing_month||'Not recorded (legacy)')+' · '+safe(new Date(x.paid_at).toLocaleString())+' · Receipt ID '+safe(x.id)+'</p><button class="secondary" data-receipt="'+safe(x.id)+'">Print receipt</button> <button class="secondary" data-receipt="'+safe(x.id)+'" data-download-receipt>Download receipt</button></div>')+'</div>';const fm=$('#feeForm'),search=$('#feeMemberSearch'),results=$('#feeMemberResults');let billing=null,billingRequest=0;const matches=()=>{const q=search.value.trim().toLowerCase();const list=members.filter(x=>!q||[x.full_name,x.membership_no,x.phone,x.email].some(v=>String(v||'').toLowerCase().includes(q))).slice(0,30);results.innerHTML=list.length?list.map(x=>'<button type="button" class="secondary" data-fee-member="'+safe(x.id)+'" style="display:block;width:100%;text-align:left;margin:5px 0"><b>'+safe(x.full_name||x.email)+'</b> · #'+safe(x.membership_no||'—')+' · '+safe(x.phone||'No phone')+'</button>').join(''):'<p>No matching members found.</p>';results.querySelectorAll('[data-fee-member]').forEach(btn=>btn.onclick=()=>chooseMember(btn.dataset.feeMember))};const chooseMember=async id=>{const requestId=++billingRequest;const x=members.find(v=>v.id===id);if(!x)return;const memberships=m.filter(v=>v.member_id===id).sort((a,b)=>String(b.ends_on).localeCompare(String(a.ends_on)));const selected=memberships.find(v=>Number(v.price)>Number(v.paid)+0.001)||memberships[0];search.value=x.full_name||x.email;results.innerHTML='';$('#feeSelectedMember').textContent='Selected: '+(x.full_name||x.email)+' · Member #'+(x.membership_no||'—')+(selected?' · '+selected.plan:' · No membership');fm.elements.membership_id.value=selected?.id||'';fm.elements.billing_month.disabled=true;fm.elements.billing_month.innerHTML='<option value="">Loading billing months...</option>';billing=null;$('#billingHint').textContent='';if(!selected){fm.elements.billing_month.innerHTML='<option value="">This member has no membership</option>';return}try{const schedule=await api('/fees/billing?membership_id='+encodeURIComponent(selected.id));if(requestId!==billingRequest)return;billing=schedule;fm.elements.billing_month.disabled=false;fm.elements.billing_month.innerHTML=billing.schedule.map(v=>'<option value="'+safe(v.month)+'" '+(billing.next?.month===v.month?'selected':'')+'>'+safe(new Date(v.month+'-01T12:00:00Z').toLocaleDateString('en-US',{month:'long',year:'numeric',timeZone:'UTC'}))+' · '+safe(v.status)+'</option>').join('');if(!billing.schedule.length)fm.elements.billing_month.innerHTML='<option value="">No billing months available</option>';updateHint()}catch(err){if(signal.aborted||requestId!==billingRequest)return;fm.elements.billing_month.innerHTML='<option value="">Unable to load months</option>';notice(err.message,true)}};const updateHint=()=>{const v=billing?.schedule.find(x=>x.month===fm.elements.billing_month.value);$('#billingHint').textContent=v?'Status: '+v.status+' · Monthly fee PKR '+v.amount.toFixed(2)+' · Already paid PKR '+v.paid.toFixed(2)+' · Remaining PKR '+v.due.toFixed(2):'';fm.elements.amount.removeAttribute('max');const available=billing?.schedule.filter((x,i,all)=>i>=all.findIndex(y=>y.month===fm.elements.billing_month.value)).reduce((sum,x)=>sum+x.due,0)||0;$('#billingHint').textContent+=(available>0?' · Available for this and future months PKR '+available.toFixed(2):'')};search.oninput=()=>{billingRequest++;fm.elements.membership_id.value='';fm.elements.billing_month.disabled=true;fm.elements.billing_month.innerHTML='<option value="">Select a member first</option>';$('#feeSelectedMember').textContent='';$('#billingHint').textContent='';billing=null;matches()};search.onfocus=matches;fm.elements.billing_month.onchange=updateHint;matches();bind('feeForm',async d=>api('/fees','POST',{...d,amount:Number(d.amount)}))}
+if(view==='Fees'){const [members,fees]=await Promise.all([api('/members'),api('/fees')]);el.innerHTML='<h1>'+safe(pageLabel(view))+'</h1><p>Find a member, choose the pending billing month and record the amount received.</p><form id="feeForm" class="card form"><div style="grid-column:1/-1"><label>Find member by name, membership number or phone<input id="feeMemberSearch" type="search" autocomplete="off" placeholder="Type name, member ID or phone number" aria-controls="feeMemberResults"></label><div id="feeMemberResults" class="card" style="max-height:250px;overflow-y:auto;margin-top:8px"></div><p id="feeSelectedMember" class="sub" aria-live="polite"></p></div><label>Membership<select name="membership_id" required disabled><option value="">Select a member first</option></select></label><label>Billing month<select name="billing_month" required disabled><option value="">Select a member first</option></select></label><label>Amount received (PKR)<input name="amount" type="number" min="0.01" step="0.01" required placeholder="Enter amount paid"></label><label>Method<select name="method"><option value="cash">Cash</option><option value="bank_transfer">Bank Transfer</option><option value="online_payment">Online Payment</option></select></label><p id="billingHint" class="sub" style="grid-column:1/-1"></p><button class="primary" type="submit">Record payment</button></form><div class="card"><h2>Recent payments</h2>'+rows(fees,x=>'<div class="item"><b>'+safe(x.email)+'</b> · PKR '+safe(x.amount)+' · '+safe(x.method)+'<p>Billing month: '+safe(x.billing_month||'Not recorded (legacy)')+' · '+safe(new Date(x.paid_at).toLocaleString())+' · Receipt ID '+safe(x.id)+'</p><button class="secondary" data-receipt="'+safe(x.id)+'">Print receipt</button> <button class="secondary" data-receipt="'+safe(x.id)+'" data-download-receipt>Download receipt</button></div>')+'</div>';const fm=$('#feeForm'),search=$('#feeMemberSearch'),results=$('#feeMemberResults');let billing=null,billingRequest=0;const matches=()=>{const q=search.value.trim().toLowerCase();const list=members.filter(x=>!q||[x.full_name,x.membership_no,x.phone,x.email].some(v=>String(v||'').toLowerCase().includes(q))).slice(0,30);results.innerHTML=list.length?list.map(x=>'<button type="button" class="secondary" data-fee-member="'+safe(x.id)+'" style="display:block;width:100%;text-align:left;margin:5px 0"><b>'+safe(x.full_name||x.email)+'</b> · #'+safe(x.membership_no||'—')+' · '+safe(x.phone||'No phone')+'</button>').join(''):'<p>No matching members found.</p>';results.querySelectorAll('[data-fee-member]').forEach(btn=>btn.onclick=()=>chooseMember(btn.dataset.feeMember))};const membershipField=fm.elements.membership_id,monthField=fm.elements.billing_month;
+const clearBilling=label=>{
+  billing=null;
+  monthField.disabled=true;
+  monthField.innerHTML='<option value="">'+safe(label)+'</option>';
+  updateHint();
+};
+const loadBilling=async()=>{
+  const requestId=++billingRequest;
+  const id=membershipField.value;
+  clearBilling(id?'Loading billing months…':'Select a membership first');
+  if(!id)return;
+  try{
+    const schedule=await api('/fees/billing?membership_id='+encodeURIComponent(id));
+    if(requestId!==billingRequest)return;
+    billing=schedule;
+    const unpaid=billing.schedule.filter(period=>period.due>0);
+    monthField.disabled=!unpaid.length;
+    monthField.innerHTML=unpaid.length?unpaid.map(period=>option(period.month,
+      new Date(period.month+'-01T12:00:00Z').toLocaleDateString('en-US',{month:'long',year:'numeric',timeZone:'UTC'})+' · '+period.status,
+      billing.next?.month)).join(''):'<option value="">No unpaid billing months</option>';
+    updateHint();
+  }catch(error){
+    if(signal.aborted||requestId!==billingRequest)return;
+    clearBilling('Unable to load billing months');
+    notice(error.message,true);
+  }
+};
+const chooseMember=async id=>{
+  const requestId=++billingRequest;
+  const member=members.find(record=>record.id===id);
+  if(!member)return;
+  search.value=member.full_name||member.email;
+  results.innerHTML='';
+  $('#feeSelectedMember').textContent='Selected: '+(member.full_name||member.email)+' · Member #'+(member.membership_no||'—');
+  membershipField.disabled=true;
+  membershipField.innerHTML='<option value="">Loading memberships…</option>';
+  clearBilling('Select a membership first');
+  try{
+    const memberships=await api('/memberships?member_id='+encodeURIComponent(id));
+    if(requestId!==billingRequest)return;
+    const unpaid=memberships.filter(record=>Number(record.price)>Number(record.paid)+0.001);
+    membershipField.disabled=!unpaid.length;
+    membershipField.innerHTML=unpaid.length?unpaid.map(record=>option(record.id,
+      record.plan+' · '+record.starts_on+' – '+record.ends_on+(record.cancelled_on?' · Cancelled':''),unpaid[0].id)).join(''):
+      '<option value="">No memberships with a balance</option>';
+    if(unpaid.length)await loadBilling();
+  }catch(error){
+    if(signal.aborted||requestId!==billingRequest)return;
+    membershipField.innerHTML='<option value="">Unable to load memberships</option>';
+    notice(error.message,true);
+  }
+};
+const updateHint=()=>{const v=billing?.schedule.find(x=>x.month===fm.elements.billing_month.value);$('#billingHint').textContent=v?'Status: '+v.status+' · Monthly fee PKR '+v.amount.toFixed(2)+' · Already paid PKR '+v.paid.toFixed(2)+' · Remaining PKR '+v.due.toFixed(2):'';fm.elements.amount.removeAttribute('max');const available=billing?.schedule.filter((x,i,all)=>i>=all.findIndex(y=>y.month===fm.elements.billing_month.value)).reduce((sum,x)=>sum+x.due,0)||0;$('#billingHint').textContent+=(available>0?' · Available for this and future months PKR '+available.toFixed(2):'')};search.oninput=()=>{
+  billingRequest++;
+  membershipField.disabled=true;
+  membershipField.innerHTML='<option value="">Select a member first</option>';
+  $('#feeSelectedMember').textContent='';
+  clearBilling('Select a member first');
+  matches();
+};
+search.onfocus=matches;
+membershipField.onchange=loadBilling;
+monthField.onchange=updateHint;
+matches();
+bind('feeForm',async data=>{
+  if(!billing||!data.membership_id||!data.billing_month)throw Error('Select a membership and an unpaid billing month.');
+  return api('/fees','POST',{...data,amount:Number(data.amount)});
+},{financial:true});
+}
+
 if(view==='Gate QR'){el.innerHTML='<div class="kiosk" id="kiosk"><div class="kiosk-top"><div class="kiosk-logo">TX</div><div><div class="kiosk-overline">TRAINERX · GYM ENTRANCE</div><h1 id="kioskName">Welcome to your gym</h1><p>Scan with your phone camera · Enter your 4-digit attendance code</p></div></div><div class="kiosk-main"><div class="kiosk-qr"><img id="gateImage" width="360" height="360" alt="Rotating gym entrance QR code"></div><div class="kiosk-side"><div class="kiosk-live">● LIVE CHECK-IN</div><h2>Ready to train?</h2><p>No app. No login. Just scan, enter your code, and get moving.</p><div id="gateCountdown" class="kiosk-countdown">Updating QR…</div><p id="gateExpiry" class="sub"></p><button class="secondary" id="kioskFull">⛶ Full screen</button></div></div><div class="kiosk-foot"><span>POWERED BY TRAINERX.IO</span><span>SECURE · ROTATING QR</span></div></div>';$('#kioskFull').onclick=()=>{const k=$('#kiosk');if(!document.fullscreenElement)k.requestFullscreen?.().catch(()=>notice('Full screen unavailable',true));else document.exitFullscreen?.()};let expiry=0,refreshing=false;const tick=()=>{if(view!=='Gate QR')return;$('#gateCountdown').textContent=expiry?'QR refresh in '+Math.max(0,Math.ceil((expiry-Date.now())/1000))+'s':'Updating QR…'};const refresh=async()=>{if(refreshing)return;refreshing=true;try{const x=await api('/gate-qr');if(view==='Gate QR'){$('#gateImage').src=x.qr;expiry=new Date(x.expires_at).getTime();$('#gateExpiry').textContent='Valid until '+new Date(x.expires_at).toLocaleTimeString();$('#kioskName').textContent=x.gym?.name||'Welcome to your gym'}}catch(e){if(!signal.aborted)notice(e.message,true)}finally{refreshing=false}};await refresh();if(signal.aborted)return;tick();gateTimer=setInterval(()=>{tick();if(Date.now()>=expiry)refresh()},1000)}
 
 if(view==='Scan QR'){el.innerHTML='<h1>Scan entrance QR</h1><p>Camera scanning requires HTTPS (or localhost) and a browser supporting BarcodeDetector. Alternatively, paste the QR content.</p><div class="card"><video id="scanVideo" autoplay playsinline muted style="width:100%;max-width:420px"></video><div class="row"><button class="primary" id="startScan">Start camera</button><button class="secondary" id="stopScan">Stop camera</button></div></div>'+form([['code','QR content']],'scanForm','Check in');bind('scanForm',async d=>api('/gate-checkin','POST',d));$('#stopScan').onclick=()=>{if(scannerStream){scannerStream.getTracks().forEach(t=>t.stop());scannerStream=null}};$('#startScan').onclick=async()=>{if(!('BarcodeDetector' in window)){notice('Camera QR detection unavailable in this browser. Use QR content input.',true);return}try{const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});if(signal.aborted||scannerStream){stream.getTracks().forEach(t=>t.stop());return}scannerStream=stream;const video=$('#scanVideo');video.srcObject=scannerStream;await video.play();const detector=new BarcodeDetector({formats:['qr_code']});const scan=async()=>{if(scannerStream!==stream||signal.aborted)return;try{const codes=await detector.detect(video);if(codes.length&&scannerStream===stream&&!signal.aborted){$('#scanForm [name=code]').value=codes[0].rawValue;scannerStream.getTracks().forEach(t=>t.stop());scannerStream=null;$('#scanForm').requestSubmit();return}}catch{}setTimeout(scan,300)};scan()}catch(e){notice(e.message,true)}}}
@@ -758,8 +833,8 @@ function renderTrendChart(id,label,points,series,{categorical=false,minStep=1}={
 function startDashboardClock(clock,signal){
   const dateNode=clock.querySelector('.dashboard-clock-date');
   const timeNode=clock.querySelector('.dashboard-clock-time');
-  const dateFormat=new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'long',year:'numeric'});
-  const timeFormat=new Intl.DateTimeFormat('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
+  const dateFormat=new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'long',year:'numeric',timeZone:me.timezone});
+  const timeFormat=new Intl.DateTimeFormat('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23',timeZone:me.timezone});
   let timer;
   function tick(){
     const now=new Date();
@@ -1033,12 +1108,18 @@ function renderDashboardCheckIn(panel,attendance,api,signal,activeMembers,refres
   };
 }
 
+function reminderSummary(delivery){
+  if(!delivery)return 'Unable to load delivery status.';
+  if(!delivery.whatsapp_configured)return 'WhatsApp setup is needed.';
+  const statuses={sent:'accepted by WhatsApp',failed:'failed',sending:'sending',retrying:'scheduled for retry'};
+  return delivery.reminders.length?'Last 30 days · '+delivery.reminders.map(row=>row.total+' '+statuses[row.status]).join(' · '):
+    'No reminder attempts in the last 30 days.';
+}
 function renderDashboardAccount(panel,account,api,signal){
   if(!account){
     panel.innerHTML='<h2>Gym account</h2><p>Unable to load gym settings.</p>';
     return;
   }
-  const deliveryStatus={sent:'accepted by WhatsApp',failed:'failed',sending:'pending or interrupted'};
   const whatsappState=enabled=>account.whatsapp_configured?(enabled?'On':'Off'):'Setup needed';
   panel.innerHTML='<details class="insight-disclosure">'+
     '<summary><div><span class="insight-disclosure-title">Gym account</span><span class="insight-period">'+
@@ -1048,12 +1129,14 @@ function renderDashboardAccount(panel,account,api,signal){
     '<div class="insight-disclosure-body"><form id="gymAccountName" class="insight-account-form">'+
     '<label>Gym name<input name="name" maxlength="120" value="'+safe(account.name)+'" required></label>'+
     '<button class="secondary">Save gym name</button></form><p data-gym-name-status role="status"></p>'+
+    '<form id="gymTimezone" class="insight-account-form"><label>Gym time zone<input name="timezone" maxlength="80" spellcheck="false" value="'+safe(account.timezone)+'" placeholder="Asia/Karachi" required></label>'+
+    '<button class="secondary">Save time zone</button></form><p data-timezone-status role="status"></p>'+
     '<h3>WhatsApp reminders</h3>'+
     '<p>Configured reminders go only to opted-in members.</p>'+
     (account.whatsapp_fee_due_configured?
       '<p>Unpaid fees get a reminder within three days before the billing period ends, followed by overdue reminders when applicable.</p>':
       '<p>Add the approved fee-due template to send reminders before a payment is due.</p>')+
-    (account.reminders.length?'<p>Last 30 days · '+account.reminders.map(r=>safe(r.total)+' '+safe(deliveryStatus[r.status])).join(' · ')+'</p>':'')+
+    '<p>'+safe(reminderSummary(account))+'</p>'+
     (account.whatsapp_configured?'':'<p>Connect a WhatsApp Business sender and approved templates to turn on reminders.</p>')+
     '<form id="whatsappSettings" class="insight-account-form"><label>Automated reminders<select name="enabled">'+
     option('false','Off',String(account.whatsapp_enabled))+
@@ -1074,6 +1157,22 @@ function renderDashboardAccount(panel,account,api,signal){
       nameForm.elements.name.value=name;
       nameStatus.textContent='Gym name saved.';
     }catch(error){if(!signal.aborted)nameStatus.textContent=error.message}
+    finally{save.disabled=false}
+  };
+  const timezoneForm=panel.querySelector('#gymTimezone');
+  const timezoneStatus=panel.querySelector('[data-timezone-status]');
+  timezoneForm.onsubmit=async event=>{
+    event.preventDefault();
+    const save=timezoneForm.querySelector('button');
+    if(save.disabled)return;
+    save.disabled=true;
+    try{
+      const {timezone}=await api('/gym-account/timezone','PUT',{timezone:timezoneForm.elements.timezone.value.trim()});
+      me.timezone=timezone;
+      financeDates=null;
+      await render();
+      notice('Gym time zone saved.');
+    }catch(error){if(!signal.aborted)timezoneStatus.textContent=error.message}
     finally{save.disabled=false}
   };
   const badge=panel.querySelector('.insight-account-state');
@@ -1189,19 +1288,36 @@ async function renderMemberAccess(panel,member,api,signal,updateList){
     if(!signal.aborted&&loading.isConnected)panel.textContent=error.message;
   }
 }
-function bind(id,handler){bindForm($('#'+id),handler)}
-function bindForm(node,handler){
+function bind(id,handler,options){bindForm($('#'+id),handler,options)}
+function bindForm(node,handler,{financial=false}={}){
   const controller=renderController;
-  node.addEventListener('submit',async e=>{
-    e.preventDefault();
+  let pending=false;
+  let previous;
+  node.addEventListener('submit',async event=>{
+    event.preventDefault();
+    if(pending)return;
+    pending=true;
+    const submitters=[...node.querySelectorAll('button:not([type]),button[type="submit"],input[type="submit"]')].filter(button=>!button.disabled);
+    submitters.forEach(button=>button.disabled=true);
+    const data=formData(node);
     try{
-      await handler(formData(e.target));
+      if(financial){
+        const payload=JSON.stringify(data);
+        if(previous?.payload!==payload)previous={payload,id:crypto.randomUUID()};
+        data.request_id=previous.id;
+      }
+      await handler(data);
+      previous=undefined;
       if(controller.signal.aborted)return;
       const rendering=render();
       const updatedView=renderController;
       await rendering;
       if(!updatedView.signal.aborted)notice('Saved successfully');
-    }catch(err){if(!controller.signal.aborted)notice(err.message,true)}
+    }catch(error){if(!controller.signal.aborted)notice(error.message,true)}
+    finally{
+      pending=false;
+      submitters.forEach(button=>button.disabled=false);
+    }
   });
 }
 $('#content').addEventListener('click',async e=>{const button=e.target.closest('[data-receipt]');if(!button)return;
