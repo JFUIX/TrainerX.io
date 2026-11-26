@@ -2,7 +2,7 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#171719"><link rel="stylesheet" href="/theme.css"><title>TrainerX | Gym Management Suite</title><style>
 *{box-sizing:border-box}body{margin:0}button{cursor:pointer;border:0;border-radius:10px;padding:12px 16px;font-weight:700}button.primary{background:var(--tx-accent);color:var(--tx-accent-ink)}button.secondary{background:#333034;color:white}.shell{max-width:1120px;margin:auto;padding:28px 18px}header{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid var(--tx-line);padding-bottom:20px}.logo{font-size:23px;font-weight:900;letter-spacing:-1px}.logo span{color:var(--tx-accent)}.sub{color:var(--tx-muted);font-size:13px}.grid{display:grid;grid-template-columns:220px 1fr;gap:24px;margin-top:24px}nav{display:flex;flex-direction:column;gap:8px}nav button{text-align:left;background:transparent;color:var(--tx-muted)}main{min-width:0}.card{background:var(--tx-panel);border:1px solid var(--tx-line);border-radius:16px;padding:22px;margin:16px 0}.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.metric strong{font-size:32px;display:block;color:var(--tx-accent)}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.form>*{min-width:0}label{display:flex;flex-direction:column;gap:7px;font-size:13px;color:var(--tx-muted)}input,select,textarea{width:100%;padding:12px;border-radius:10px;background:var(--tx-control);border:1px solid var(--tx-line);color:#fff}h1{font-size:30px;margin:8px 0}h2{font-size:19px}p{color:var(--tx-muted)}.item{padding:14px 0;border-bottom:1px solid var(--tx-line);overflow-wrap:anywhere}.item:last-child{border:0}.badge{display:inline-block;padding:4px 9px;border-radius:8px;background:#382723;color:var(--tx-accent-soft);font-size:12px}.error{color:#ff9f9f}.success{color:var(--tx-accent)}#notice{min-height:24px}#login{max-width:430px;margin:10vh auto}.hidden{display:none!important}@media(max-width:720px){.grid{display:block}nav{flex-direction:row;overflow-x:auto;padding:12px 0}nav button{white-space:nowrap}.metrics{grid-template-columns:1fr 1fr}.form{grid-template-columns:1fr}.shell{padding:16px}}
 
-.dashboard-hero{padding:25px;border-radius:20px;background:radial-gradient(circle at 92% 12%,#4d3028 0,transparent 46%),linear-gradient(130deg,var(--tx-panel),var(--tx-control));border:1px solid var(--tx-line);margin:12px 0 18px}.dashboard-hero h1{font-size:clamp(27px,4vw,38px);letter-spacing:-1.2px}.dashboard-hero p{margin:7px 0 0}.dash-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.dash-kpi{margin:0;min-height:125px;background:linear-gradient(145deg,var(--tx-panel),var(--tx-control));position:relative;overflow:hidden}.dash-kpi:before{content:'';position:absolute;pointer-events:none;right:-28px;top:-36px;width:105px;height:105px;border-radius:50%;background:color-mix(in srgb,var(--tx-accent) 5%,transparent)}.dash-kpi .kpi-label{font-size:12px;color:var(--tx-muted);font-weight:600}.dash-kpi strong{font-size:clamp(22px,3vw,32px);display:block;margin:14px 0 3px;letter-spacing:-1px;color:var(--tx-text)}.dash-kpi.accent strong{color:var(--tx-accent)}.dash-kpi small{font-size:11px;color:var(--tx-muted)}.dash-panels{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}.dash-panels .card{margin:0}.dash-panel-head{display:flex;justify-content:space-between;align-items:center;gap:8px}.dash-panel-head h2{margin:0}.dash-chart{height:154px;display:flex;align-items:end;gap:10px;padding-top:18px}.dash-chart .bar-col{flex:1;min-width:0;text-align:center;display:flex;flex-direction:column;justify-content:end;height:100%;gap:6px}.dash-chart .bar{width:100%;border-radius:6px 6px 2px 2px;min-height:3px;background:linear-gradient(0deg,#b54a2d,var(--tx-accent))}.dash-chart .bar-col span{font-size:10px;color:var(--tx-muted)}.dash-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:15px}.dash-action{background:var(--tx-panel);border:1px solid var(--tx-line);color:var(--tx-text);text-align:left;font-size:12px;padding:14px}.dash-action strong{display:block;color:var(--tx-accent);font-size:22px;margin-bottom:3px}.dash-action:hover{border-color:var(--tx-accent)}.dash-feed{display:flex;justify-content:space-between;gap:10px;font-size:13px}.dash-feed time{color:var(--tx-muted);white-space:nowrap}@media(max-width:850px){.dash-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.dash-panels{grid-template-columns:1fr}}@media(max-width:450px){.dash-kpi{padding:15px;min-height:112px}.dash-chart{gap:6px}.dashboard-hero{padding:20px}}
+.dashboard-hero{padding:25px;border-radius:20px;background:radial-gradient(circle at 92% 12%,#4d3028 0,transparent 46%),linear-gradient(130deg,var(--tx-panel),var(--tx-control));border:1px solid var(--tx-line);margin:12px 0 18px}.dashboard-hero h1{font-size:clamp(27px,4vw,38px);letter-spacing:-1.2px}.dashboard-hero p{margin:7px 0 0}.dash-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.dash-kpi{margin:0;min-height:125px;background:linear-gradient(145deg,var(--tx-panel),var(--tx-control));position:relative;overflow:hidden}.dash-kpi:before{content:'';position:absolute;pointer-events:none;right:-28px;top:-36px;width:105px;height:105px;border-radius:50%;background:color-mix(in srgb,var(--tx-accent) 5%,transparent)}.dash-kpi .kpi-label{font-size:12px;color:var(--tx-muted);font-weight:600}.dash-kpi strong{font-size:clamp(22px,3vw,32px);display:block;margin:14px 0 3px;letter-spacing:-1px;color:var(--tx-text)}.dash-kpi.accent strong{color:var(--tx-accent)}.dash-kpi small{font-size:11px;color:var(--tx-muted)}.dash-panels{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}.dash-panels .card{margin:0}.dash-panel-head{display:flex;justify-content:space-between;align-items:center;gap:8px}.dash-panel-head h2{margin:0}.dash-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:15px}.dash-action{background:var(--tx-panel);border:1px solid var(--tx-line);color:var(--tx-text);text-align:left;font-size:12px;padding:14px}.dash-action strong{display:block;color:var(--tx-accent);font-size:22px;margin-bottom:3px}.dash-action:hover{border-color:var(--tx-accent)}.dash-feed{display:flex;justify-content:space-between;gap:10px;font-size:13px}.dash-feed time{color:var(--tx-muted);white-space:nowrap}@media(max-width:850px){.dash-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.dash-panels{grid-template-columns:1fr}}@media(max-width:450px){.dash-kpi{padding:15px;min-height:112px}.dash-chart{gap:6px}.dashboard-hero{padding:20px}}
  .money-line{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.money-line strong{margin:0}.money-toggle{background:#352a2b;color:var(--tx-accent);border:1px solid #68524e;padding:6px 9px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center}.money-toggle:hover{background:#433237}.money-toggle svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.money-value{font-variant-numeric:tabular-nums}
 #memberList{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px;align-items:start}
 .member-card{margin:0;min-width:0;display:grid;gap:14px}
@@ -77,7 +77,7 @@ nav button.active{background:#382723;color:var(--tx-accent-soft);box-shadow:inse
 button.primary:hover{background:var(--tx-accent-hover)}input::placeholder,textarea::placeholder{color:var(--tx-muted);opacity:.8}.member-status,.badge{color:var(--tx-accent-soft)}
 header:after,.member-mini .card:after,.dash-kpi:after,#login:before{background:var(--tx-accent)}
 .dashboard-hero{background:radial-gradient(circle at 90% 12%,color-mix(in srgb,var(--tx-accent) 15%,transparent),transparent 48%),linear-gradient(130deg,var(--tx-panel),var(--tx-control))}
-.dash-chart .bar{background:var(--tx-accent)}.dash-kpi:before{background:color-mix(in srgb,var(--tx-accent) 6%,transparent)}
+.dash-kpi:before{background:color-mix(in srgb,var(--tx-accent) 6%,transparent)}
 button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline-color:var(--tx-accent)}
 .insight{display:grid;gap:16px;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"lead clock" "summary summary" "attendance attendance" "panels panels" "content content"}
 .insight-header{display:flex;align-items:center;justify-content:space-between;gap:12px}
@@ -110,16 +110,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .insight-details .insight-stat{background:#2d292c;border:1px solid #494043;border-radius:10px;padding:10px}
 .insight-details .insight-stat-label{font-size:12px}
 .insight-details .insight-stat strong{font-size:19px}
-.insight .dash-chart{height:145px;padding-top:5px;border-bottom:1px solid #4a4244;background:repeating-linear-gradient(to top,transparent 0 32px,#ffffff0d 32px 33px)}
-.insight .dash-chart .bar{width:min(100%,42px);min-height:0;margin-inline:auto;background:linear-gradient(#666064,#40393d)}
-.insight .dash-chart .is-peak .bar{background:linear-gradient(#ff8558,#bd4d32);box-shadow:0 0 18px #ff74452a}
-.insight .dash-chart span{padding-bottom:6px;color:var(--tx-muted)}
 .insight-months{display:grid;gap:7px;margin-top:14px}
 .insight-months h3{font-size:13px;margin:0}
-.insight-month{display:grid;grid-template-columns:55px 1fr 30px;align-items:center;gap:8px;font-size:12px;color:var(--tx-muted)}
-.insight-month meter{width:100%}
-.insight-month meter::-webkit-meter-optimum-value{background:#ed805a}
-.insight-month b{text-align:right;color:#f8eeea}
 .insight-actions{display:grid;gap:6px}
 .insight-actions button{display:grid;grid-template-columns:minmax(32px,auto) minmax(0,1fr) auto;align-items:center;gap:10px;text-align:left;background:#302a2d;color:#f3eae7;font-size:13px;padding:9px}
 .insight-actions button:hover{background:#433237}
@@ -175,37 +167,21 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .analytics .card{margin:0;border-radius:14px;padding:16px;min-width:0;box-shadow:none}
 .analytics .analytics-total{display:grid;align-content:start;gap:10px;padding:22px 18px}
 .analytics-total span{color:var(--tx-muted);font-size:14px;font-weight:600}
-.analytics-total strong,.analytics-ring strong{line-height:1.1;letter-spacing:-.035em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.analytics-total strong{line-height:1.1;letter-spacing:-.035em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 .analytics-total strong{font-size:clamp(25px,3vw,42px)}
 .analytics-total:first-child{background:linear-gradient(135deg,#743323,#362326);border-color:#9a4d3c}
 .analytics-total:first-child span{color:#ffe5d9}
 .analytics-panel-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:14px}
 .analytics-panel-head h2{margin:0;font-size:18px}
 .analytics .sub{color:var(--tx-muted)}
-.analytics-ring{display:grid;place-items:center;position:relative;width:min(132px,68%);aspect-ratio:1;margin:8px auto 12px;border-radius:50%;background:conic-gradient(var(--expense-segments))}
-.analytics-ring::before{content:'';position:absolute;inset:18%;border-radius:50%;background:var(--tx-panel)}
-.analytics-ring-label{position:relative;display:grid;gap:5px;width:63%;text-align:center}
-.analytics-ring strong{font-size:clamp(13px,1.15vw,16px)}
-.analytics-ring-label span{font-size:11px;color:var(--tx-muted)}
-.analytics-legend{display:grid;gap:8px;list-style:none;margin:0;padding:0}
+.analytics-legend{display:grid;gap:8px;list-style:none;margin:12px 0 0;padding:0}
 .analytics-legend li{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px}
 .analytics-legend li+li{border-top:1px solid var(--tx-line);padding-top:8px}
-.analytics-legend li>span,.analytics-keys span{display:flex;align-items:center;gap:6px}
+.analytics-keys span{display:flex;align-items:center;gap:6px}
 .analytics-swatch{width:8px;height:8px;background:var(--swatch);border-radius:50%;flex:none}
 .analytics-keys{display:flex;flex-wrap:wrap;gap:12px;color:var(--tx-muted);font-size:12px}
-.analytics-chart{--plot-height:124px;margin-top:8px}
-.analytics-chart-details{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;min-height:32px;font-size:12px;color:var(--tx-muted)}
-.analytics-chart-details strong{color:inherit}
-.analytics-chart-body{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px}
-.analytics-chart-axis{display:flex;flex-direction:column;justify-content:space-between;align-items:end;height:var(--plot-height);position:relative;font-size:11px;color:var(--tx-muted);font-variant-numeric:tabular-nums}.analytics-chart-axis span:last-child{position:absolute;top:100%;padding-top:5px}
-.analytics-plot{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);background:repeating-linear-gradient(to top,transparent 0 calc(25% - 1px),#ffffff16 calc(25% - 1px) 25%) top / 100% var(--plot-height) no-repeat}
-.analytics-plot-bucket{min-width:0;border-radius:4px;outline-offset:-2px}
-.analytics-plot-bucket:hover,.analytics-plot-bucket:focus-visible{background:#ffffff0c}
-.analytics-plot-bars{display:flex;align-items:end;justify-content:center;gap:3px;height:var(--plot-height);padding:0 3px;border-bottom:1px solid var(--tx-line)}
-.analytics-plot-bars span{width:min(43%,24px);border-radius:4px 4px 0 0}
-.analytics-revenue{--swatch:#ff865a;background:linear-gradient(#ff9f7b,#a84c37)}
-.analytics-expense{--swatch:#c6adf2;background:linear-gradient(#c6adf2,#70608d)}
-.analytics-plot-day{text-align:center;font-size:10px;color:var(--tx-muted);padding-top:5px}
+.analytics-revenue{--swatch:#ff9f7b}
+.analytics-expense{--swatch:#c6adf2}
 .analytics-table-wrap{overflow-x:auto}
 .analytics-table{width:100%;border-collapse:collapse;text-align:left;font-size:13px}
 .analytics-table th,.analytics-table td{padding:9px 8px;border-bottom:1px solid var(--tx-line)}
@@ -239,36 +215,31 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .attendance-week-total strong{font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
 .attendance-peak{display:grid;gap:2px;padding:8px 10px;border:1px solid #745047;border-radius:10px;background:#382723;font-size:12px}
 .attendance-peak strong{color:var(--tx-accent-soft)}
-.attendance-week-chart{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:7px;color:var(--tx-muted);font-size:10px}
-.attendance-week-axis{height:126px;display:flex;flex-direction:column;justify-content:space-between;text-align:right}
-.attendance-week-plot{position:relative;min-width:0}
-.attendance-week-plot svg{display:block;width:100%;height:126px}
-.attendance-week-guides,.attendance-week-trace{fill:none;vector-effect:non-scaling-stroke}
-.attendance-week-guides{stroke:var(--tx-line);stroke-dasharray:2 3}
-.attendance-week-trace{stroke:#ded7d6;stroke-width:1.5;stroke-linejoin:round}
-.attendance-week-points{position:absolute;inset:0 0 auto;height:126px;display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
-.attendance-week-point{position:relative;min-width:0;outline-offset:-2px}
-.attendance-week-point:is(:hover,:focus-visible){z-index:1}
-.attendance-week-point:is(:hover,:focus-visible)::before{content:'';position:absolute;top:0;left:50%;height:126px;border-left:1px solid #9b9091}
-.attendance-week-point:is(:hover,:focus-visible)::after{content:'';position:absolute;left:50%;top:var(--point-y);width:6px;height:6px;border-radius:50%;background:#f4eeee;transform:translate(-50%,-50%)}
-.attendance-week-date{position:absolute;top:130px;left:50%;transform:translateX(-50%);padding:2px 4px;border-radius:99px;white-space:nowrap}
-.attendance-week-point:is(:hover,:focus-visible) .attendance-week-date{background:#f4eeee;color:#231e20}
-.attendance-week-tooltip{display:none;position:absolute;top:6px;left:calc(50% + 6px);padding:6px 8px;border:1px solid var(--tx-line);border-radius:7px;background:#201d20;color:var(--tx-text);white-space:nowrap;pointer-events:none}
-.attendance-week-point:nth-child(n+4) .attendance-week-tooltip{left:auto;right:calc(50% + 6px)}
-.attendance-week-point:is(:hover,:focus-visible) .attendance-week-tooltip{display:grid;gap:2px}
-.attendance-week-plot{padding-bottom:21px}
+.trend-chart{--plot-height:126px;display:grid;grid-template-columns:max-content minmax(0,1fr);gap:7px;color:var(--tx-muted);font-size:10px;font-variant-numeric:tabular-nums}
+.trend-axis,.trend-plot{position:relative;min-width:0}
+.trend-axis{height:var(--plot-height)}
+.trend-axis span{display:block;position:relative;top:var(--tick-y);height:0;text-align:right;transform:translateY(-.55em)}
+.trend-plot svg{display:block;width:100%;height:var(--plot-height)}
+.trend-guides,.trend-trace{fill:none;vector-effect:non-scaling-stroke}
+.trend-guides{stroke:var(--tx-line);stroke-dasharray:2 3}
+.trend-trace{stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round}
+.trend-points{position:absolute;inset:0 0 auto;height:var(--plot-height);display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
+.trend-point{position:relative;min-width:0;outline-offset:-2px}
+.trend-point:is(:hover,:focus){z-index:1}
+.trend-point:is(:hover,:focus)::before{content:'';position:absolute;inset:0 auto 0 50%;border-left:1px solid #9b9091}
+.trend-dot{display:none;position:absolute;left:50%;width:6px;height:6px;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none}
+.trend-point:is(:hover,:focus) .trend-dot{display:block}
+.trend-label{position:absolute;top:calc(100% + 4px);left:50%;transform:translateX(-50%);padding:2px 3px;border-radius:99px;white-space:nowrap}
+.trend-categories .trend-label{max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.trend-point:not(:is(:hover,:focus)) .trend-label.sparse{visibility:hidden}
+.trend-point:is(:hover,:focus) .trend-label{background:#f4eeee;color:#231e20}
+.trend-tooltip{display:none;position:absolute;top:6px;left:calc(50% + 6px);width:max-content;max-width:100px;overflow-wrap:anywhere;padding:6px 8px;border:1px solid var(--tx-line);border-radius:7px;background:#201d20;color:var(--tx-text);pointer-events:none}
+.trend-point.trend-point-right .trend-tooltip{left:auto;right:calc(50% + 6px)}
+.trend-point:only-child .trend-tooltip{left:50%;right:auto;transform:translateX(-50%)}
+.trend-point:is(:hover,:focus) .trend-tooltip{display:grid;gap:2px}
+.trend-plot{padding-bottom:22px}
 .attendance-hourly{margin-top:13px;padding-top:10px;border-top:1px solid var(--tx-line)}
 .attendance-hourly h3{margin:0 0 7px;font-size:12px}
-.attendance-hour-bars{display:grid;grid-template-columns:repeat(24,minmax(0,1fr));align-items:end;gap:2px;height:40px;border-bottom:1px solid var(--tx-line)}
-.attendance-hour-bars span{height:var(--height);min-height:2px;background:#685652;border-radius:2px 2px 0 0}
-.attendance-hour-bars .is-peak{background:var(--tx-accent)}
-.attendance-hour-labels{display:flex;justify-content:space-between;margin-top:5px;color:var(--tx-muted);font-size:10px}
-.attendance-line-chart svg{display:block;width:100%;height:auto;overflow:visible}
-.attendance-line-guides{fill:none;stroke:var(--tx-line);stroke-width:1}
-.attendance-line-trace{fill:none;stroke:var(--tx-accent);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
-.attendance-line-trace,.attendance-line-guides{vector-effect:non-scaling-stroke}
-.attendance-line-dot{fill:var(--tx-panel);stroke:var(--tx-accent);stroke-width:2}
-.attendance-line-chart text{fill:var(--tx-muted);font-size:11px;text-anchor:middle}
 .insight-front-desk{display:grid;gap:16px;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
 .insight-front-desk .insight-activity-list{max-height:224px;overflow:auto;scrollbar-width:thin}
 .insight-front-desk .insight-activity{border:0;border-left:1px solid var(--tx-line);padding:0 0 0 16px;margin:0}
@@ -284,8 +255,6 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
   .dashboard-clock-time{font-size:clamp(52px,4.2vw,62px)}
   .insight-panels{align-self:stretch}
   .insight-panels > .card{display:flex;flex-direction:column}
-  .insight-panels .dash-chart{flex:1 0 145px;height:auto}
-  .insight-panels .insight-months{flex:1;grid-template-rows:auto;grid-auto-rows:1fr}
   .insight-attendance-stack{align-self:stretch;grid-template-rows:auto auto 1fr}
 }
 .dashboard-check-in{display:grid;gap:8px}
@@ -400,15 +369,6 @@ if(view==='Financials'){
     if(row.type==='Expense')expenseTotals.set(row.category,(expenseTotals.get(row.category)||0)+Math.round(Number(row.amount)*100));
   }
   const categories=[...expenseTotals].sort((a,b)=>b[1]-a[1]);
-  const colors=['#ff865a','#c6adf2','#e5b87e','#9cc7c1','#f3b7aa','#9ca9d8'];
-  const totalExpenseCents=categories.reduce((sum,[,cents])=>sum+cents,0);
-  let fraction=0;
-  const segments=categories.map(([,cents],index)=>{
-    const start=fraction;
-    fraction+=100*cents/totalExpenseCents;
-    const color=colors[index%colors.length];
-    return `color-mix(in srgb, ${color}, #fff 18%) ${start}%, color-mix(in srgb, ${color}, #241b22 32%) ${fraction}%`;
-  }).join(', ')||'#474248 0% 100%';
   el.innerHTML=`<div class="analytics">
     <div class="analytics-header">
       <h1>${safe(pageLabel(view))}</h1>
@@ -425,12 +385,12 @@ if(view==='Financials'){
     <div class="analytics-grid">
       <section class="card">
         <div class="analytics-panel-head"><h2>Expenses by category</h2></div>
-        <div class="analytics-ring" style="--expense-segments:${segments}">
-          <div class="analytics-ring-label"><strong>${safe(money(report.expenses))}</strong><span>Total expenses</span></div>
-        </div>
-        ${categories.length?`<ul class="analytics-legend">${categories.map(([category,cents],index)=>`
-          <li><span><i class="analytics-swatch" style="--swatch:${colors[index%colors.length]}" aria-hidden="true"></i>${safe(category)}</span>
-          <strong>${safe(money(cents/100))}</strong></li>`).join('')}</ul>`:'<p class="sub">No expenses recorded for this period.</p>'}
+        ${categories.length?renderTrendChart('expenses-by-category','Expenses by category',
+          categories.map(([category,cents])=>({label:category,values:[cents/100]})),
+          [{format:money}],{categorical:true,minStep:.01}):''}
+        ${categories.length?`<ul class="analytics-legend">${categories.map(([category,cents])=>`
+          <li><span>${safe(category)}</span><strong>${safe(money(cents/100))}</strong></li>`).join('')}</ul>`:
+          '<p class="sub">No expenses recorded for this period.</p>'}
       </section>
       <section class="card">
         <div class="analytics-panel-head"><h2>Financial activity</h2>
@@ -460,25 +420,6 @@ if(view==='Financials'){
       ${report.entries.length>100?`<p class="sub analytics-table-note">Showing 100 transactions. The CSV includes all ${report.entries.length}.</p>`:''}
     </section>
   </div>`;
-  const chart=$('.analytics-chart');
-  if(chart){
-    const details=chart.querySelector('.analytics-chart-details');
-    const showPeriod=bucket=>{
-      details.querySelector('strong').textContent=bucket.dataset.range;
-      details.querySelector('span').textContent=bucket.dataset.values;
-    };
-    const buckets=chart.querySelectorAll('.analytics-plot-bucket');
-    for(const bucket of buckets){
-      bucket.onpointerenter=()=>showPeriod(bucket);
-      bucket.onfocus=()=>showPeriod(bucket);
-      bucket.onclick=()=>showPeriod(bucket);
-    }
-    chart.onpointerleave=()=>showPeriod(chart.querySelector('.analytics-plot-bucket:focus')||buckets[buckets.length-1]);
-    chart.onfocusout=event=>{
-      if(!chart.contains(event.relatedTarget))showPeriod(chart.querySelector('.analytics-plot-bucket:hover')||buckets[buckets.length-1]);
-    };
-    showPeriod(buckets[buckets.length-1]);
-  }
   $('#financialDates').onsubmit=e=>{
     e.preventDefault();
     const next=formData(e.currentTarget);
@@ -732,31 +673,80 @@ function renderFinancialActivity(entries,dates,money,currency){
     const index=Math.floor((Date.parse(row.date)-from)/(day*span));
     periods[index][row.type]+=Math.round(Number(row.amount)*100);
   }
-  const peak=Math.max(0,...periods.map(period=>Math.max(period.Payment,period.Expense)));
-  const targetStep=Math.max(1,peak/4);
-  const magnitude=10**Math.floor(Math.log10(targetStep));
-  const step=Math.ceil([1,2,2.5,5,10].find(multiplier=>multiplier*magnitude>=targetStep)*magnitude);
-  const axisAmount=new Intl.NumberFormat(undefined,{notation:'compact',maximumFractionDigits:3});
-  const ticks=[4,3,2,1,0].map(tick=>`<span>${safe(axisAmount.format(tick*step/100))}</span>`).join('');
   const dateFormat=new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric',timeZone:'UTC'});
-  const bars=periods.map((period,index)=>{
+  const points=periods.map((period,index)=>{
     const start=dateFormat.format(from+index*span*day);
     const end=dateFormat.format(from+Math.min(days-1,(index+1)*span-1)*day);
-    const range=start===end?start:start+' – '+end;
-    const values='Revenue '+money(period.Payment/100)+' · Expenses '+money(period.Expense/100);
-    return `<div class="analytics-plot-bucket" role="group" tabindex="0" aria-label="${safe(range+': '+values)}"
-      data-range="${safe(range)}" data-values="${safe(values)}">
-      <div class="analytics-plot-bars" aria-hidden="true">
-        <span class="analytics-revenue" style="height:${period.Payment/(4*step)*100}%"></span>
-        <span class="analytics-expense" style="height:${period.Expense/(4*step)*100}%"></span>
-      </div><div class="analytics-plot-day" aria-hidden="true">${safe(start)}</div>
-    </div>`;
+    return {
+      label:start,
+      detail:start===end?start:start+' – '+end,
+      values:[period.Payment/100,period.Expense/100],
+      sparse:periods.length>5&&index%2===1&&index!==periods.length-1
+    };
+  });
+  return renderTrendChart('financial-activity','Financial activity in '+currency,points,[
+    {color:'#ff9f7b',format:value=>'Revenue '+money(value)},
+    {color:'#c6adf2',format:value=>'Expenses '+money(value)}
+  ],{minStep:.01});
+}
+
+const chartAxisFormat=new Intl.NumberFormat(undefined,{notation:'compact',maximumFractionDigits:2});
+const chartVisitLabel=count=>count+(count===1?' check-in':' check-ins');
+function renderTrendChart(id,label,points,series,{categorical=false,minStep=1}={}){
+  if(!points.length)return '<p class="sub">No data for this period.</p>';
+  const peak=Math.max(...points.flatMap(point=>point.values));
+  const target=Math.max(minStep,peak/4);
+  const magnitude=10**Math.floor(Math.log10(target));
+  const roundedStep=[1,2,2.5,5,10].find(multiplier=>multiplier*magnitude>=target)*magnitude;
+  const step=minStep===1?Math.ceil(roundedStep):roundedStep;
+  const tickValues=[4,3,2,1,0];
+  const ticks=tickValues.map(tick=>({y:100-24*tick,value:chartAxisFormat.format(tick*step)}));
+  const width=700;
+  const slot=width/points.length;
+  const x=index=>slot*(index+.5);
+  const y=value=>100-96*value/(4*step);
+  const palette=series.map(item=>item.color||'#ded7d6');
+  const paths=palette.map((color,index)=>{
+    const gradient=id+'-fill-'+index;
+    const fill='url(#'+gradient+')';
+    const shade=`<defs><linearGradient id="${gradient}" x2="0%" y2="100%">
+      <stop stop-color="${color}" stop-opacity=".26"/><stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+    </linearGradient></defs>`;
+    if(categorical){
+      return shade+points.map((point,i)=>{
+        const top=y(point.values[index]);
+        const left=x(i)-slot*.25;
+        return `<rect x="${left}" y="${top}" width="${slot*.5}" height="${100-top}" fill="${fill}"/>
+          <path class="trend-trace" d="M${left} ${top}h${slot*.5}" stroke="${color}"/>`;
+      }).join('');
+    }
+    const coordinates=points.map((point,i)=>x(i)+','+y(point.values[index]));
+    if(points.length===1)coordinates[0]=`0,${y(points[0].values[index])} L${width},${y(points[0].values[index])}`;
+    const line='M'+coordinates.join(' L');
+    const start=points.length===1?0:x(0);
+    const end=points.length===1?width:x(points.length-1);
+    return shade+`<path d="${line} L${end},100 H${start} Z" fill="${fill}"/>
+      <path class="trend-trace" d="${line}" stroke="${color}"/>`;
   }).join('');
-  return `<div class="analytics-chart" role="group" aria-label="Financial activity in ${safe(currency)}">
-    <div class="analytics-chart-details" aria-hidden="true"><strong></strong><span></span></div>
-    <div class="analytics-chart-body">
-      <div class="analytics-chart-axis" aria-hidden="true">${ticks}<span>${safe(currency)}</span></div>
-      <div class="analytics-plot">${bars}</div>
+  return `<div class="trend-chart${categorical?' trend-categories':''}" role="group" aria-label="${safe(label)}">
+    <div class="trend-axis" aria-hidden="true">${ticks.map(tick=>`<span style="--tick-y:${tick.y}%">${safe(tick.value)}</span>`).join('')}</div>
+    <div class="trend-plot">
+      <svg viewBox="0 0 ${width} 100" preserveAspectRatio="none" aria-hidden="true">
+        <path class="trend-guides" d="${ticks.map(tick=>`M0 ${tick.y}H${width}`).join(' ')}"/>
+        ${paths}
+      </svg>
+      <div class="trend-points">
+        ${points.map((point,index)=>{
+          const detail=point.detail||point.label;
+          const values=series.map((item,i)=>item.format(point.values[i]));
+          return `<div class="trend-point${index>=points.length/2?' trend-point-right':''}" tabindex="0" role="group"
+            aria-label="${safe([detail,...values].join(', '))}">
+            ${point.values.map((value,i)=>`<span class="trend-dot" aria-hidden="true" style="top:${y(value)}%;background:${palette[i]}"></span>`).join('')}
+            <span class="trend-label${point.sparse?' sparse':''}" aria-hidden="true">${safe(point.label)}</span>
+            <span class="trend-tooltip" aria-hidden="true"><strong>${safe(detail)}</strong>${values.map(value=>`<span>${safe(value)}</span>`).join('')}</span>
+          </div>`;
+        }).join('')}
+      </div>
     </div>
   </div>`;
 }
@@ -786,54 +776,29 @@ function renderWeeklyAttendance(trend){
   if(!trend)return '<p class="insight-period">Attendance trends are temporarily unavailable.</p>';
   const {days,hours,timezone}=trend;
   const total=days.reduce((sum,day)=>sum+day.visits,0);
-  const step=Math.max(1,Math.ceil(Math.max(...days.map(day=>day.visits))/4));
   const dateFormat=new Intl.DateTimeFormat(undefined,{weekday:'short',month:'short',day:'numeric',timeZone:'UTC'});
-  const plotted=days.map((day,index)=>({
-    ...day,
-    x:700*(index+.5)/days.length,
-    y:100-96*day.visits/(step*4),
-    fullDate:dateFormat.format(new Date(day.date+'T00:00:00Z'))
+  const dailyPoints=days.map(day=>({
+    label:day.label,
+    detail:dateFormat.format(new Date(day.date+'T00:00:00Z')),
+    values:[day.visits]
   }));
-  const line='M'+plotted.map(({x,y})=>x+','+y).join(' L');
-  const area=line+' V100 H'+plotted[0].x+' Z';
   const hourlyMax=Math.max(...hours);
   const peak=hours.indexOf(hourlyMax);
   const clock=new Intl.DateTimeFormat(undefined,{hour:'numeric',timeZone:'UTC'});
   const hourLabel=hour=>clock.format(new Date(Date.UTC(2020,0,1,hour%24)));
   const hourRange=hour=>hourLabel(hour)+' – '+hourLabel(hour+1);
-  const visitLabel=count=>count+(count===1?' check-in':' check-ins');
+  const hourlyPoints=hours.map((count,hour)=>({
+    label:hourLabel(hour),detail:hourRange(hour),values:[count],sparse:![0,6,12,18,23].includes(hour)
+  }));
   return `<div class="attendance-week-summary">
     <div class="attendance-week-total"><strong>${total.toLocaleString()}</strong><span class="insight-period">Check-ins · Last 7 days</span></div>
     <div class="attendance-peak" title="${safe(timezone)}"><strong>Peak hour</strong>
-      <span>${hourlyMax?safe(hourRange(peak)+' · '+visitLabel(hourlyMax)):'No check-ins yet'}</span></div>
+      <span>${hourlyMax?safe(hourRange(peak)+' · '+chartVisitLabel(hourlyMax)):'No check-ins yet'}</span></div>
   </div>
-  <div class="attendance-week-chart" role="group" aria-label="Daily check-ins for the last seven days">
-    <div class="attendance-week-axis" aria-hidden="true">${[4,3,2,1,0].map(tick=>'<span>'+tick*step+'</span>').join('')}</div>
-    <div class="attendance-week-plot">
-      <svg viewBox="0 0 700 100" preserveAspectRatio="none" aria-hidden="true">
-        <defs><linearGradient id="attendanceWeekFill" x2="0%" y2="100%">
-          <stop stop-color="#e8dbda" stop-opacity=".26"/><stop offset="100%" stop-color="#e8dbda" stop-opacity="0"/>
-        </linearGradient></defs>
-        <path class="attendance-week-guides" d="M0 4H700 M0 28H700 M0 52H700 M0 76H700 M0 100H700"/>
-        <path d="${area}" fill="url(#attendanceWeekFill)"/>
-        <path class="attendance-week-trace" d="${line}"/>
-      </svg>
-      <div class="attendance-week-points">
-        ${plotted.map(day=>`<div class="attendance-week-point" tabindex="0" role="group"
-          aria-label="${safe(day.fullDate+', '+visitLabel(day.visits))}" style="--point-y:${day.y*1.26}px">
-          <span class="attendance-week-date" aria-hidden="true">${safe(day.label)}</span>
-          <span class="attendance-week-tooltip" aria-hidden="true"><strong>${safe(day.fullDate)}</strong>${safe(visitLabel(day.visits))}</span>
-        </div>`).join('')}
-      </div>
-    </div>
-  </div>
+  ${renderTrendChart('weekly-attendance','Daily check-ins for the last seven days',dailyPoints,[{format:chartVisitLabel}])}
   <div class="attendance-hourly">
     <h3>Check-ins by hour</h3>
-    <div class="attendance-hour-bars" role="img" aria-label="${safe(timezone+': '+hours.map((count,hour)=>hourRange(hour)+' '+visitLabel(count)).join(', '))}">
-      ${hours.map((count,hour)=>`<span aria-hidden="true" class="${hourlyMax&&count===hourlyMax?'is-peak':''}"
-        title="${safe(hourRange(hour)+' · '+visitLabel(count))}" style="--height:${count/Math.max(1,hourlyMax)*100}%"></span>`).join('')}
-    </div>
-    <div class="attendance-hour-labels" aria-hidden="true">${[0,6,12,18,23].map(hour=>`<span>${safe(hourLabel(hour))}</span>`).join('')}</div>
+    ${renderTrendChart('hourly-attendance','Check-ins by hour in '+timezone,hourlyPoints,[{format:chartVisitLabel}])}
   </div>`;
 }
 
@@ -847,45 +812,18 @@ function renderInsight(el,report,insights,trends,attendanceTrend){
         <button type="button" class="money-toggle" data-money-toggle="${key}" data-money-label="${safe(label)}"
           aria-label="${safe('Show '+label.toLowerCase())}">${eye}</button>`:`<strong${metric?' data-'+metric:''}>${safe(value)}</strong>`}
     </div>${target?`<button type="button" class="insight-stat-link" data-insight-view="${target}">${link}<span aria-hidden="true">→</span></button>`:''}</div>`;
-  const barChart=(points,format,label)=>{
-    const max=Math.max(1,...points.map(point=>Number(point.value)));
-    const summary=points.map(point=>(point.fullLabel||point.label)+' '+format(point.value)).join(', ');
-    return `<div class="dash-chart" role="img" aria-label="${safe(label+': '+summary)}">`+points.map(point=>
-      `<div class="bar-col${Number(point.value)===max?' is-peak':''}" aria-hidden="true" title="${safe((point.fullLabel||point.label)+': '+format(point.value))}">
-        <div class="bar" style="height:${Math.round(Number(point.value)/max*100)}%"></div>
-        <span>${safe(point.label)}</span>
-      </div>`).join('')+'</div>';
-  };
-  const weeklyChart=(field,format,label)=>barChart(report.trend.map(day=>({label:day.label,value:day[field]})),format,label);
-  const monthName=new Intl.DateTimeFormat(undefined,{month:'short',timeZone:'UTC'});
-  const monthlyAttendance=trends.map(row=>({
-    label:monthName.format(new Date(row.month+'-01T00:00:00Z')),
-    fullLabel:row.month,
-    value:row.visits
+  const dateFormat=new Intl.DateTimeFormat(undefined,{weekday:'short',month:'short',day:'numeric',timeZone:'UTC'});
+  const weeklyRevenue=report.trend.map(day=>({
+    label:day.label,
+    detail:dateFormat.format(new Date(day.day)),
+    values:[Number(day.revenue)]
   }));
-  const attendanceLine=(points,label)=>{
-    const max=Math.max(1,...points.map(point=>Number(point.value)));
-    const plotted=points.map((point,index)=>({
-      ...point,
-      x:260*(index+.5)/points.length,
-      y:96-80*Number(point.value)/max
-    }));
-    const describe=point=>(point.fullLabel||point.label)+': '+point.value+' check-ins';
-    return `<div class="attendance-line-chart" role="img" aria-label="${safe(label+': '+plotted.map(describe).join(', '))}">
-      <svg viewBox="0 0 260 117" aria-hidden="true">
-        <path class="attendance-line-guides" d="M0 16H260 M0 56H260 M0 96H260"/>
-        <polyline class="attendance-line-trace" points="${plotted.map(({x,y})=>x+','+y).join(' ')}"/>
-        ${plotted.map(point=>`<circle class="attendance-line-dot" cx="${point.x}" cy="${point.y}" r="3.5">
-          <title>${safe(describe(point))}</title></circle><text x="${point.x}" y="113">${safe(point.label)}</text>`).join('')}
-      </svg>
-    </div>`;
-  };
-  const monthlyChart=(label,key)=>{
-    const max=Math.max(1,...trends.map(row=>row[key]));
-    return `<div class="insight-months"><h3>${label} · 6 months</h3>`+trends.map(row=>`<div class="insight-month">
-      <span>${safe(row.month)}</span><meter min="0" max="${max}" value="${row[key]}" aria-label="${label} ${safe(row.month)}"></meter>
-      <b>${row[key]}</b></div>`).join('')+'</div>';
-  };
+  const shortMonth=new Intl.DateTimeFormat(undefined,{month:'short',timeZone:'UTC'});
+  const fullMonth=new Intl.DateTimeFormat(undefined,{month:'long',year:'numeric',timeZone:'UTC'});
+  const monthlyPoints=key=>trends.map(row=>{
+    const date=new Date(row.month+'-01T00:00:00Z');
+    return {label:shortMonth.format(date),detail:fullMonth.format(date),values:[Number(row[key])]};
+  });
   const action=(target,value,label)=>`<button type="button" data-insight-view="${target}">
     <strong>${safe(value)}</strong><span>${label}</span><span aria-hidden="true">→</span></button>`;
   const attendanceRate=report.active?Math.round(report.attendance/report.active*100):0;
@@ -928,14 +866,14 @@ function renderInsight(el,report,insights,trends,attendanceTrend){
           <details class="card insight-disclosure attendance-trends-card" open>
             <summary><div><span class="insight-disclosure-title">Monthly attendance</span><span class="insight-period">Last 6 months</span></div></summary>
             <div class="insight-disclosure-body">
-              ${attendanceLine(monthlyAttendance,'Check-ins for the last six months')}
+              ${renderTrendChart('monthly-attendance','Check-ins for the last six months',monthlyPoints('visits'),[{format:chartVisitLabel}])}
             </div>
           </details>
       </div>
         <div class="insight-panels">
             <section class="card">
               <div class="insight-panel-head"><h2>Revenue</h2><span class="insight-period">Last 7 days</span></div>
-              ${weeklyChart('revenue',money,'Revenue for the last seven days')}
+              ${renderTrendChart('weekly-revenue','Revenue for the last seven days',weeklyRevenue,[{format:money}],{minStep:.01})}
               <div class="insight-details">
                 ${stat('Collected this month',report.revenue_month,{key:'revenue'})}
                 ${stat('Collected in the past 30 days',insights.collected_30d,{key:'rolling'})}
@@ -949,7 +887,11 @@ function renderInsight(el,report,insights,trends,attendanceTrend){
                 ${stat('Joined this month',insights.joined_month)}
                 ${stat('Eligible to check in',report.active)}
               </div>
-              ${monthlyChart('New members','joined')}
+              <div class="insight-months">
+                <h3>New members · 6 months</h3>
+                ${renderTrendChart('membership-growth','New members for the last six months',monthlyPoints('joined'),
+                  [{format:count=>count+(count===1?' new member':' new members')}])}
+              </div>
             </section>
         </div>
       <div class="insight-content">
