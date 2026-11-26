@@ -71,6 +71,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .logo span, .success,.metric strong,.dash-kpi.accent strong,.member-mini strong,.money-toggle{color:var(--tx-accent)}
 button.primary,.member-tabs button.active{background:var(--tx-accent);color:var(--tx-accent-ink)}
 nav button:hover:not(:disabled),nav button:active:not(:disabled){transform:none}
+nav button:has(svg){display:flex;align-items:center;gap:9px}
+nav button svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 nav button.active{background:#382723;color:var(--tx-accent-soft);box-shadow:inset 3px 0 var(--tx-accent)}
 button.primary:hover{background:var(--tx-accent-hover)}input::placeholder,textarea::placeholder{color:var(--tx-muted);opacity:.8}.member-status,.badge{color:var(--tx-accent-soft)}
 header:after,.member-mini .card:after,.dash-kpi:after,#login:before{background:var(--tx-accent)}
@@ -89,7 +91,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .insight-shortcuts button{padding:9px 12px;font-size:13px}
 .insight-shortcuts .secondary{background:#333034}
 .insight-summary,.insight-panels{display:grid;gap:12px;min-width:0}
-.insight-summary{grid-template-columns:repeat(3,minmax(0,1fr))}
+.insight-summary{grid-template-columns:repeat(4,minmax(140px,1fr));overflow-x:auto;scrollbar-width:thin}
 .insight-panels{grid-template-columns:minmax(0,5fr) minmax(0,4fr)}
 .insight .card{margin:0;border:1px solid var(--tx-line);border-radius:15px;box-shadow:none;background:var(--tx-panel);padding:16px;min-width:0}
 .insight-summary .card{background:linear-gradient(145deg,#353032,#232225 75%)}
@@ -130,7 +132,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .insight-table td{font-variant-numeric:tabular-nums}
 .insight-retention-hint{font-size:13px;margin:0 0 8px}
 @media(max-width:950px){.insight-panels{grid-template-columns:minmax(0,1fr)}}
-@media(max-width:530px){.insight-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.insight-summary .insight-featured{grid-column:1/-1}.insight .card{padding:12px}}
+@media(max-width:530px){.insight .card{padding:12px}}
 .insight-text-button{padding:5px 0;background:transparent;color:var(--tx-accent-soft);font-size:13px}
 .insight-text-button:hover{text-decoration:underline}
 .insight-activity{margin-top:16px;padding-top:14px;border-top:1px solid var(--tx-line)}
@@ -237,11 +239,24 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .attendance-week-total strong{font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
 .attendance-peak{display:grid;gap:2px;padding:8px 10px;border:1px solid #745047;border-radius:10px;background:#382723;font-size:12px}
 .attendance-peak strong{color:var(--tx-accent-soft)}
-.attendance-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
-.attendance-day{display:grid;grid-template-rows:90px auto;gap:4px;text-align:center;font-size:10px;color:var(--tx-muted)}
-.attendance-day-plot{display:flex;align-items:end;border-bottom:1px solid var(--tx-line);min-width:0}
-.attendance-day-fill{display:flex;justify-content:center;width:100%;height:var(--height);min-height:18px;align-items:start;padding-top:2px;border-radius:6px 6px 0 0;background:color-mix(in srgb,var(--bar) 24%,var(--tx-panel));border-top:2px solid var(--bar);color:var(--tx-text);font-size:10px;font-variant-numeric:tabular-nums;overflow:hidden}
-.attendance-day-fill.is-zero{background:transparent;border-color:transparent;color:var(--tx-muted)}
+.attendance-week-chart{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:7px;color:var(--tx-muted);font-size:10px}
+.attendance-week-axis{height:126px;display:flex;flex-direction:column;justify-content:space-between;text-align:right}
+.attendance-week-plot{position:relative;min-width:0}
+.attendance-week-plot svg{display:block;width:100%;height:126px}
+.attendance-week-guides,.attendance-week-trace{fill:none;vector-effect:non-scaling-stroke}
+.attendance-week-guides{stroke:var(--tx-line);stroke-dasharray:2 3}
+.attendance-week-trace{stroke:#ded7d6;stroke-width:1.5;stroke-linejoin:round}
+.attendance-week-points{position:absolute;inset:0 0 auto;height:126px;display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.attendance-week-point{position:relative;min-width:0;outline-offset:-2px}
+.attendance-week-point:is(:hover,:focus-visible){z-index:1}
+.attendance-week-point:is(:hover,:focus-visible)::before{content:'';position:absolute;top:0;left:50%;height:126px;border-left:1px solid #9b9091}
+.attendance-week-point:is(:hover,:focus-visible)::after{content:'';position:absolute;left:50%;top:var(--point-y);width:6px;height:6px;border-radius:50%;background:#f4eeee;transform:translate(-50%,-50%)}
+.attendance-week-date{position:absolute;top:130px;left:50%;transform:translateX(-50%);padding:2px 4px;border-radius:99px;white-space:nowrap}
+.attendance-week-point:is(:hover,:focus-visible) .attendance-week-date{background:#f4eeee;color:#231e20}
+.attendance-week-tooltip{display:none;position:absolute;top:6px;left:calc(50% + 6px);padding:6px 8px;border:1px solid var(--tx-line);border-radius:7px;background:#201d20;color:var(--tx-text);white-space:nowrap;pointer-events:none}
+.attendance-week-point:nth-child(n+4) .attendance-week-tooltip{left:auto;right:calc(50% + 6px)}
+.attendance-week-point:is(:hover,:focus-visible) .attendance-week-tooltip{display:grid;gap:2px}
+.attendance-week-plot{padding-bottom:21px}
 .attendance-hourly{margin-top:13px;padding-top:10px;border-top:1px solid var(--tx-line)}
 .attendance-hourly h3{margin:0 0 7px;font-size:12px}
 .attendance-hour-bars{display:grid;grid-template-columns:repeat(24,minmax(0,1fr));align-items:end;gap:2px;height:40px;border-bottom:1px solid var(--tx-line)}
@@ -263,7 +278,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 }
 @media(min-width:1240px){
   .shell:has(.dashboard-attendance-rail){max-width:1680px;padding-inline:clamp(22px,2.1vw,36px)}
-  .insight{grid-template-columns:minmax(0,1fr) minmax(245px,286px);grid-template-areas:"lead clock" "summary attendance" "panels attendance" "content content";align-items:start;grid-template-rows:auto auto 1fr auto}
+  .insight{grid-template-columns:minmax(0,1fr) minmax(245px,286px);grid-template-areas:"lead clock" "summary summary" "panels attendance" "content content";align-items:start;grid-template-rows:auto auto 1fr auto}
   .insight .dashboard-clock{padding:4px 14px 4px 0}
   .dashboard-clock-date{font-size:clamp(21px,1.7vw,25px)}
   .dashboard-clock-time{font-size:clamp(52px,4.2vw,62px)}
@@ -313,8 +328,17 @@ function form(fields,id,button){return '<form id="'+id+'" class="card form">'+fi
 function rows(data,fn){return data.length?data.map(fn).join(''):'<p>No records yet.</p>'}
 const views={superadmin:['Gyms'],owner:['Insight','Members','Plans','Fees','Gate QR','Financials'],reception:['Members','Fees','Attendance','Gate QR','Alerts'],trainer:['Trainer Clients','Workouts','Diets'],member:['My attendance','Scan QR','My plans','Workouts','Diets']};
 const sharedLabels={Fees:'Fee Collection',Plans:'Membership Plans','Gate QR':'Check-in QR'};
-const ownerLabels={Insight:'Dashboard',Financials:'Reports & Analytics',Workouts:'Workout'};
-const pageLabel=id=>sharedLabels[id]||(me.role==='owner'&&ownerLabels[id])||id;
+const ownerLabels={Insight:'Dashboard',Plans:'Memberships',Fees:'Payments',Financials:'Analytics',Workouts:'Workout'};
+const pageLabel=id=>(me.role==='owner'&&ownerLabels[id])||sharedLabels[id]||id;
+const navIcons={
+  Insight:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+  Members:'<circle cx="9" cy="7" r="3"/><path d="M3 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2m2-6a4 4 0 0 1 4 4v2M16 4a3 3 0 0 1 0 6"/>',
+  Plans:'<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8" cy="11" r="2"/><path d="M5 16c0-3 6-3 6 0m3-6h4m-4 4h4"/>',
+  Fees:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/>',
+  'Gate QR':'<rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><path d="M3 12h5m4-9v5m0 4h5v5h4m-9 0v4m5 0h4m0-9v1"/>',
+  Financials:'<path d="M4 3v17h17M8 15v-3m5 3V8m5 7V5"/>'
+};
+const navIcon=id=>navIcons[id]?'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">'+navIcons[id]+'</svg>':'';
 const option=(value,label,selected)=>'<option value="'+safe(value)+'" '+(selected===value?'selected':'')+'>'+safe(label)+'</option>';
 function localDay(date=new Date()){
   return [date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-');
@@ -354,7 +378,7 @@ async function render({enrollMember=false}={}){
   };
   let memberData;
   const navView=me.role==='owner'&&['Alerts','Workouts'].includes(view)?'Insight':view;
-  notice('');$('#nav').innerHTML=views[me.role].map(v=>'<button class="'+(navView===v?'active':'')+'" data-view="'+safe(v)+'"'+(navView===v?' aria-current="page"':'')+'>'+safe(pageLabel(v))+'</button>').join('');const el=$('#content');el.innerHTML='<p>Loading…</p>';try{
+  notice('');$('#nav').innerHTML=views[me.role].map(v=>'<button class="'+(navView===v?'active':'')+'" data-view="'+safe(v)+'"'+(navView===v?' aria-current="page"':'')+'>'+navIcon(v)+safe(pageLabel(v))+'</button>').join('');const el=$('#content');el.innerHTML='<p>Loading…</p>';try{
 if(view==='Alerts'){
   const alerts=await api('/alerts');
   el.innerHTML='<h1>Member alerts</h1><p>Expiries in the next seven days and unpaid balances from previous billing months.</p>'+
@@ -762,24 +786,46 @@ function renderWeeklyAttendance(trend){
   if(!trend)return '<p class="insight-period">Attendance trends are temporarily unavailable.</p>';
   const {days,hours,timezone}=trend;
   const total=days.reduce((sum,day)=>sum+day.visits,0);
-  const dailyMax=Math.max(1,...days.map(day=>day.visits));
+  const step=Math.max(1,Math.ceil(Math.max(...days.map(day=>day.visits))/4));
+  const dateFormat=new Intl.DateTimeFormat(undefined,{weekday:'short',month:'short',day:'numeric',timeZone:'UTC'});
+  const plotted=days.map((day,index)=>({
+    ...day,
+    x:700*(index+.5)/days.length,
+    y:100-96*day.visits/(step*4),
+    fullDate:dateFormat.format(new Date(day.date+'T00:00:00Z'))
+  }));
+  const line='M'+plotted.map(({x,y})=>x+','+y).join(' L');
+  const area=line+' V100 H'+plotted[0].x+' Z';
   const hourlyMax=Math.max(...hours);
   const peak=hours.indexOf(hourlyMax);
-  const colors=['#f6c54e','#ff9751','#7899ff','#ad91ff','#54cfa2','#e883a1','#65bed1'];
   const clock=new Intl.DateTimeFormat(undefined,{hour:'numeric',timeZone:'UTC'});
   const hourLabel=hour=>clock.format(new Date(Date.UTC(2020,0,1,hour%24)));
   const hourRange=hour=>hourLabel(hour)+' – '+hourLabel(hour+1);
   const visitLabel=count=>count+(count===1?' check-in':' check-ins');
-  const dayLabel=day=>day.label+': '+visitLabel(day.visits);
   return `<div class="attendance-week-summary">
     <div class="attendance-week-total"><strong>${total.toLocaleString()}</strong><span class="insight-period">Check-ins · Last 7 days</span></div>
     <div class="attendance-peak" title="${safe(timezone)}"><strong>Peak hour</strong>
       <span>${hourlyMax?safe(hourRange(peak)+' · '+visitLabel(hourlyMax)):'No check-ins yet'}</span></div>
   </div>
-  <div class="attendance-days" role="img" aria-label="${safe(days.map(dayLabel).join(', '))}">
-    ${days.map((day,i)=>`<div class="attendance-day" aria-hidden="true" title="${safe(dayLabel(day))}">
-      <div class="attendance-day-plot"><span class="attendance-day-fill${day.visits?'':' is-zero'}"
-        style="--bar:${colors[i]};--height:${day.visits/dailyMax*100}%">${day.visits}</span></div><span>${safe(day.label)}</span></div>`).join('')}
+  <div class="attendance-week-chart" role="group" aria-label="Daily check-ins for the last seven days">
+    <div class="attendance-week-axis" aria-hidden="true">${[4,3,2,1,0].map(tick=>'<span>'+tick*step+'</span>').join('')}</div>
+    <div class="attendance-week-plot">
+      <svg viewBox="0 0 700 100" preserveAspectRatio="none" aria-hidden="true">
+        <defs><linearGradient id="attendanceWeekFill" x2="0%" y2="100%">
+          <stop stop-color="#e8dbda" stop-opacity=".26"/><stop offset="100%" stop-color="#e8dbda" stop-opacity="0"/>
+        </linearGradient></defs>
+        <path class="attendance-week-guides" d="M0 4H700 M0 28H700 M0 52H700 M0 76H700 M0 100H700"/>
+        <path d="${area}" fill="url(#attendanceWeekFill)"/>
+        <path class="attendance-week-trace" d="${line}"/>
+      </svg>
+      <div class="attendance-week-points">
+        ${plotted.map(day=>`<div class="attendance-week-point" tabindex="0" role="group"
+          aria-label="${safe(day.fullDate+', '+visitLabel(day.visits))}" style="--point-y:${day.y*1.26}px">
+          <span class="attendance-week-date" aria-hidden="true">${safe(day.label)}</span>
+          <span class="attendance-week-tooltip" aria-hidden="true"><strong>${safe(day.fullDate)}</strong>${safe(visitLabel(day.visits))}</span>
+        </div>`).join('')}
+      </div>
+    </div>
   </div>
   <div class="attendance-hourly">
     <h3>Check-ins by hour</h3>
@@ -858,8 +904,9 @@ function renderInsight(el,report,insights,trends,attendanceTrend){
         <time class="dashboard-clock-time"></time>
       </div>
       <section class="insight-summary" aria-label="Key metrics">
+          ${stat('Total Revenue',report.revenue_total,{key:'total',target:'Financials',link:'View reports'})}
           ${stat('Collected today',report.revenue_today,{key:'today',target:'Financials',link:'View reports'})}
-          ${stat('Registered members',report.members,{target:'Members',link:'View members'})}
+          ${stat('Active Members',report.active,{target:'Members',link:'View members'})}
           ${stat('Today’s check-ins',report.attendance,{target:'Attendance',link:'Open check-in',metric:'today-check-ins'})}
       </section>
       <div class="insight-attendance-stack">
