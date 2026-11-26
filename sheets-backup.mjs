@@ -32,7 +32,7 @@ async function jsonRequest(url,options){
   return response.json();
 }
 
-async function openSheet({sheetId,account}){
+export async function openSheet({sheetId,account}){
   const now=Math.floor(Date.now()/1000);
   const segment=value=>Buffer.from(JSON.stringify(value)).toString('base64url');
   const claim=segment({alg:'RS256',typ:'JWT'})+'.'+segment({
