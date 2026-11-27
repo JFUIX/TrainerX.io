@@ -8,10 +8,10 @@
 
 :root {
   --chart-revenue: #202020;
-  --chart-expense: #c22032;
+  --chart-expense: #d90019;
   --chart-surplus: #202020;
-  --chart-deficit: #c22032;
-  --chart-attendance: #ac1729;
+  --chart-deficit: var(--chart-expense);
+  --chart-attendance: #b60018;
   --chart-hourly: #545454;
   --chart-membership: #77111e;
   --chart-utilities: #797979;
@@ -40,15 +40,19 @@
   --tx-line: #c9cbd0;
   --tx-text: #17181c;
   --tx-muted: #555861;
-  --tx-accent: #25262b;
-  --tx-accent-hover: #42444d;
-  --tx-accent-soft: #393b43;
+  --tx-accent: #d90019;
+  --tx-accent-hover: #b40016;
+  --tx-accent-soft: #a60016;
+  --tx-accent-tint: #ffe4e7;
+  --tx-focus: #c90019;
+  --tx-featured: linear-gradient(145deg,#9b0014,#4b000b);
+  --tx-featured-line: #ad1730;
   --tx-accent-ink: #fff;
   --tx-backdrop:
     radial-gradient(ellipse at -20% 90%, transparent 46%, #f9fafbc9 46.6%, #f5f6f8b0 49%, #777d8c2e 55%, transparent 57%),
     radial-gradient(ellipse at 104% -34%, transparent 53%, #62697945 54%, #f6f7fa9e 58%, transparent 60%),
     radial-gradient(ellipse at 12% -9%, #f7f8fa 6%, #eceef1 25%, transparent 44%),
-    radial-gradient(ellipse at 91% 18%, #9699a2 0%, #c0c3cb 28%, transparent 48%),
+    radial-gradient(ellipse at 91% 18%, #cf8c95 0%, #e4bdc2 28%, transparent 48%),
     radial-gradient(ellipse at 72% 112%, #f7f8f9 5%, #e4e6eb 22%, transparent 53%),
     repeating-linear-gradient(134deg, #e6e8ec 0%, #c7cad1 19%, #eff0f2 37%, #afb3bd 54%, #e2e4e8 72%);
 }
@@ -66,20 +70,24 @@
   --tx-line-hover: #697086;
   --tx-text: #f1f2f6;
   --tx-muted: #b7bdcd;
-  --tx-accent: #e3e7f2;
-  --tx-accent-hover: #fff;
-  --tx-accent-soft: #c5ccdf;
-  --tx-accent-ink: #1a1c26;
+  --tx-accent: #d90019;
+  --tx-accent-hover: #be0016;
+  --tx-accent-soft: #ff929d;
+  --tx-accent-tint: #4b1b26;
+  --tx-focus: #ff5b6a;
+  --tx-featured: linear-gradient(145deg,#800018,#38000a);
+  --tx-featured-line: #a83145;
+  --tx-accent-ink: #fff;
   --tx-danger: #ffa5b7;
   --tx-danger-surface: #402532;
   --tx-frame: linear-gradient(145deg,#20222b,#181a23);
   --tx-frame-line: #373b49;
   --tx-frame-inset: #ffffff06;
-  --tx-backdrop: radial-gradient(ellipse at 85% 0%,#292d3a,transparent 65%);
+  --tx-backdrop: radial-gradient(ellipse at 85% 0%,#401c27,transparent 65%);
   --chart-revenue: #f5f5f5;
-  --chart-expense: #ff6877;
+  --chart-expense: #ff4659;
   --chart-surplus: #f5f5f5;
-  --chart-deficit: #ff6877;
+  --chart-deficit: var(--chart-expense);
   --chart-attendance: #ff8793;
   --chart-hourly: #bdbdbd;
   --chart-membership: #dc4254;
@@ -102,6 +110,6 @@ button, input, select, textarea, optgroup, option {
 }
 
 :where(a, button, input, select, textarea):focus-visible {
-  outline: 2px solid var(--tx-accent);
+  outline: 2px solid var(--tx-focus);
   outline-offset: 3px;
 }
