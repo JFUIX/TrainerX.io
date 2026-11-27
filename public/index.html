@@ -45,7 +45,7 @@
 body{min-height:100vh}
 .shell{max-width:1340px;padding:14px clamp(12px,2vw,26px)}header{padding:0 0 10px;position:relative}header:after{content:"";position:absolute;bottom:-1px;left:0;width:110px;height:2px;background:linear-gradient(90deg,var(--tx-accent),transparent)}
 .header-brand{display:flex;align-items:center;gap:10px;min-width:0}
-.header-brand-mark{display:grid;place-items:center;width:42px;height:42px;flex:none;border:1px solid var(--tx-featured-line);border-radius:11px;background:linear-gradient(155deg,#f21b34,#a80017 62%,#68000d);box-shadow:inset 0 1px 0 #ffffff52}
+.header-brand-mark{display:grid;place-items:center;width:42px;height:42px;flex:none;border:1px solid var(--tx-featured-line);border-radius:11px;background:var(--tx-featured);box-shadow:inset 0 1px 0 #ffffff52}
 .header-brand-mark::before{content:'';width:24px;height:24px;background:#fff;clip-path:polygon(0 0,30% 0,50% 29%,72% 0,100% 0,65% 48%,100% 100%,69% 100%,49% 69%,26% 100%,0 100%,34% 48%)}
 .header-brand-copy{display:grid;gap:4px}
 .header-wordmark{display:block;color:var(--tx-text);font-size:clamp(20px,2.6vw,27px);font-weight:900;letter-spacing:-.065em;line-height:1;white-space:nowrap}
@@ -250,7 +250,7 @@ nav a.nav-link.active{background:var(--tx-accent);color:var(--tx-accent-ink)}
 .insight .insight-summary .insight-featured .insight-stat-label{color:#e1e3e8}
 .insight .insight-summary .insight-featured .insight-stat-link{color:#f5f5f7;border-color:#ffffff4a}
 .insight .insight-summary .insight-featured .money-toggle{background:#ffffff24;color:#fff;border-color:#ffffff65}
-.insight .insight-summary .insight-featured::before{background:linear-gradient(90deg,#ff6576,transparent 75%)}
+.insight .insight-summary .insight-featured::before{background:linear-gradient(90deg,var(--tx-accent-soft),transparent 75%)}
 .insight .insight-summary .card:hover{border-color:var(--tx-line-hover)}
 .insight .dashboard-attendance-rail{background:linear-gradient(150deg,var(--tx-raised),var(--tx-panel) 68%);border-color:var(--tx-line)}
 .insight .dashboard-attendance-rail h2{display:flex;align-items:center;gap:8px}
@@ -383,6 +383,7 @@ button.secondary{border:1px solid var(--tx-line)}
 .sidebar-preferences{margin-top:12px;padding:10px;border:1px solid var(--tx-line);border-radius:8px}
 .sidebar-preferences label{display:flex;align-items:center;gap:8px;margin:6px 0}
 .sidebar-preferences input[type="checkbox"]{width:auto}
+.sidebar-preferences input[type="color"]{width:52px;height:32px;padding:2px;cursor:pointer}
 .sidebar-panel-actions{display:flex;flex-wrap:wrap;gap:7px}
 @media(max-width:720px){
   .shell #nav{max-height:none;min-height:0;overflow:visible;gap:6px}
@@ -963,7 +964,7 @@ bind('feeForm',async data=>{
 },{financial:true});
 }
 
-if(view==='Gate QR'){el.innerHTML='<div class="kiosk" id="kiosk"><div class="kiosk-top"><div class="kiosk-logo">TX</div><div><div class="kiosk-overline">TRAINERX · GYM ENTRANCE</div><h1 id="kioskName">Welcome to your gym</h1><p>Scan with your phone camera · Enter your 4-digit attendance code</p></div></div><div class="kiosk-main"><div class="kiosk-qr"><img id="gateImage" width="360" height="360" alt="Rotating gym entrance QR code"></div><div class="kiosk-side"><div class="kiosk-live">● LIVE CHECK-IN</div><h2>Ready to train?</h2><p>No app. No login. Just scan, enter your code, and get moving.</p><div id="gateCountdown" class="kiosk-countdown">Updating QR…</div><p id="gateExpiry" class="sub"></p><button class="secondary" id="kioskFull">⛶ Full screen</button></div></div><div class="kiosk-foot"><span>POWERED BY TRAINERX.IO</span><span>SECURE · ROTATING QR</span></div></div>';$('#kioskFull').onclick=()=>{const k=$('#kiosk');if(!document.fullscreenElement)k.requestFullscreen?.().catch(()=>notice('Full screen unavailable',true));else document.exitFullscreen?.()};let expiry=0,refreshing=false;const tick=()=>{if(view!=='Gate QR')return;$('#gateCountdown').textContent=expiry?'QR refresh in '+Math.max(0,Math.ceil((expiry-Date.now())/1000))+'s':'Updating QR…'};const refresh=async()=>{if(refreshing)return;refreshing=true;try{const x=await api('/gate-qr');if(view==='Gate QR'){$('#gateImage').src=x.qr;expiry=new Date(x.expires_at).getTime();$('#gateExpiry').textContent='Valid until '+new Date(x.expires_at).toLocaleTimeString();$('#kioskName').textContent=x.gym?.name||'Welcome to your gym'}}catch(e){if(!signal.aborted)notice(e.message,true)}finally{refreshing=false}};await refresh();if(signal.aborted)return;tick();gateTimer=setInterval(()=>{tick();if(Date.now()>=expiry)refresh()},1000)}
+if(view==='Gate QR'){el.innerHTML='<div class="kiosk" id="kiosk"><div class="kiosk-top"><div class="kiosk-logo">TX</div><div><div class="kiosk-overline">TRAINERX · GYM ENTRANCE</div><h1 id="kioskName">Welcome to your gym</h1><p>Scan with your phone camera · Enter your 4-digit attendance code</p></div></div><div class="kiosk-main"><div class="kiosk-qr"><img id="gateImage" width="360" height="360" alt="Rotating gym entrance QR code"></div><div class="kiosk-side"><div class="kiosk-live">● LIVE CHECK-IN</div><h2>Ready to train?</h2><p>No app. No login. Just scan, enter your code, and get moving.</p><div id="gateCountdown" class="kiosk-countdown">Updating QR…</div><p id="gateExpiry" class="sub"></p><button class="secondary" id="kioskFull">⛶ Full screen</button></div></div><div class="kiosk-foot"><span>POWERED BY TRAINERX.IO</span><span>SECURE · ROTATING QR</span></div></div>';$('#kioskFull').onclick=()=>{const k=$('#kiosk');if(!document.fullscreenElement)k.requestFullscreen?.().catch(()=>notice('Full screen unavailable',true));else document.exitFullscreen?.()};let expiry=0,refreshing=false;const tick=()=>{if(view!=='Gate QR')return;$('#gateCountdown').textContent=expiry?'QR refresh in '+Math.max(0,Math.ceil((expiry-Date.now())/1000))+'s':'Updating QR…'};const refresh=async()=>{if(refreshing)return;refreshing=true;try{const color=window.trainerXColors.get('qr');const x=await api('/gate-qr?'+new URLSearchParams({color}));if(color!==window.trainerXColors.get('qr'))return;if(view==='Gate QR'){$('#gateImage').src=x.qr;expiry=new Date(x.expires_at).getTime();$('#gateExpiry').textContent='Valid until '+new Date(x.expires_at).toLocaleTimeString();$('#kioskName').textContent=x.gym?.name||'Welcome to your gym'}}catch(e){if(!signal.aborted)notice(e.message,true)}finally{refreshing=false}};window.addEventListener('trainerx-qr-color',()=>{expiry=0;void refresh()},{signal});await refresh();if(signal.aborted)return;tick();gateTimer=setInterval(()=>{tick();if(Date.now()>=expiry)refresh()},1000)}
 
 if(view==='Scan QR'){el.innerHTML='<h1>Scan entrance QR</h1><p>Camera scanning requires HTTPS (or localhost) and a browser supporting BarcodeDetector. Alternatively, paste the QR content.</p><div class="card"><video id="scanVideo" autoplay playsinline muted style="width:100%;max-width:420px"></video><div class="row"><button class="primary" id="startScan">Start camera</button><button class="secondary" id="stopScan">Stop camera</button></div></div>'+form([['code','QR content']],'scanForm','Check in');bind('scanForm',async d=>api('/gate-checkin','POST',d));$('#stopScan').onclick=()=>{if(scannerStream){scannerStream.getTracks().forEach(t=>t.stop());scannerStream=null}};$('#startScan').onclick=async()=>{if(!('BarcodeDetector' in window)){notice('Camera QR detection unavailable in this browser. Use QR content input.',true);return}try{const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});if(signal.aborted||scannerStream){stream.getTracks().forEach(t=>t.stop());return}scannerStream=stream;const video=$('#scanVideo');video.srcObject=scannerStream;await video.play();const detector=new BarcodeDetector({formats:['qr_code']});const scan=async()=>{if(scannerStream!==stream||signal.aborted)return;try{const codes=await detector.detect(video);if(codes.length&&scannerStream===stream&&!signal.aborted){$('#scanForm [name=code]').value=codes[0].rawValue;scannerStream.getTracks().forEach(t=>t.stop());scannerStream=null;$('#scanForm').requestSubmit();return}}catch{}setTimeout(scan,300)};scan()}catch(e){notice(e.message,true)}}}
 if(view==='Workouts'||view==='Diets'){const workout=view==='Workouts',key=workout?'exercises':'meals',endpoint=workout?'/workouts':'/diets';const [plans,members]=await Promise.all([api(endpoint),me.role==='member'?[]:api('/members')]);el.innerHTML='<h1>'+safe(pageLabel(view))+'</h1><p>'+ (workout?'Exercise plans with sets and reps':'Meal plans and nutrition guidance')+'</p>'+(me.role==='member'?'':'<form id="trainingForm" class="card form"><label>Member<select name="member_id">'+members.map(m=>'<option value="'+safe(m.id)+'">'+safe(m.email)+'</option>').join('')+'</select></label><label>Plan title<input name="title" required maxlength="120"></label><label style="grid-column:1/-1">'+(workout?'Exercises: one per line (Name | Sets | Reps)':'Meals: one per line (Meal | Food | Calories)')+'<textarea name="lines" required rows="6" style="width:100%;background:var(--tx-control);color:var(--tx-text);padding:12px;border:1px solid var(--tx-line);border-radius:10px"></textarea></label><button class="primary">Save plan</button></form>')+'<div class="card">'+rows(plans,p=>'<div class="item"><b>'+safe(p.title)+'</b><p>'+safe(p.member)+'</p>'+p[key].map(x=>'<div class="sub">'+Object.values(x).map(safe).join(' · ')+'</div>').join('')+'</div>')+'</div>';if($('#trainingForm'))bind('trainingForm',async d=>{const lines=d.lines.split('\n').map(x=>x.trim()).filter(Boolean);if(!lines.length||lines.length>30)throw Error('Enter 1–30 lines');const items=lines.map(line=>{const parts=line.split('|').map(x=>x.trim());return workout?{name:parts[0]||'',sets:parts[1]||'',reps:parts[2]||''}:{meal:parts[0]||'',food:parts[1]||'',calories:parts[2]||''}});return api(endpoint,'POST',{member_id:d.member_id,title:d.title,[key]:items})})}
@@ -1741,6 +1742,13 @@ function openSidebarPanel(name){
   }
   if(name==='Settings'){
     sidebarBody.innerHTML=`<label>App appearance<select id="appTheme">${option('light','Light',document.documentElement.dataset.theme||'light')}${option('dark','Dark',document.documentElement.dataset.theme||'light')}</select></label>
+      <fieldset class="sidebar-preferences"><legend>Colors</legend>
+        <label>App accent <input type="color" id="appAccent"></label>
+        <label>Entrance QR <input type="color" id="qrAccent"></label>
+        <p class="sub">Colors are saved on this browser. Light QR colors are darkened for scanning.</p>
+        <button class="secondary" type="button" id="resetAccent">Reset app accent</button>
+        <button class="secondary" type="button" id="resetQr">Reset QR color</button>
+      </fieldset>
       ${me.role==='owner'?'<p><button class="secondary" type="button" data-gym-settings>Open gym settings</button></p>':''}`;
     if(me.role==='owner'){
       sidebarBody.insertAdjacentHTML('beforeend',`<form id="sidebarReminderPreferences">
@@ -1769,6 +1777,15 @@ function openSidebarPanel(name){
       };
     }
     $('#appTheme').onchange=event=>window.setTrainerXTheme(event.target.value);
+    for(const [type,inputId,resetId] of [['accent','appAccent','resetAccent'],['qr','qrAccent','resetQr']]){
+      const input=$('#'+inputId);
+      input.value=window.trainerXColors.get(type);
+      input.oninput=()=>window.trainerXColors.set(type,input.value);
+      $('#'+resetId).onclick=()=>{
+        window.trainerXColors.reset(type);
+        input.value=window.trainerXColors.get(type);
+      };
+    }
   }
   if(name==='Share'){
     const link=new URL('/',location.origin).href;

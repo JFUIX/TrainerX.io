@@ -142,7 +142,18 @@ if(Number(balance.paid)+amount>Number(m.rows[0].price)+0.001){await c.query('ROL
 
 const gateSecret=createHash('sha256').update('trainerx-gate-v1:'+String(process.env.BOOTSTRAP_TOKEN||'')).digest();
 const gateSign=v=>createHmac('sha256',gateSecret).update(v).digest('hex');
-app.get('/gate-qr',auth,async(req,res)=>{if(!staff(req.user))return res.sendStatus(403);const expires=Math.floor(Date.now()/60000)+1;const payload=req.user.gym_id+'.'+expires;const code=payload+'.'+gateSign(payload);const url=req.protocol+'://'+req.get('host')+'/checkin.html?gate='+encodeURIComponent(code);const gym=await db.query('SELECT name FROM gyms WHERE id=$1',[req.user.gym_id]);res.set('Cache-Control','no-store').json({qr:await QRCode.toDataURL(url,{width:420,margin:2}),expires_at:new Date(expires*60000).toISOString(),gym:gym.rows[0]||null})});
+function qrForeground(value){
+  if(typeof value!=='string'||!/^#[0-9a-f]{6}$/i.test(value))return '#000000';
+  let channels=value.slice(1).match(/../g).map(hex=>parseInt(hex,16));
+  const luminance=([r,g,b])=>.2126*r+.7152*g+.0722*b;
+  const linear=channel=>{
+    const normalized=channel/255;
+    return normalized<=.04045?normalized/12.92:((normalized+.055)/1.055)**2.4;
+  };
+  while(luminance(channels.map(linear))>.175)channels=channels.map(channel=>Math.floor(channel*.95));
+  return '#'+channels.map(channel=>channel.toString(16).padStart(2,'0')).join('');
+}
+app.get('/gate-qr',auth,async(req,res)=>{if(!staff(req.user))return res.sendStatus(403);const expires=Math.floor(Date.now()/60000)+1;const payload=req.user.gym_id+'.'+expires;const code=payload+'.'+gateSign(payload);const url=req.protocol+'://'+req.get('host')+'/checkin.html?gate='+encodeURIComponent(code);const gym=await db.query('SELECT name FROM gyms WHERE id=$1',[req.user.gym_id]);res.set('Cache-Control','no-store').json({qr:await QRCode.toDataURL(url,{width:420,margin:4,color:{dark:qrForeground(req.query.color),light:'#ffffff'}}),expires_at:new Date(expires*60000).toISOString(),gym:gym.rows[0]||null})});
 // Public phone-camera check-in. The rotating signed QR identifies the gym, not the member.
 app.post('/public-checkin',rateLimit({windowMs:60000,limit:12}),async(req,res)=>{
  const {gate,code}=req.body||{};

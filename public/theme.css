@@ -103,6 +103,36 @@
   --chart-ink: #f5f5f5;
 }
 
+:root[data-custom-accent] {
+  --tx-accent: var(--tx-custom-accent);
+  --tx-accent-ink: var(--tx-custom-ink);
+  --tx-accent-hover: var(--tx-accent);
+  --tx-accent-soft: color-mix(in srgb,var(--tx-accent) 42%,#000);
+  --tx-accent-tint: color-mix(in srgb,var(--tx-accent) 18%,#fff);
+  --tx-focus: var(--tx-accent-soft);
+  --tx-red-halo: color-mix(in srgb,var(--tx-accent) 28%,transparent);
+  --tx-red-halo-strong: color-mix(in srgb,var(--tx-accent) 52%,transparent);
+  --tx-featured: linear-gradient(145deg,color-mix(in srgb,var(--tx-accent) 43%,#000),color-mix(in srgb,var(--tx-accent) 22%,#000));
+  --tx-featured-line: color-mix(in srgb,var(--tx-accent) 60%,#000);
+  --chart-expense: color-mix(in srgb,var(--tx-accent) 64%,#000);
+  --chart-attendance: color-mix(in srgb,var(--tx-accent) 48%,#000);
+  --chart-membership: color-mix(in srgb,var(--tx-accent) 32%,#000);
+  --chart-other: color-mix(in srgb,var(--tx-accent) 62%,#777);
+  --tx-backdrop: radial-gradient(ellipse at 88% 12%,var(--tx-accent-tint),transparent 55%);
+}
+
+:root[data-custom-accent][data-theme="dark"] {
+  --tx-accent-soft: color-mix(in srgb,var(--tx-accent) 36%,#fff);
+  --tx-accent-tint: color-mix(in srgb,var(--tx-accent) 25%,#181a23);
+  --tx-red-halo: color-mix(in srgb,var(--tx-accent) 42%,transparent);
+  --tx-red-halo-strong: color-mix(in srgb,var(--tx-accent) 66%,transparent);
+  --tx-featured-line: color-mix(in srgb,var(--tx-accent) 68%,#fff);
+  --chart-expense: color-mix(in srgb,var(--tx-accent) 56%,#fff);
+  --chart-attendance: color-mix(in srgb,var(--tx-accent) 34%,#fff);
+  --chart-membership: color-mix(in srgb,var(--tx-accent) 76%,#fff);
+  --chart-other: color-mix(in srgb,var(--tx-accent) 48%,#b6b6b6);
+}
+
 body {
   background: var(--tx-backdrop) no-repeat;
   background-size: 100% max(820px, 100vh);
