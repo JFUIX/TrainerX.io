@@ -164,6 +164,19 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .analytics-grid,.analytics-totals{display:grid;gap:8px}.analytics-grid{align-items:start}
 .analytics-totals{grid-template-columns:repeat(3,minmax(0,1fr))}
 .analytics-grid{grid-template-columns:minmax(0,2fr) minmax(0,3fr)}
+.analytics-breakdown{grid-row:span 2}
+.analytics-donut{position:relative;display:grid;place-items:center;width:min(100%,166px);aspect-ratio:1;margin:10px auto 12px;border-radius:50%;background:conic-gradient(var(--segments))}
+.analytics-donut::before{content:'';position:absolute;inset:17%;border-radius:50%;background:var(--tx-panel)}
+.analytics-donut-total{position:relative;width:63%;text-align:center;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.analytics-donut-total strong{display:block;font-size:15px}
+.analytics-donut-total span{color:var(--tx-muted);font-size:11px}
+.analytics-legend-label,.analytics-legend-value{display:flex;align-items:center;gap:6px}
+.analytics-legend-label{min-width:0;overflow-wrap:anywhere}
+.analytics-legend-value{justify-content:end;flex-wrap:wrap;text-align:right;font-variant-numeric:tabular-nums}
+.analytics-legend-value small{min-width:3.5ch;color:var(--tx-muted)}
+.analytics-gain{--swatch:#76d9b3}.analytics-loss{--swatch:#ff9277}
+.trend-baseline{stroke:#837679;vector-effect:non-scaling-stroke}
+.analytics-cashflow .trend-chart{--plot-height:90px}
 .analytics .card{margin:0;border-radius:14px;padding:11px;min-width:0;box-shadow:none}
 .analytics .analytics-total{display:grid;align-content:start;gap:5px;padding:10px 12px}
 .analytics-total span{color:var(--tx-muted);font-size:14px;font-weight:600}
@@ -189,7 +202,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .analytics-table :is(th,td):last-child{text-align:right;white-space:nowrap}
 .analytics-table td:nth-child(4){overflow-wrap:anywhere;min-width:8rem}
 .analytics .analytics-table-note{margin-top:10px}
-@media(max-width:1000px){.analytics-grid{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:1000px){.analytics-grid{grid-template-columns:minmax(0,1fr)}.analytics-breakdown{grid-row:auto}}
 @media(max-width:480px){.analytics-totals{grid-template-columns:minmax(0,1fr)}.analytics .card{padding:12px}}
 .insight-lead,.insight-content,.insight-attendance-stack{min-width:0;display:grid;gap:8px;align-content:start}
 .insight-main{display:contents}
@@ -231,7 +244,6 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .trend-dot{display:none;position:absolute;left:50%;width:6px;height:6px;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none}
 .trend-point:is(:hover,:focus) .trend-dot{display:block}
 .trend-label{position:absolute;top:calc(100% + 4px);left:50%;transform:translateX(-50%);padding:2px 3px;border-radius:99px;white-space:nowrap}
-.trend-categories .trend-label{max-width:100%;overflow:hidden;text-overflow:ellipsis}
 .trend-point:not(:is(:hover,:focus)) .trend-label.sparse{visibility:hidden}
 .trend-point:is(:hover,:focus) .trend-label{background:#f4eeee;color:#231e20}
 .trend-tooltip{display:none;position:absolute;top:6px;left:calc(50% + 6px);width:max-content;max-width:100px;overflow-wrap:anywhere;padding:6px 8px;border:1px solid var(--tx-line);border-radius:7px;background:#201d20;color:var(--tx-text);pointer-events:none}
@@ -378,6 +390,7 @@ if(view==='Financials'){
     if(row.type==='Expense')expenseTotals.set(row.category,(expenseTotals.get(row.category)||0)+Math.round(Number(row.amount)*100));
   }
   const categories=[...expenseTotals].sort((a,b)=>b[1]-a[1]);
+  const points=financialPoints(report.entries,dates);
   el.innerHTML=`<div class="analytics">
     <div class="analytics-header">
       <h1>${safe(pageLabel(view))}</h1>
@@ -392,21 +405,27 @@ if(view==='Financials'){
       ${totals.map(([label,value])=>`<section class="card analytics-total"><span>${label}</span><strong>${safe(money(value))}</strong></section>`).join('')}
     </div>
     <div class="analytics-grid">
-      <section class="card">
+      <section class="card analytics-breakdown">
         <div class="analytics-panel-head"><h2>Expenses by category</h2></div>
-        ${categories.length?renderTrendChart('expenses-by-category','Expenses by category',
-          categories.map(([category,cents])=>({label:category,values:[cents/100]})),
-          [{format:money}],{categorical:true,minStep:.01}):''}
-        ${categories.length?`<ul class="analytics-legend">${categories.map(([category,cents])=>`
-          <li><span>${safe(category)}</span><strong>${safe(money(cents/100))}</strong></li>`).join('')}</ul>`:
-          '<p class="sub">No expenses recorded for this period.</p>'}
+        ${renderExpenseDonut(categories,money)}
       </section>
       <section class="card">
         <div class="analytics-panel-head"><h2>Financial activity</h2>
           <div class="analytics-keys"><span><i class="analytics-swatch analytics-revenue" aria-hidden="true"></i>Revenue</span>
           <span><i class="analytics-swatch analytics-expense" aria-hidden="true"></i>Expenses</span></div>
         </div>
-        ${renderFinancialActivity(report.entries,dates,money,account.currency)}
+        ${renderTrendChart('financial-activity','Financial activity in '+account.currency,points,[
+          {color:'#ff9f7b',format:value=>'Revenue '+money(value)},
+          {color:'#c6adf2',format:value=>'Expenses '+money(value)}
+        ],{minStep:.01})}
+      </section>
+      <section class="card analytics-cashflow">
+        <div class="analytics-panel-head"><h2>Net cash flow by period</h2>
+          <div class="analytics-keys"><span><i class="analytics-swatch analytics-gain" aria-hidden="true"></i>Surplus</span>
+          <span><i class="analytics-swatch analytics-loss" aria-hidden="true"></i>Deficit</span></div>
+        </div>
+        ${renderTrendChart('net-cash-flow','Net cash flow in '+account.currency,
+          points.map(point=>({...point,values:[point.net]})),[{format:money}],{bars:true,minStep:.01})}
       </section>
     </div>
     <section class="card">
@@ -741,8 +760,27 @@ if(view==='Renewals'){const r=await api('/renewals');el.innerHTML='<h1>Upcoming 
 
 if(view==='My plans'){const p=await api('/plans');el.innerHTML='<h1>Available plans</h1><div class="card">'+rows(p,x=>'<div class="item"><b>'+safe(x.name)+'</b> · '+safe(x.months)+' months · '+safe(x.price)+'</div>')+'</div>'}
 }catch(e){if(!signal.aborted)el.innerHTML='<p class="error">'+safe(e.message)+'</p>'}}
-function renderFinancialActivity(entries,dates,money,currency){
-  if(!entries.length)return '<p class="sub">No revenue or expenses recorded for this period.</p>';
+function renderExpenseDonut(categories,money){
+  if(!categories.length)return '<p class="sub">No expenses recorded for this period.</p>';
+  const colors=['#ff9676','#c6adf2','#75d6b3','#f3c66d','#87bcf5','#ed9dcd'];
+  const total=categories.reduce((sum,[,cents])=>sum+cents,0);
+  let end=0;
+  const segments=categories.map(([,cents],index)=>{
+    const start=end;
+    end+=100*cents/total;
+    return colors[index%colors.length]+' '+start+'% '+end+'%';
+  }).join(',');
+  const share=new Intl.NumberFormat(undefined,{style:'percent',maximumFractionDigits:1});
+  return `<div class="analytics-donut" style="--segments:${segments}">
+    <div class="analytics-donut-total"><strong>${safe(money(total/100))}</strong><span>Total expenses</span></div>
+  </div><ul class="analytics-legend">${categories.map(([category,cents],index)=>`<li>
+    <span class="analytics-legend-label"><i class="analytics-swatch" aria-hidden="true" style="--swatch:${colors[index%colors.length]}"></i>${safe(category)}</span>
+    <span class="analytics-legend-value"><strong>${safe(money(cents/100))}</strong><small>${safe(share.format(cents/total))}</small></span>
+  </li>`).join('')}</ul>`;
+}
+
+function financialPoints(entries,dates){
+  if(!entries.length)return [];
   const day=86400000;
   const from=Date.parse(dates.from);
   const days=Math.round((Date.parse(dates.to)-from)/day)+1;
@@ -753,52 +791,52 @@ function renderFinancialActivity(entries,dates,money,currency){
     periods[index][row.type]+=Math.round(Number(row.amount)*100);
   }
   const dateFormat=new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric',timeZone:'UTC'});
-  const points=periods.map((period,index)=>{
+  return periods.map((period,index)=>{
     const start=dateFormat.format(from+index*span*day);
     const end=dateFormat.format(from+Math.min(days-1,(index+1)*span-1)*day);
     return {
       label:start,
       detail:start===end?start:start+' – '+end,
       values:[period.Payment/100,period.Expense/100],
+      net:(period.Payment-period.Expense)/100,
       sparse:periods.length>5&&index%2===1&&index!==periods.length-1
     };
   });
-  return renderTrendChart('financial-activity','Financial activity in '+currency,points,[
-    {color:'#ff9f7b',format:value=>'Revenue '+money(value)},
-    {color:'#c6adf2',format:value=>'Expenses '+money(value)}
-  ],{minStep:.01});
+
 }
 
 const chartAxisFormat=new Intl.NumberFormat(undefined,{notation:'compact',maximumFractionDigits:2});
 const chartVisitLabel=count=>count+(count===1?' check-in':' check-ins');
-function renderTrendChart(id,label,points,series,{categorical=false,minStep=1}={}){
+function renderTrendChart(id,label,points,series,{bars=false,minStep=1}={}){
   if(!points.length)return '<p class="sub">No data for this period.</p>';
-  const peak=Math.max(...points.flatMap(point=>point.values));
-  const target=Math.max(minStep,peak/4);
+  const values=points.flatMap(point=>point.values);
+  const peak=Math.max(...values),trough=Math.min(...values);
+  const tickValues=trough<0?(peak>0?[2,1,0,-1,-2]:[0,-1,-2,-3,-4]):[4,3,2,1,0];
+  const extent=Math.max(Math.abs(peak),Math.abs(trough));
+  const target=Math.max(minStep,extent/Math.max(...tickValues.map(Math.abs)));
   const magnitude=10**Math.floor(Math.log10(target));
   const roundedStep=[1,2,2.5,5,10].find(multiplier=>multiplier*magnitude>=target)*magnitude;
   const step=minStep===1?Math.ceil(roundedStep):roundedStep;
-  const tickValues=[4,3,2,1,0];
-  const ticks=tickValues.map(tick=>({y:100-24*tick,value:chartAxisFormat.format(tick*step)}));
+  const y=value=>4+24*(tickValues[0]-value/step);
+  const ticks=tickValues.map(tick=>({y:y(tick*step),value:chartAxisFormat.format(tick*step)}));
   const width=700;
   const slot=width/points.length;
   const x=index=>slot*(index+.5);
-  const y=value=>100-96*value/(4*step);
   const palette=series.map(item=>item.color||'#ded7d6');
-  const paths=palette.map((color,index)=>{
+  const barColor=value=>value<0?'#ff9277':'#76d9b3';
+  const barsMarkup=()=>points.map((point,index)=>{
+    const value=point.values[0];
+    const base=y(0),tip=y(value);
+    const barWidth=Math.min(48,slot*.5);
+    return `<rect x="${x(index)-barWidth/2}" y="${Math.min(base,tip)}" width="${barWidth}" height="${Math.abs(base-tip)}"
+      rx="3" fill="${barColor(value)}" fill-opacity=".86"/>`;
+  }).join('');
+  const paths=bars?barsMarkup():palette.map((color,index)=>{
     const gradient=id+'-fill-'+index;
     const fill='url(#'+gradient+')';
     const shade=`<defs><linearGradient id="${gradient}" x2="0%" y2="100%">
       <stop stop-color="${color}" stop-opacity=".26"/><stop offset="100%" stop-color="${color}" stop-opacity="0"/>
     </linearGradient></defs>`;
-    if(categorical){
-      return shade+points.map((point,i)=>{
-        const top=y(point.values[index]);
-        const left=x(i)-slot*.25;
-        return `<rect x="${left}" y="${top}" width="${slot*.5}" height="${100-top}" fill="${fill}"/>
-          <path class="trend-trace" d="M${left} ${top}h${slot*.5}" stroke="${color}"/>`;
-      }).join('');
-    }
     const coordinates=points.map((point,i)=>x(i)+','+y(point.values[index]));
     if(points.length===1)coordinates[0]=`0,${y(points[0].values[index])} L${width},${y(points[0].values[index])}`;
     const line='M'+coordinates.join(' L');
@@ -807,12 +845,13 @@ function renderTrendChart(id,label,points,series,{categorical=false,minStep=1}={
     return shade+`<path d="${line} L${end},100 H${start} Z" fill="${fill}"/>
       <path class="trend-trace" d="${line}" stroke="${color}"/>`;
   }).join('');
-  return `<div class="trend-chart${categorical?' trend-categories':''}" role="group" aria-label="${safe(label)}">
+  return `<div class="trend-chart" role="group" aria-label="${safe(label)}">
     <div class="trend-axis" aria-hidden="true">${ticks.map(tick=>`<span style="--tick-y:${tick.y}%">${safe(tick.value)}</span>`).join('')}</div>
     <div class="trend-plot">
       <svg viewBox="0 0 ${width} 100" preserveAspectRatio="none" aria-hidden="true">
         <path class="trend-guides" d="${ticks.map(tick=>`M0 ${tick.y}H${width}`).join(' ')}"/>
         ${paths}
+        ${bars?`<line class="trend-baseline" x2="${width}" y1="${y(0)}" y2="${y(0)}"/>`: ''}
       </svg>
       <div class="trend-points">
         ${points.map((point,index)=>{
@@ -820,7 +859,7 @@ function renderTrendChart(id,label,points,series,{categorical=false,minStep=1}={
           const values=series.map((item,i)=>item.format(point.values[i]));
           return `<div class="trend-point${index>=points.length/2?' trend-point-right':''}" tabindex="0" role="group"
             aria-label="${safe([detail,...values].join(', '))}">
-            ${point.values.map((value,i)=>`<span class="trend-dot" aria-hidden="true" style="top:${y(value)}%;background:${palette[i]}"></span>`).join('')}
+            ${point.values.map((value,i)=>`<span class="trend-dot" aria-hidden="true" style="top:${y(value)}%;background:${bars?barColor(value):palette[i]}"></span>`).join('')}
             <span class="trend-label${point.sparse?' sparse':''}" aria-hidden="true">${safe(point.label)}</span>
             <span class="trend-tooltip" aria-hidden="true"><strong>${safe(detail)}</strong>${values.map(value=>`<span>${safe(value)}</span>`).join('')}</span>
           </div>`;
