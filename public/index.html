@@ -161,9 +161,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .plan-templates{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,165px),1fr));gap:8px}
 .plan-templates button{display:flex;align-items:center;gap:7px;min-height:38px;text-align:left;padding:7px 9px}
 .plan-templates svg{width:20px;height:20px;flex:none;fill:none;stroke:var(--tx-accent-soft);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-.analytics-grid,.analytics-totals{display:grid;gap:8px}.analytics-grid{align-items:start}
+.analytics-grid,.analytics-totals{display:grid;gap:8px}
 .analytics-totals{grid-template-columns:repeat(3,minmax(0,1fr))}
-.analytics-grid{grid-template-columns:minmax(0,2fr) minmax(0,3fr)}
+.analytics-grid{grid-template-columns:minmax(0,2fr) minmax(0,3fr);grid-template-rows:repeat(2,1fr)}
 .analytics-breakdown{grid-row:span 2}
 .analytics-donut{position:relative;display:grid;place-items:center;width:min(100%,166px);aspect-ratio:1;margin:10px auto 12px;border-radius:50%;background:conic-gradient(var(--segments))}
 .analytics-donut::before{content:'';position:absolute;inset:17%;border-radius:50%;background:var(--tx-panel)}
@@ -176,7 +176,6 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .analytics-legend-value small{min-width:3.5ch;color:var(--tx-muted)}
 .analytics-gain{--swatch:#76d9b3}.analytics-loss{--swatch:#ff9277}
 .trend-baseline{stroke:#837679;vector-effect:non-scaling-stroke}
-.analytics-cashflow .trend-chart{--plot-height:90px}
 .analytics .card{margin:0;border-radius:14px;padding:11px;min-width:0;box-shadow:none}
 .analytics .analytics-total{display:grid;align-content:start;gap:5px;padding:10px 12px}
 .analytics-total span{color:var(--tx-muted);font-size:14px;font-weight:600}
@@ -202,7 +201,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .analytics-table :is(th,td):last-child{text-align:right;white-space:nowrap}
 .analytics-table td:nth-child(4){overflow-wrap:anywhere;min-width:8rem}
 .analytics .analytics-table-note{margin-top:10px}
-@media(max-width:1000px){.analytics-grid{grid-template-columns:minmax(0,1fr)}.analytics-breakdown{grid-row:auto}}
+@media(max-width:1000px){.analytics-grid{grid-template-columns:minmax(0,1fr);grid-template-rows:none}.analytics-breakdown{grid-row:auto}}
 @media(max-width:480px){.analytics-totals{grid-template-columns:minmax(0,1fr)}.analytics .card{padding:12px}}
 .insight-lead,.insight-content,.insight-attendance-stack{min-width:0;display:grid;gap:8px;align-content:start}
 .insight-main{display:contents}
@@ -419,7 +418,7 @@ if(view==='Financials'){
           {color:'#c6adf2',format:value=>'Expenses '+money(value)}
         ],{minStep:.01})}
       </section>
-      <section class="card analytics-cashflow">
+      <section class="card">
         <div class="analytics-panel-head"><h2>Net cash flow by period</h2>
           <div class="analytics-keys"><span><i class="analytics-swatch analytics-gain" aria-hidden="true"></i>Surplus</span>
           <span><i class="analytics-swatch analytics-loss" aria-hidden="true"></i>Deficit</span></div>
