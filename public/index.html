@@ -414,6 +414,12 @@ button.secondary{border:1px solid var(--tx-line)}
 .analytics-donut-halo::before{content:'';position:absolute;inset:0;border-radius:50%;
   background:conic-gradient(var(--red-segments));
   mask:radial-gradient(circle closest-side,transparent 65%,#000 67%)}
+
+.accent-presets{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,110px),1fr));gap:6px;margin:6px 0 10px}
+.accent-preset{display:grid;gap:5px;text-align:left;font-size:12px}
+.accent-preset[aria-pressed="true"]{outline:2px solid var(--tx-focus);outline-offset:1px}
+.accent-swatches{display:flex;overflow:hidden;border-radius:5px;height:9px}
+.accent-swatches span{flex:1}
 </style></head><body>
 <div class="shell"><header>
   <div class="header-brand" translate="no">
@@ -1743,6 +1749,12 @@ function openSidebarPanel(name){
   if(name==='Settings'){
     sidebarBody.innerHTML=`<label>App appearance<select id="appTheme">${option('light','Light',document.documentElement.dataset.theme||'light')}${option('dark','Dark',document.documentElement.dataset.theme||'light')}</select></label>
       <fieldset class="sidebar-preferences"><legend>Colors</legend>
+        <div class="accent-presets" role="group" aria-label="Accent themes">
+          ${window.trainerXColors.presets().map(preset=>`<button class="secondary accent-preset" type="button" data-accent-preset="${preset.id}" aria-pressed="false">
+            <span class="accent-swatches" aria-hidden="true">${preset.shades.map(shade=>`<span style="background:${shade}"></span>`).join('')}</span>
+            <span>${preset.name}</span>
+          </button>`).join('')}
+        </div>
         <label>App accent <input type="color" id="appAccent"></label>
         <label>Entrance QR <input type="color" id="qrAccent"></label>
         <p class="sub">Colors are saved on this browser. Light QR colors are darkened for scanning.</p>
@@ -1777,13 +1789,23 @@ function openSidebarPanel(name){
       };
     }
     $('#appTheme').onchange=event=>window.setTrainerXTheme(event.target.value);
+    const presetButtons=sidebarBody.querySelectorAll('button[data-accent-preset]');
+    const syncPresets=()=>presetButtons.forEach(button=>
+      button.setAttribute('aria-pressed',String(button.dataset.accentPreset===window.trainerXColors.selectedPreset())));
+    syncPresets();
+    presetButtons.forEach(button=>button.onclick=()=>{
+      window.trainerXColors.selectPreset(button.dataset.accentPreset);
+      $('#appAccent').value=window.trainerXColors.get('accent');
+      syncPresets();
+    });
     for(const [type,inputId,resetId] of [['accent','appAccent','resetAccent'],['qr','qrAccent','resetQr']]){
       const input=$('#'+inputId);
       input.value=window.trainerXColors.get(type);
-      input.oninput=()=>window.trainerXColors.set(type,input.value);
+      input.oninput=()=>{window.trainerXColors.set(type,input.value);syncPresets()};
       $('#'+resetId).onclick=()=>{
         window.trainerXColors.reset(type);
         input.value=window.trainerXColors.get(type);
+        syncPresets();
       };
     }
   }

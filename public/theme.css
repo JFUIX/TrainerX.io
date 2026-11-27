@@ -133,6 +133,50 @@
   --chart-other: color-mix(in srgb,var(--tx-accent) 48%,#b6b6b6);
 }
 
+:root[data-accent-preset] {
+  --tx-bg: var(--preset-pale);
+  --tx-backdrop: radial-gradient(ellipse at 85% 0%,var(--preset-soft),transparent 65%);
+  --tx-frame: linear-gradient(150deg,#ffffffb5,var(--preset-pale));
+  --tx-accent: var(--preset-dark);
+  --tx-accent-hover: var(--preset-deep);
+  --tx-accent-soft: var(--preset-dark);
+  --tx-accent-tint: var(--preset-pale);
+  --tx-focus: var(--preset-dark);
+  --tx-accent-ink: #fff;
+  --tx-featured: linear-gradient(145deg,var(--preset-dark),var(--preset-deep));
+  --tx-featured-line: var(--preset-medium);
+  --tx-red-halo: color-mix(in srgb,var(--preset-vivid) 28%,transparent);
+  --tx-red-halo-strong: color-mix(in srgb,var(--preset-vivid) 52%,transparent);
+  --chart-expense: var(--preset-medium);
+  --chart-attendance: var(--preset-dark);
+  --chart-membership: var(--preset-deep);
+  --chart-other: var(--preset-vivid);
+}
+
+:root[data-accent-preset][data-theme="dark"] {
+  --tx-bg: var(--preset-deep);
+  --tx-muted: #d7d8df;
+  --tx-panel: color-mix(in srgb,var(--preset-deep) 88%,var(--preset-pale));
+  --tx-control: color-mix(in srgb,var(--preset-deep) 94%,var(--preset-pale));
+  --tx-raised: color-mix(in srgb,var(--preset-deep) 85%,var(--preset-pale));
+  --tx-subtle: color-mix(in srgb,var(--preset-deep) 78%,var(--preset-pale));
+  --tx-hover: color-mix(in srgb,var(--preset-deep) 72%,var(--preset-pale));
+  --tx-line: color-mix(in srgb,var(--preset-deep) 67%,var(--preset-pale));
+  --tx-backdrop: radial-gradient(ellipse at 85% 0%,var(--preset-dark),transparent 65%);
+  --tx-frame: linear-gradient(145deg,var(--tx-panel),var(--preset-deep));
+  --tx-accent: var(--preset-bright);
+  --tx-accent-hover: color-mix(in srgb,var(--preset-bright) 85%,#fff);
+  --tx-accent-soft: var(--preset-pale);
+  --tx-accent-tint: var(--tx-subtle);
+  --tx-focus: var(--preset-pale);
+  --tx-accent-ink: #000;
+  --tx-featured-line: var(--preset-soft);
+  --chart-expense: var(--preset-bright);
+  --chart-attendance: var(--preset-soft);
+  --chart-membership: var(--preset-pale);
+  --chart-other: var(--preset-medium);
+}
+
 body {
   background: var(--tx-backdrop) no-repeat;
   background-size: 100% max(820px, 100vh);
