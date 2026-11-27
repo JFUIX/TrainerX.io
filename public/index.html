@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#d5d7db"><link rel="stylesheet" href="/theme.css"><title>TrainerX | Gym Management Suite</title><style>
-*{box-sizing:border-box}body{margin:0}button{cursor:pointer;border:0;border-radius:999px;padding:8px 13px;font-weight:700}button.primary{background:var(--tx-accent);color:var(--tx-accent-ink)}button.secondary{background:#e7e8eb;color:var(--tx-text)}.shell{max-width:1120px;margin:auto;padding:28px 18px}header{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid var(--tx-line);padding-bottom:20px}.sub{color:var(--tx-muted);font-size:13px}.grid{display:grid;grid-template-columns:220px 1fr;gap:24px;margin-top:24px}nav{display:flex;flex-direction:column;gap:8px}nav button{text-align:left;background:transparent;color:var(--tx-muted)}main{min-width:0}.card{background:var(--tx-panel);border:1px solid var(--tx-line);border-radius:16px;padding:12px;margin:10px 0}.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.metric strong{font-size:32px;display:block;color:var(--tx-accent)}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.form>*{min-width:0}label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--tx-muted)}input,select,textarea{width:100%;padding:8px 10px;border-radius:8px;background:var(--tx-control);border:1px solid var(--tx-line);color:#17181c}h1{font-size:30px;margin:8px 0}h2{font-size:19px}p{color:var(--tx-muted)}.item{padding:8px 0;border-bottom:1px solid var(--tx-line);overflow-wrap:anywhere}.item:last-child{border:0}.badge{display:inline-block;padding:4px 9px;border-radius:8px;background:#e6e7eb;color:var(--tx-accent-soft);font-size:12px}.error{color:#642d38}.success{color:var(--tx-accent)}#notice:not(:empty){margin-bottom:8px}#login{max-width:430px;margin:10vh auto}.hidden{display:none!important}@media(max-width:720px){.grid{display:block}nav{flex-direction:row;overflow-x:auto;padding:12px 0}nav button{white-space:nowrap}.metrics{grid-template-columns:1fr 1fr}.form{grid-template-columns:1fr}.shell{padding:16px}}
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#d5d7db"><script src="/theme.js"></script><link rel="stylesheet" href="/theme.css"><title>TrainerX | Gym Management Suite</title><style>
+*{box-sizing:border-box}body{margin:0}button{cursor:pointer;border:0;border-radius:999px;padding:8px 13px;font-weight:700}button.primary{background:var(--tx-accent);color:var(--tx-accent-ink)}button.secondary{background:var(--tx-subtle);color:var(--tx-text)}.shell{max-width:1120px;margin:auto;padding:28px 18px}header{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid var(--tx-line);padding-bottom:20px}.sub{color:var(--tx-muted);font-size:13px}.grid{display:grid;grid-template-columns:220px 1fr;gap:24px;margin-top:24px}nav{display:flex;flex-direction:column;gap:8px}nav button{text-align:left;background:transparent;color:var(--tx-muted)}main{min-width:0}.card{background:var(--tx-panel);border:1px solid var(--tx-line);border-radius:16px;padding:12px;margin:10px 0}.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.metric strong{font-size:32px;display:block;color:var(--tx-accent)}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.form>*{min-width:0}label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--tx-muted)}input,select,textarea{width:100%;padding:8px 10px;border-radius:8px;background:var(--tx-control);border:1px solid var(--tx-line);color:var(--tx-text)}h1{font-size:30px;margin:8px 0}h2{font-size:19px}p{color:var(--tx-muted)}.item{padding:8px 0;border-bottom:1px solid var(--tx-line);overflow-wrap:anywhere}.item:last-child{border:0}.badge{display:inline-block;padding:4px 9px;border-radius:8px;background:var(--tx-subtle);color:var(--tx-accent-soft);font-size:12px}.error{color:var(--tx-danger)}.success{color:var(--tx-accent)}#notice:not(:empty){margin-bottom:8px}#login{max-width:430px;margin:10vh auto}.hidden{display:none!important}@media(max-width:720px){.grid{display:block}nav{flex-direction:row;overflow-x:auto;padding:12px 0}nav button{white-space:nowrap}.metrics{grid-template-columns:1fr 1fr}.form{grid-template-columns:1fr}.shell{padding:16px}}
 
-.dashboard-hero{padding:25px;border-radius:20px;background:radial-gradient(circle at 92% 12%,#e0e2e7 0,transparent 46%),linear-gradient(130deg,var(--tx-panel),var(--tx-control));border:1px solid var(--tx-line);margin:12px 0 18px}.dashboard-hero h1{font-size:clamp(27px,4vw,38px);letter-spacing:-1.2px}.dashboard-hero p{margin:7px 0 0}.dash-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.dash-kpi{margin:0;min-height:125px;background:linear-gradient(145deg,var(--tx-panel),var(--tx-control));position:relative;overflow:hidden}.dash-kpi:before{content:'';position:absolute;pointer-events:none;right:-28px;top:-36px;width:105px;height:105px;border-radius:50%;background:color-mix(in srgb,var(--tx-accent) 5%,transparent)}.dash-kpi .kpi-label{font-size:12px;color:var(--tx-muted);font-weight:600}.dash-kpi strong{font-size:clamp(22px,3vw,32px);display:block;margin:14px 0 3px;letter-spacing:-1px;color:var(--tx-text)}.dash-kpi.accent strong{color:var(--tx-accent)}.dash-kpi small{font-size:11px;color:var(--tx-muted)}.dash-panels{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}.dash-panels .card{margin:0}.dash-panel-head{display:flex;justify-content:space-between;align-items:center;gap:8px}.dash-panel-head h2{margin:0}.dash-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:15px}.dash-action{background:var(--tx-panel);border:1px solid var(--tx-line);color:var(--tx-text);text-align:left;font-size:12px;padding:14px}.dash-action strong{display:block;color:var(--tx-accent);font-size:22px;margin-bottom:3px}.dash-action:hover{border-color:var(--tx-accent)}.dash-feed{display:flex;justify-content:space-between;gap:10px;font-size:13px}.dash-feed time{color:var(--tx-muted);white-space:nowrap}@media(max-width:850px){.dash-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.dash-panels{grid-template-columns:1fr}}@media(max-width:450px){.dash-kpi{padding:15px;min-height:112px}.dash-chart{gap:6px}.dashboard-hero{padding:20px}}
- .money-line{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.money-line strong{margin:0}.money-toggle{background:#eceef0;color:var(--tx-accent);border:1px solid #c8cad0;padding:6px 9px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center}.money-toggle:hover{background:#e0e2e7}.money-toggle svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.money-value{font-variant-numeric:tabular-nums}
+.dashboard-hero{padding:25px;border-radius:20px;background:radial-gradient(circle at 92% 12%,var(--tx-hover) 0,transparent 46%),linear-gradient(130deg,var(--tx-panel),var(--tx-control));border:1px solid var(--tx-line);margin:12px 0 18px}.dashboard-hero h1{font-size:clamp(27px,4vw,38px);letter-spacing:-1.2px}.dashboard-hero p{margin:7px 0 0}.dash-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.dash-kpi{margin:0;min-height:125px;background:linear-gradient(145deg,var(--tx-panel),var(--tx-control));position:relative;overflow:hidden}.dash-kpi:before{content:'';position:absolute;pointer-events:none;right:-28px;top:-36px;width:105px;height:105px;border-radius:50%;background:color-mix(in srgb,var(--tx-accent) 5%,transparent)}.dash-kpi .kpi-label{font-size:12px;color:var(--tx-muted);font-weight:600}.dash-kpi strong{font-size:clamp(22px,3vw,32px);display:block;margin:14px 0 3px;letter-spacing:-1px;color:var(--tx-text)}.dash-kpi.accent strong{color:var(--tx-accent)}.dash-kpi small{font-size:11px;color:var(--tx-muted)}.dash-panels{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}.dash-panels .card{margin:0}.dash-panel-head{display:flex;justify-content:space-between;align-items:center;gap:8px}.dash-panel-head h2{margin:0}.dash-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:15px}.dash-action{background:var(--tx-panel);border:1px solid var(--tx-line);color:var(--tx-text);text-align:left;font-size:12px;padding:14px}.dash-action strong{display:block;color:var(--tx-accent);font-size:22px;margin-bottom:3px}.dash-action:hover{border-color:var(--tx-accent)}.dash-feed{display:flex;justify-content:space-between;gap:10px;font-size:13px}.dash-feed time{color:var(--tx-muted);white-space:nowrap}@media(max-width:850px){.dash-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.dash-panels{grid-template-columns:1fr}}@media(max-width:450px){.dash-kpi{padding:15px;min-height:112px}.dash-chart{gap:6px}.dashboard-hero{padding:20px}}
+ .money-line{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.money-line strong{margin:0}.money-toggle{background:var(--tx-control);color:var(--tx-accent);border:1px solid var(--tx-line);padding:6px 9px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center}.money-toggle:hover{background:var(--tx-hover)}.money-toggle svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.money-value{font-variant-numeric:tabular-nums}
 #memberList{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,350px),1fr));gap:8px;align-items:start}
 .member-card{margin:0;min-width:0;display:grid;gap:8px}
 .member-card .member-person{min-width:0}
@@ -28,7 +28,7 @@
 .member-card-actions{display:flex;flex-wrap:wrap;gap:7px}
 .member-card-actions button,.member-card-actions a{font-size:12px;padding:7px 10px}
 .member-profile-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}
-.member-contact{display:inline-flex;align-items:center;padding:8px 12px;border-radius:8px;background:var(--tx-accent);color:#fff;font-weight:700;text-decoration:none;white-space:nowrap}
+.member-contact{display:inline-flex;align-items:center;padding:8px 12px;border-radius:8px;background:var(--tx-accent);color:var(--tx-accent-ink);font-weight:700;text-decoration:none;white-space:nowrap}
 .member-contact:focus-visible{outline:2px solid var(--tx-accent-soft);outline-offset:3px}
 .member-card-actions .member-cancel{color:var(--tx-accent-soft)}
 .member-card-records{border-top:1px solid var(--tx-line);padding-top:10px}
@@ -38,15 +38,15 @@
 #memberDetail{min-width:0;border-top:1px solid var(--tx-line);padding-top:12px;scroll-margin-top:18px}
 #memberDetail .form{margin-top:12px}
 #memberDetail h3{grid-column:1/-1}
-.member-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:9px 0}.member-toolbar input{flex:1;min-width:180px}.member-toolbar select{width:auto;min-width:130px}.member-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.member-mini .card{margin:0;padding:9px}.member-mini strong{font-size:25px;display:block;color:var(--tx-accent)}.member-list .item{content-visibility:auto;contain-intrinsic-block-size:auto 36px;display:flex;justify-content:space-between;align-items:center;gap:12px}.member-person{display:flex;align-items:center;gap:12px;min-width:0}.member-avatar{flex-shrink:0;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#d9dce3;color:var(--tx-accent-soft);font-weight:800}.member-person p{margin:5px 0;font-size:12px}.member-status{font-size:11px;padding:5px 9px;border-radius:30px;background:#e6e7eb;color:var(--tx-accent-soft)}.member-status.expired{background:#e9e5e7;color:#5c343d}.member-status.inactive{background:#e4e5e8;color:#575a64}.member-actions{display:flex;gap:7px;align-items:center}.member-actions button{padding:8px 11px;font-size:12px}.member-tabs{display:flex;gap:6px;overflow:auto;margin:9px 0}.member-tabs button{white-space:nowrap;padding:9px 12px;font-size:12px;background:#e7e8eb;color:var(--tx-text)}.member-tabs button.active{background:var(--tx-accent);color:var(--tx-accent-ink)}.member-form-wrap{display:none}.member-form-wrap.open{display:block}@media(max-width:550px){.member-mini{grid-template-columns:repeat(3,1fr)}.member-mini .card{padding:11px}.member-mini strong{font-size:20px}.member-list .item{align-items:flex-start;flex-direction:column}.member-toolbar select{flex:1}}
+.member-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:9px 0}.member-toolbar input{flex:1;min-width:180px}.member-toolbar select{width:auto;min-width:130px}.member-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.member-mini .card{margin:0;padding:9px}.member-mini strong{font-size:25px;display:block;color:var(--tx-accent)}.member-list .item{content-visibility:auto;contain-intrinsic-block-size:auto 36px;display:flex;justify-content:space-between;align-items:center;gap:12px}.member-person{display:flex;align-items:center;gap:12px;min-width:0}.member-avatar{flex-shrink:0;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--tx-subtle);color:var(--tx-accent-soft);font-weight:800}.member-person p{margin:5px 0;font-size:12px}.member-status{font-size:11px;padding:5px 9px;border-radius:30px;background:var(--tx-subtle);color:var(--tx-accent-soft)}.member-status.expired{background:var(--tx-danger-surface);color:var(--tx-danger)}.member-status.inactive{background:var(--tx-subtle);color:var(--tx-muted)}.member-actions{display:flex;gap:7px;align-items:center}.member-actions button{padding:8px 11px;font-size:12px}.member-tabs{display:flex;gap:6px;overflow:auto;margin:9px 0}.member-tabs button{white-space:nowrap;padding:9px 12px;font-size:12px;background:var(--tx-subtle);color:var(--tx-text)}.member-tabs button.active{background:var(--tx-accent);color:var(--tx-accent-ink)}.member-form-wrap{display:none}.member-form-wrap.open{display:block}@media(max-width:550px){.member-mini{grid-template-columns:repeat(3,1fr)}.member-mini .card{padding:11px}.member-mini strong{font-size:20px}.member-list .item{align-items:flex-start;flex-direction:column}.member-toolbar select{flex:1}}
 
 /* TrainerX interface refresh: layered surfaces, clearer hierarchy and tactile controls. */
 
 body{min-height:100vh}
 .shell{max-width:1340px;padding:14px clamp(12px,2vw,26px)}header{padding:0 0 10px;position:relative}header:after{content:"";position:absolute;bottom:-1px;left:0;width:110px;height:2px;background:linear-gradient(90deg,var(--tx-accent),transparent)}
 .header-brand{display:flex;align-items:center;gap:10px;min-width:0}
-.header-brand-mark{display:grid;place-items:center;width:42px;height:42px;flex:none;border:1px solid #404149;border-radius:11px;background:linear-gradient(155deg,#4c4f59,var(--tx-accent) 62%,#212228);box-shadow:inset 0 1px 0 #ffffff52}
-.header-brand-mark::before{content:'';width:24px;height:24px;background:var(--tx-accent-ink);clip-path:polygon(0 0,30% 0,50% 29%,72% 0,100% 0,65% 48%,100% 100%,69% 100%,49% 69%,26% 100%,0 100%,34% 48%)}
+.header-brand-mark{display:grid;place-items:center;width:42px;height:42px;flex:none;border:1px solid #404149;border-radius:11px;background:linear-gradient(155deg,#4c4f59,#25262b 62%,#212228);box-shadow:inset 0 1px 0 #ffffff52}
+.header-brand-mark::before{content:'';width:24px;height:24px;background:#fff;clip-path:polygon(0 0,30% 0,50% 29%,72% 0,100% 0,65% 48%,100% 100%,69% 100%,49% 69%,26% 100%,0 100%,34% 48%)}
 .header-brand-copy{display:grid;gap:4px}
 .header-wordmark{display:block;color:var(--tx-text);font-size:clamp(20px,2.6vw,27px);font-weight:900;letter-spacing:-.065em;line-height:1;white-space:nowrap}
 .header-wordmark .brand-x{color:var(--tx-accent)}
@@ -57,15 +57,15 @@ body{min-height:100vh}
 @media(max-width:420px){.header-brand{gap:6px}.header-brand-mark{width:34px;height:34px;border-radius:8px}.header-brand-mark::before{width:20px;height:20px}.header-brand-subtitle{font-size:8px;letter-spacing:.075em}}
 .sub{letter-spacing:.02em}
 .grid{grid-template-columns:190px minmax(0,1fr);gap:14px;margin-top:12px}nav{position:sticky;top:12px;align-self:start;gap:2px;padding:6px;background:var(--tx-control);border:1px solid var(--tx-line);border-radius:16px}
-nav button{position:relative;min-height:38px;border-radius:8px;padding:8px 10px;transition:background .18s,color .18s;font-weight:600;font-size:14px;line-height:1.3}nav button:not(.active):hover{background:#e9eaee;color:var(--tx-text)}
+nav button{position:relative;min-height:38px;border-radius:8px;padding:8px 10px;transition:background .18s,color .18s;font-weight:600;font-size:14px;line-height:1.3}nav button:not(.active):hover{background:var(--tx-hover);color:var(--tx-text)}
 h1,h2{letter-spacing:-.035em}h1{font-size:clamp(26px,3vw,38px);line-height:1.12}h2{font-size:20px}p{line-height:1.55}
 .card{background:var(--tx-panel);border:1px solid var(--tx-line);border-radius:20px;box-shadow:0 10px 32px rgba(0,0,0,.12);transition:none}
-.card:hover{border-color:#a8abb4}.dash-kpi,.member-mini .card{overflow:hidden}.dash-kpi:after,.member-mini .card:after{content:"";display:block;width:32px;height:3px;margin-top:7px;border-radius:8px;background:var(--tx-accent);opacity:.8}
-.dashboard-hero{position:relative;overflow:hidden;padding:clamp(24px,3.5vw,43px);border-radius:24px;background:radial-gradient(circle at 88% 8%,color-mix(in srgb,var(--tx-accent) calc(.19 * 100%),transparent),transparent 35%),linear-gradient(125deg,#e6e7eb,var(--tx-control) 72%);border:1px solid #c5c8cf;box-shadow:0 18px 44px rgba(0,0,0,.16)}
+.card:hover{border-color:var(--tx-line-hover)}.dash-kpi,.member-mini .card{overflow:hidden}.dash-kpi:after,.member-mini .card:after{content:"";display:block;width:32px;height:3px;margin-top:7px;border-radius:8px;background:var(--tx-accent);opacity:.8}
+.dashboard-hero{position:relative;overflow:hidden;padding:clamp(24px,3.5vw,43px);border-radius:24px;background:radial-gradient(circle at 88% 8%,color-mix(in srgb,var(--tx-accent) calc(.19 * 100%),transparent),transparent 35%),linear-gradient(125deg,var(--tx-subtle),var(--tx-control) 72%);border:1px solid var(--tx-line);box-shadow:0 18px 44px rgba(0,0,0,.16)}
 .dashboard-hero:after{content:"";position:absolute;width:190px;height:190px;right:-45px;bottom:-115px;border:30px solid color-mix(in srgb,var(--tx-accent) calc(.07 * 100%),transparent);border-radius:50%;pointer-events:none}
-button{transition:transform .12s ease}button:hover:not(:disabled){transform:translateY(-1px)}button:active:not(:disabled){transform:translateY(1px)}button.primary{box-shadow:0 5px 18px color-mix(in srgb,var(--tx-accent) calc(.12 * 100%),transparent)}button.primary:hover{background:var(--tx-accent-hover);box-shadow:0 7px 24px color-mix(in srgb,var(--tx-accent) calc(.2 * 100%),transparent)}button.secondary:hover{background:#d7d9de}
+button{transition:transform .12s ease}button:hover:not(:disabled){transform:translateY(-1px)}button:active:not(:disabled){transform:translateY(1px)}button.primary{box-shadow:0 5px 18px color-mix(in srgb,var(--tx-accent) calc(.12 * 100%),transparent)}button.primary:hover{background:var(--tx-accent-hover);box-shadow:0 7px 24px color-mix(in srgb,var(--tx-accent) calc(.2 * 100%),transparent)}button.secondary:hover{background:var(--tx-hover)}
 button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--tx-accent);outline-offset:3px}input,select,textarea{border-color:var(--tx-line);transition:none}input:focus,select:focus,textarea:focus{border-color:var(--tx-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--tx-accent) calc(.09 * 100%),transparent);outline:none}
-.member-avatar{border-radius:14px;background:linear-gradient(135deg,#e8e9ed,#cdd0d8);box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}.member-list .item{padding:8px 4px}.member-list .item:hover{background:color-mix(in srgb,var(--tx-accent) calc(.025 * 100%),transparent)}
+.member-avatar{border-radius:14px;background:linear-gradient(135deg,var(--tx-subtle),var(--tx-line));box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}.member-list .item{padding:8px 4px}.member-list .item:hover{background:color-mix(in srgb,var(--tx-accent) calc(.025 * 100%),transparent)}
 .member-tabs button{border-radius:10px}
 #login{max-width:440px;margin:clamp(16px,4vh,38px) auto 12px;padding:clamp(14px,3vw,22px);border-color:var(--tx-line);box-shadow:0 30px 90px rgba(0,0,0,.3)}#login:before{content:"";display:block;width:48px;height:5px;border-radius:10px;background:var(--tx-accent);margin-bottom:12px}
 #notice{font-weight:600}a{color:var(--tx-accent)}
@@ -83,7 +83,7 @@ button.primary,.member-tabs button.active{background:var(--tx-accent);color:var(
 nav button:hover:not(:disabled),nav button:active:not(:disabled){transform:none}
 nav button:has(svg){display:flex;align-items:center;gap:9px}
 nav svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-nav button.active{background:#e6e7eb;color:var(--tx-accent-soft);box-shadow:inset 3px 0 var(--tx-accent)}
+nav button.active{background:var(--tx-subtle);color:var(--tx-accent-soft);box-shadow:inset 3px 0 var(--tx-accent)}
 button.primary:hover{background:var(--tx-accent-hover)}input::placeholder,textarea::placeholder{color:var(--tx-muted);opacity:.8}.member-status,.badge{color:var(--tx-accent-soft)}
 header:after,.member-mini .card:after,.dash-kpi:after,#login:before{background:var(--tx-accent)}
 .dashboard-hero{background:radial-gradient(circle at 90% 12%,color-mix(in srgb,var(--tx-accent) 15%,transparent),transparent 48%),linear-gradient(130deg,var(--tx-panel),var(--tx-control))}
@@ -99,7 +99,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 @media(max-width:400px){.insight-header h1{font-size:27px}.dashboard-clock-date{font-size:12px}.shell>header>.row{min-width:0}#identity{overflow-wrap:anywhere}}
 .insight-shortcuts{display:flex;gap:8px;flex-wrap:wrap}
 .insight-shortcuts button{padding:9px 12px;font-size:13px}
-.insight-shortcuts .secondary{background:#e7e8eb}
+.insight-shortcuts .secondary{background:var(--tx-subtle)}
 .insight-summary,.insight-panels{display:grid;gap:8px;min-width:0}
 .insight-summary-region{grid-area:summary;min-width:0}
 .insight-summary-cue{display:none;margin:0 0 5px;color:var(--tx-muted);font-size:11px;text-align:right}
@@ -112,7 +112,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .skip-link{position:absolute;left:12px;top:12px;z-index:5;background:var(--tx-panel);color:var(--tx-text);padding:8px 12px;border-radius:8px;transform:translateY(-200%)}
 .skip-link:focus{transform:none}
 nav a.nav-link{position:relative;display:flex;align-items:center;gap:9px;min-height:38px;border-radius:999px;padding:8px 10px;color:var(--tx-muted);font-size:14px;font-weight:600;line-height:1.3;text-decoration:none}
-nav a.nav-link:hover{background:#e9eaee;color:var(--tx-text)}
+nav a.nav-link:hover{background:var(--tx-hover);color:var(--tx-text)}
 nav a.nav-link.active{background:var(--tx-accent);color:var(--tx-accent-ink)}
 @media(max-width:720px){nav a.nav-link{flex:none;white-space:nowrap}}
 .insight-summary{grid-template-columns:repeat(4,minmax(0,1fr));min-width:0}
@@ -122,32 +122,32 @@ nav a.nav-link.active{background:var(--tx-accent);color:var(--tx-accent-ink)}
   .insight-summary{grid-template-columns:repeat(4,minmax(140px,1fr));overflow-x:auto;scrollbar-width:thin}
 }
 .insight .card{margin:0;border:1px solid var(--tx-line);border-radius:15px;box-shadow:none;background:var(--tx-panel);padding:10px;min-width:0}
-.insight .insight-panels>.card{background:linear-gradient(165deg,#fff,var(--tx-panel) 56%)}
-.insight-summary .card{background:linear-gradient(145deg,#fff,#f1f2f4 75%)}
+.insight .insight-panels>.card{background:linear-gradient(165deg,var(--tx-raised),var(--tx-panel) 56%)}
+.insight-summary .card{background:linear-gradient(145deg,var(--tx-raised),var(--tx-control) 75%)}
 .insight-summary .insight-featured{background:linear-gradient(125deg,#373944,#25262d 68%,#202126);border-color:#44464e}
 .insight-stat{display:grid;align-content:start;gap:5px;min-width:0}
-.insight-stat-label{color:#535660;font-size:13px}
+.insight-stat-label{color:var(--tx-muted);font-size:13px}
 .insight-stat strong{font-size:clamp(22px,2.3vw,32px);line-height:1.1;letter-spacing:-.04em;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 .insight-featured strong{color:#fff}
-.insight-stat-link{border:0;border-top:1px solid #c9cbd0;border-radius:0;background:transparent;color:#32343b;text-align:left;padding:6px 0 0;font-size:12px;display:flex;justify-content:space-between}
-.insight-stat-link:hover{color:#000}
-.insight .money-toggle{padding:3px 7px;color:#31333a;background:#eceef0;border-color:#c8cad0}
+.insight-stat-link{border:0;border-top:1px solid var(--tx-line);border-radius:0;background:transparent;color:var(--tx-text);text-align:left;padding:6px 0 0;font-size:12px;display:flex;justify-content:space-between}
+.insight-stat-link:hover{color:var(--tx-text)}
+.insight .money-toggle{padding:3px 7px;color:var(--tx-text);background:var(--tx-control);border-color:var(--tx-line)}
 .insight .money-toggle svg{width:15px;height:15px}
 .insight-panel-head{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-bottom:7px}
 .insight-panel-head h2{margin:0}
 .insight-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:8px 0 0}
-.insight-details .insight-stat{background:#edeef1;border:1px solid #d2d4da;border-radius:10px;padding:7px}
+.insight-details .insight-stat{background:var(--tx-control);border:1px solid var(--tx-line);border-radius:10px;padding:7px}
 .insight-details .insight-stat-label{font-size:12px}
 .insight-details .insight-stat strong{font-size:19px}
 .insight-months{display:grid;gap:6px;margin-top:8px}
 .insight-months h3{font-size:13px;margin:0}
 .insight-actions{display:grid;gap:6px}
-.insight-actions button{display:grid;grid-template-columns:minmax(32px,auto) minmax(0,1fr) auto;align-items:center;gap:10px;text-align:left;background:#edeef1;color:#25262b;font-size:13px;padding:9px}
-.insight-actions button:hover{background:#e0e2e7}
-.insight-actions strong{font-size:17px;color:#24262e;text-align:center;font-variant-numeric:tabular-nums}
+.insight-actions button{display:grid;grid-template-columns:minmax(32px,auto) minmax(0,1fr) auto;align-items:center;gap:10px;text-align:left;background:var(--tx-control);color:var(--tx-text);font-size:13px;padding:9px}
+.insight-actions button:hover{background:var(--tx-hover)}
+.insight-actions strong{font-size:17px;color:var(--tx-text);text-align:center;font-variant-numeric:tabular-nums}
 .insight-table{width:100%;border-collapse:collapse;font-size:13px;text-align:left}
-.insight-table th,.insight-table td{padding:6px 7px;border-bottom:1px solid #d4d6dc;overflow-wrap:anywhere}
-.insight-table thead th{color:var(--tx-muted);background:#e6e8ec;font-weight:600}
+.insight-table th,.insight-table td{padding:6px 7px;border-bottom:1px solid var(--tx-line);overflow-wrap:anywhere}
+.insight-table thead th{color:var(--tx-muted);background:var(--tx-subtle);font-weight:600}
 .insight-table tbody tr:last-child>*{border:0}
 .insight-table tbody th{font-weight:500}
 .insight-table td{font-variant-numeric:tabular-nums}
@@ -243,15 +243,15 @@ nav a.nav-link.active{background:var(--tx-accent);color:var(--tx-accent-ink)}
 .insight-attendance-stack{grid-area:attendance}
 .insight-content{grid-area:content}
 .insight .dashboard-clock{grid-area:clock;align-self:center;border-right:3px solid var(--tx-accent);padding-right:12px}
-.insight .dashboard-clock-time{color:#1f2026}
-.insight .insight-summary .card:not(.insight-featured){background:linear-gradient(155deg,#fff,var(--tx-panel) 75%)}
+.insight .dashboard-clock-time{color:var(--tx-text)}
+.insight .insight-summary .card:not(.insight-featured){background:linear-gradient(155deg,var(--tx-raised),var(--tx-panel) 75%)}
 .insight .insight-summary .insight-featured{background:radial-gradient(ellipse at 10% 0,#454853,transparent 75%),linear-gradient(130deg,#30323b,#24252a)}
 .insight .insight-summary .insight-featured .insight-stat-label{color:#e1e3e8}
 .insight .insight-summary .insight-featured .insight-stat-link{color:#f5f5f7;border-color:#ffffff4a}
 .insight .insight-summary .insight-featured .money-toggle{background:#454750;color:#fff;border-color:#656875}
 .insight .insight-summary .insight-featured::before{background:linear-gradient(90deg,#eef0f3,transparent 75%)}
-.insight .insight-summary .card:hover{border-color:#9ca0ab}
-.insight .dashboard-attendance-rail{background:linear-gradient(150deg,#fff,var(--tx-panel) 68%);border-color:#c5c8d0}
+.insight .insight-summary .card:hover{border-color:var(--tx-line-hover)}
+.insight .dashboard-attendance-rail{background:linear-gradient(150deg,var(--tx-raised),var(--tx-panel) 68%);border-color:var(--tx-line)}
 .insight .dashboard-attendance-rail h2{display:flex;align-items:center;gap:8px}
 .insight .dashboard-attendance-rail h2::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--tx-accent);box-shadow:0 0 10px #0002}
 .insight-attendance-stack .insight-attendance-stats{gap:7px}
@@ -262,7 +262,7 @@ nav a.nav-link.active{background:var(--tx-accent);color:var(--tx-accent-ink)}
 .attendance-week-summary{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px;margin-bottom:8px}
 .attendance-week-total{display:grid;gap:3px}
 .attendance-week-total strong{font-size:28px;line-height:1;font-variant-numeric:tabular-nums}
-.attendance-peak{display:grid;gap:2px;padding:5px 7px;border:1px solid #c9cbd2;border-radius:10px;background:#e6e7eb;font-size:12px}
+.attendance-peak{display:grid;gap:2px;padding:5px 7px;border:1px solid var(--tx-line);border-radius:10px;background:var(--tx-subtle);font-size:12px}
 .attendance-peak strong{color:var(--tx-accent-soft)}
 .trend-chart{--plot-height:100px;display:grid;grid-template-columns:max-content minmax(0,1fr);gap:7px;color:var(--tx-muted);font-size:10px;font-variant-numeric:tabular-nums}
 .trend-axis,.trend-plot{position:relative;min-width:0}
@@ -278,13 +278,13 @@ nav a.nav-link.active{background:var(--tx-accent);color:var(--tx-accent-ink)}
 .trend-point:is(:hover,:focus)::before{content:'';position:absolute;inset:0 auto 0 50%;border-left:1px solid #767984}
 .trend-dot{position:absolute;left:50%;width:5px;height:5px;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none}
 .trend-dot.inspection-only{visibility:hidden}
-.trend-point:is(:hover,:focus) .trend-dot{visibility:visible;width:8px;height:8px;box-shadow:0 0 0 1px #fff}
+.trend-point:is(:hover,:focus) .trend-dot{visibility:visible;width:8px;height:8px;box-shadow:0 0 0 1px var(--tx-raised)}
 .trend-tooltip-value{display:grid;grid-template-columns:6px minmax(0,1fr);align-items:baseline;gap:4px}
 .trend-tooltip-value i{width:6px;height:6px;border-radius:50%;background:var(--point-color)}
 .trend-label{position:absolute;top:calc(100% + 4px);left:50%;transform:translateX(-50%);padding:2px 3px;border-radius:99px;white-space:nowrap}
 .trend-point:not(:is(:hover,:focus)) .trend-label.sparse{visibility:hidden}
 .trend-point:is(:hover,:focus) .trend-label{background:#30313a;color:#fff}
-.trend-tooltip{display:none;position:absolute;top:6px;left:calc(50% + 6px);width:max-content;max-width:100px;overflow-wrap:anywhere;padding:6px 8px;border:1px solid var(--tx-line);border-radius:7px;background:#fff;color:var(--tx-text);pointer-events:none}
+.trend-tooltip{display:none;position:absolute;top:6px;left:calc(50% + 6px);width:max-content;max-width:100px;overflow-wrap:anywhere;padding:6px 8px;border:1px solid var(--tx-line);border-radius:7px;background:var(--tx-raised);color:var(--tx-text);pointer-events:none}
 .trend-point.trend-point-right .trend-tooltip{left:auto;right:calc(50% + 6px)}
 .trend-point:only-child .trend-tooltip{left:50%;right:auto;transform:translateX(-50%)}
 .trend-point:is(:hover,:focus) .trend-tooltip{display:grid;gap:2px}
@@ -332,60 +332,55 @@ nav a.nav-link.active{background:var(--tx-accent);color:var(--tx-accent-ink)}
 
 /* Frosted frame and neutral surfaces shared by the TrainerX workspace. */
 .shell{margin:clamp(10px,2vw,30px) auto;width:calc(100% - clamp(20px,4vw,60px));
-  background:linear-gradient(150deg,#ffffffb5,#eef0f3a8);
-  border:1px solid #ffffffcc;border-radius:26px;box-shadow:0 12px 30px #1b203015,inset 0 0 0 4px #ffffff38}
-.shell>header{border-bottom:1px solid #5a60662e}
+  background:var(--tx-frame);
+  border:1px solid var(--tx-frame-line);border-radius:26px;box-shadow:0 12px 30px #1b203015,inset 0 0 0 4px var(--tx-frame-inset)}
+.shell>header{border-bottom:1px solid var(--tx-line)}
 .shell>header::after{width:0}
-#nav{background:#fffffff0;border-color:#fff;border-radius:20px;padding:9px;box-shadow:0 6px 22px #2429360a}
-.card,.insight .card,.analytics .card{border-radius:17px;border-color:#ffffffd9;box-shadow:0 3px 13px #2226350b}
-.card:hover,.insight .card:hover{border-color:#aeb1ba}
+#nav{border-radius:20px;padding:9px;box-shadow:0 6px 22px #2429360a}
+.card,.insight .card,.analytics .card{border-radius:17px;border-color:var(--tx-card-line);box-shadow:0 3px 13px #2226350b}
+.card:hover,.insight .card:hover{border-color:var(--tx-line-hover)}
 .analytics .card.analytics-total:first-child,.insight .insight-summary .insight-featured{border-color:#484a54}
 button.primary,button.secondary,.member-tabs button,.plan-templates button{border-radius:999px}
 button.primary{color:var(--tx-accent-ink);border:1px solid transparent;box-shadow:none}
-button.secondary{border:1px solid #c9cbd1}
+button.secondary{border:1px solid var(--tx-line)}
 #login{box-shadow:0 14px 34px #1c203016}
-.trend-guides{stroke:#bfc2c9}
+.trend-guides{stroke:var(--tx-line)}
 .trend-tooltip{box-shadow:0 4px 16px #2026371f}
 @media(max-width:720px){.shell{border-radius:19px}.shell #nav{border-radius:14px;padding:5px}}
 
-/* Sidebar variants reuse the workspace typography and neutral palette. */
-#nav{--nav-ink:#272833;--nav-muted:#545665;--nav-hover:#eeedf3;--nav-active:#272833;
-  --nav-active-ink:#fff;--nav-line:#dddee8;--nav-count:#e7e6ef;
-  display:flex;flex-direction:column;gap:12px;min-height:min(490px,calc(100dvh - 32px));
-  max-height:calc(100dvh - 24px);overflow:auto;background:#fcfcff;border-color:#fff}
-#nav[data-style="dark"]{--nav-ink:#f6f6fa;--nav-muted:#d0d1dd;--nav-hover:#30313e;--nav-active:#efeff6;
-  --nav-active-ink:#232430;--nav-line:#404153;--nav-count:#363747;background:#20212b;border-color:#343544}
+/* Sidebar and dialogs share the app theme. */
+#nav{display:flex;flex-direction:column;gap:12px;min-height:min(490px,calc(100dvh - 32px));
+  max-height:calc(100dvh - 24px);overflow:auto;background:var(--tx-raised);border-color:var(--tx-card-line)}
 .sidebar-navigation,.sidebar-tools{display:grid;gap:3px}
-.sidebar-tools{margin-top:auto;padding-top:9px;border-top:1px solid var(--nav-line)}
-#nav .nav-link{width:100%;color:var(--nav-muted);background:transparent;box-shadow:none;border:0;text-align:left}
-#nav .nav-link:hover{background:var(--nav-hover);color:var(--nav-ink)}
-#nav .nav-link.active{background:var(--nav-active);color:var(--nav-active-ink)}
-#nav .nav-link:focus-visible{outline-color:var(--nav-ink);outline-offset:1px}
+.sidebar-tools{margin-top:auto;padding-top:9px;border-top:1px solid var(--tx-line)}
+#nav .nav-link{width:100%;color:var(--tx-muted);background:transparent;box-shadow:none;border:0;text-align:left}
+#nav .nav-link:hover{background:var(--tx-hover);color:var(--tx-text)}
+#nav .nav-link.active{background:var(--tx-accent);color:var(--tx-accent-ink)}
+#nav .nav-link:focus-visible{outline-color:var(--tx-text);outline-offset:1px}
 .sidebar-count{margin-left:auto;min-width:22px;border-radius:999px;padding:2px 5px;text-align:center;
-  background:var(--nav-count);color:var(--nav-ink);font-size:11px;font-variant-numeric:tabular-nums}
+  background:var(--tx-subtle);color:var(--tx-text);font-size:11px;font-variant-numeric:tabular-nums}
 #sidebarPanel{width:min(440px,calc(100% - 24px));max-height:calc(100dvh - 24px);margin:auto;padding:16px;
-  overflow:auto;overscroll-behavior:contain;border:1px solid #d4d5df;border-radius:17px;background:#fcfcff;color:#242530;
+  overflow:auto;overscroll-behavior:contain;border:1px solid var(--tx-line);border-radius:17px;background:var(--tx-raised);color:var(--tx-text);
   box-shadow:0 12px 34px #1718242b}
-#sidebarPanel[data-style="dark"]{background:#20212b;color:#f6f6fa;border-color:#414256;color-scheme:dark}
 #sidebarPanel::backdrop{background:#1d1f2b63}
 .sidebar-panel-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
 .sidebar-panel-header h2{margin:0}
-.sidebar-panel-close{display:grid;place-items:center;width:36px;height:36px;padding:0;background:#eeedf3;color:#272833;font-size:23px}
+.sidebar-panel-close{display:grid;place-items:center;width:36px;height:36px;padding:0;background:var(--tx-subtle);color:var(--tx-text);font-size:23px}
 .sidebar-panel-body p{margin:0 0 10px;color:inherit}
 .sidebar-panel-body :is(h3,dl){margin:8px 0}
 .sidebar-panel-body dd{margin:3px 0 10px}
 .sidebar-panel-body label{color:inherit}
-.sidebar-panel-body input,.sidebar-panel-body select{color:#242530;background:#f5f5f9}
+.sidebar-panel-body input,.sidebar-panel-body select{color:var(--tx-text);background:var(--tx-control)}
 .sidebar-panel-body a{color:inherit}
 .sidebar-reminders{list-style:none;margin:0 0 10px;padding:0}
-.sidebar-reminders li{display:grid;gap:3px;padding:8px 0;border-top:1px solid #81839355;overflow-wrap:anywhere}
+.sidebar-reminders li{display:grid;gap:3px;padding:8px 0;border-top:1px solid var(--tx-line);overflow-wrap:anywhere}
 .sidebar-reminders small{opacity:.8}
 .sidebar-reminders li{grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}
 .sidebar-reminder-link{display:grid;gap:3px;text-align:left;min-width:0;background:none;color:inherit;border:0;padding:4px;cursor:pointer}
 .sidebar-reminder-link:hover strong{text-decoration:underline}
 .sidebar-reminder-controls{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px}
 .sidebar-reminders [data-unread] strong::before{content:'● ';font-size:.65em}
-.sidebar-preferences{margin-top:12px;padding:10px;border:1px solid #81839355;border-radius:8px}
+.sidebar-preferences{margin-top:12px;padding:10px;border:1px solid var(--tx-line);border-radius:8px}
 .sidebar-preferences label{display:flex;align-items:center;gap:8px;margin:6px 0}
 .sidebar-preferences input[type="checkbox"]{width:auto}
 .sidebar-panel-actions{display:flex;flex-wrap:wrap;gap:7px}
@@ -831,7 +826,7 @@ $('#closeMember').onclick=()=>{
   d.replaceChildren();
   action?.focus();
 };
-const renderTab=t=>{d.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));const content=$('#memberTabContent');if(t==='Details'){content.innerHTML=canCreate?'<form id="editMemberForm" class="form"><label>Name<input name="full_name" required maxlength="150" value="'+safe(x.full_name||'')+'"></label><label>Phone<input name="phone" maxlength="40" value="'+safe(x.phone||'')+'"></label><label>Age<input name="age" type="number" min="1" max="120" value="'+safe(x.age||'')+'"></label><label>Weight (kg)<input name="weight_kg" type="number" min="0.1" max="500" step="0.1" value="'+safe(x.weight_kg??'')+'"></label><label>Address<input name="residential_address" maxlength="500" value="'+safe(x.residential_address||'')+'"></label><label>Trainer<select name="trainer_id"><option value="">Unassigned</option>'+trainers.map(t=>'<option value="'+safe(t.id)+'" '+(x.trainer_id===t.id?'selected':'')+'>'+safe(t.email)+'</option>').join('')+'</select></label><label>Emergency Name<input name="emergency_name" maxlength="150" value="'+safe(x.emergency_name||'')+'"></label><label>Emergency Phone<input name="emergency_phone" maxlength="150" value="'+safe(x.emergency_phone||'')+'"></label><button class="primary" type="submit">Save Changes</button></form>':'<p class="sub">Member details are shown above.</p>';if(canCreate){$('#editMemberForm').onsubmit=async e=>{e.preventDefault();try{const data=formData(e.target);if(data.age==='')delete data.age;else data.age=Number(data.age);data.weight_kg=data.weight_kg===''?null:Number(data.weight_kg);const saved=await api('/members/'+encodeURIComponent(x.id),'PATCH',data);Object.assign(x,saved,{joined_on:x.joined_on});notice('Member updated');renderTab('Details');list()}catch(err){notice(err.message,true)}}}}else if(t==='Memberships'){content.innerHTML=rows(h.memberships,v=>'<div class="item" tabindex="-1" data-membership-card="'+safe(v.id)+'"><b>'+safe(v.plan)+(v.cancelled_on?' · Cancelled':'')+'</b><p>'+safe(String(v.starts_on).slice(0,10))+' → '+safe(String(v.ends_on).slice(0,10))+' · PKR '+safe(v.price)+'</p>'+(canCreate&&!v.cancelled_on?'<button class="secondary" data-edit-membership="'+safe(v.id)+'">Edit membership</button>':'')+'</div>')+(canCreate?'<button class="secondary" id="renewMember">Renew / Change Plan</button>':'');if(canCreate){$('#renewMember').onclick=()=>window.openRenewalFor(x.id);content.querySelectorAll('[data-edit-membership]').forEach(button=>button.onclick=async()=>{const v=h.memberships.find(item=>item.id===button.dataset.editMembership);const plans=enrollmentPlans;const current=plans.find(p=>p.id===v.plan_id);content.innerHTML='<form id="editMembershipForm" class="form"><h3>Edit existing membership</h3><label>Plan<select name="plan_id" required>'+plans.map(p=>'<option value="'+safe(p.id)+'" '+(p.id===v.plan_id?'selected':'')+'>'+safe(p.name)+'</option>').join('')+'</select></label><label>Start date<input name="starts_on" type="date" value="'+safe(String(v.starts_on).slice(0,10))+'" required></label><label>Duration (months)<input name="months" type="number" min="1" max="120" required></label><label>Total fee (PKR)<input id="editMembershipTotal" readonly></label><button class="primary" type="submit">Save membership changes</button><button class="secondary" type="button" id="cancelMembershipEdit">Cancel</button></form>';const fm=$('#editMembershipForm');fm.elements.months.value=current?Math.max(1,Math.round(Number(v.price)/Number(current.price)))||current.months:1;const update=()=>{const p=plans.find(p=>p.id===fm.elements.plan_id.value);$('#editMembershipTotal').value=p?(Number(p.price)*Number(fm.elements.months.value)).toFixed(2):''};fm.elements.plan_id.onchange=update;fm.elements.months.oninput=update;update();$('#cancelMembershipEdit').onclick=()=>renderTab('Memberships');fm.onsubmit=async e=>{e.preventDefault();try{await api('/memberships/'+encodeURIComponent(v.id),'PATCH',{plan_id:fm.elements.plan_id.value,starts_on:fm.elements.starts_on.value,months:Number(fm.elements.months.value)});notice('Membership updated');await render()}catch(err){notice(err.message,true)}}})}}else if(t==='Attendance'){content.innerHTML='<p>'+h.attendance.length+' recent check-ins</p>'+rows(h.attendance,v=>'<div class="item">'+safe(new Date(v.checked_at).toLocaleString())+'</div>')}else if(t==='Access & reminders'){renderMemberAccess(content,x,api,signal,list)}else{content.innerHTML='<p>Private staff notes</p>'+(canCreate?'<form id="memberNotes"><textarea name="staff_notes" maxlength="2000" rows="5" style="width:100%;background:var(--tx-control);color:#fff;border:1px solid var(--tx-line);border-radius:10px;padding:12px">'+safe(x.staff_notes||'')+'</textarea><button class="primary" type="submit">Save Notes</button></form>':'<p>'+safe(x.staff_notes||'No notes')+'</p>');if(canCreate)$('#memberNotes').onsubmit=async e=>{e.preventDefault();try{const saved=await api('/members/'+encodeURIComponent(x.id),'PATCH',{staff_notes:e.target.elements.staff_notes.value});Object.assign(x,saved);notice('Notes saved')}catch(err){notice(err.message,true)}}}};d.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>renderTab(b.dataset.tab));renderTab(initialTab);if(editMembershipId)d.querySelector('[data-edit-membership="'+CSS.escape(editMembershipId)+'"]')?.click();d.scrollIntoView({block:'nearest'});(d.querySelector('#memberTabContent input:not([readonly]),#memberTabContent select')||d.querySelector('#closeMember'))?.focus({preventScroll:true})};$('#memberSearch').oninput=list;$('#memberFilter').onchange=list;$('#exportMembers').onclick=()=>{const columns=['membership_no','attendance_code','full_name','email','phone','age','residential_address','joined_on','plan','trainer_email','ends_on'];downloadCsv('trainerx-members.csv',columns,m.map(x=>columns.map(k=>x[k])))};list();if(canCreate){const addMember=$('#addMember'),enrollWrap=$('#enrollWrap'),memberForm=$('#memberForm');
+const renderTab=t=>{d.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));const content=$('#memberTabContent');if(t==='Details'){content.innerHTML=canCreate?'<form id="editMemberForm" class="form"><label>Name<input name="full_name" required maxlength="150" value="'+safe(x.full_name||'')+'"></label><label>Phone<input name="phone" maxlength="40" value="'+safe(x.phone||'')+'"></label><label>Age<input name="age" type="number" min="1" max="120" value="'+safe(x.age||'')+'"></label><label>Weight (kg)<input name="weight_kg" type="number" min="0.1" max="500" step="0.1" value="'+safe(x.weight_kg??'')+'"></label><label>Address<input name="residential_address" maxlength="500" value="'+safe(x.residential_address||'')+'"></label><label>Trainer<select name="trainer_id"><option value="">Unassigned</option>'+trainers.map(t=>'<option value="'+safe(t.id)+'" '+(x.trainer_id===t.id?'selected':'')+'>'+safe(t.email)+'</option>').join('')+'</select></label><label>Emergency Name<input name="emergency_name" maxlength="150" value="'+safe(x.emergency_name||'')+'"></label><label>Emergency Phone<input name="emergency_phone" maxlength="150" value="'+safe(x.emergency_phone||'')+'"></label><button class="primary" type="submit">Save Changes</button></form>':'<p class="sub">Member details are shown above.</p>';if(canCreate){$('#editMemberForm').onsubmit=async e=>{e.preventDefault();try{const data=formData(e.target);if(data.age==='')delete data.age;else data.age=Number(data.age);data.weight_kg=data.weight_kg===''?null:Number(data.weight_kg);const saved=await api('/members/'+encodeURIComponent(x.id),'PATCH',data);Object.assign(x,saved,{joined_on:x.joined_on});notice('Member updated');renderTab('Details');list()}catch(err){notice(err.message,true)}}}}else if(t==='Memberships'){content.innerHTML=rows(h.memberships,v=>'<div class="item" tabindex="-1" data-membership-card="'+safe(v.id)+'"><b>'+safe(v.plan)+(v.cancelled_on?' · Cancelled':'')+'</b><p>'+safe(String(v.starts_on).slice(0,10))+' → '+safe(String(v.ends_on).slice(0,10))+' · PKR '+safe(v.price)+'</p>'+(canCreate&&!v.cancelled_on?'<button class="secondary" data-edit-membership="'+safe(v.id)+'">Edit membership</button>':'')+'</div>')+(canCreate?'<button class="secondary" id="renewMember">Renew / Change Plan</button>':'');if(canCreate){$('#renewMember').onclick=()=>window.openRenewalFor(x.id);content.querySelectorAll('[data-edit-membership]').forEach(button=>button.onclick=async()=>{const v=h.memberships.find(item=>item.id===button.dataset.editMembership);const plans=enrollmentPlans;const current=plans.find(p=>p.id===v.plan_id);content.innerHTML='<form id="editMembershipForm" class="form"><h3>Edit existing membership</h3><label>Plan<select name="plan_id" required>'+plans.map(p=>'<option value="'+safe(p.id)+'" '+(p.id===v.plan_id?'selected':'')+'>'+safe(p.name)+'</option>').join('')+'</select></label><label>Start date<input name="starts_on" type="date" value="'+safe(String(v.starts_on).slice(0,10))+'" required></label><label>Duration (months)<input name="months" type="number" min="1" max="120" required></label><label>Total fee (PKR)<input id="editMembershipTotal" readonly></label><button class="primary" type="submit">Save membership changes</button><button class="secondary" type="button" id="cancelMembershipEdit">Cancel</button></form>';const fm=$('#editMembershipForm');fm.elements.months.value=current?Math.max(1,Math.round(Number(v.price)/Number(current.price)))||current.months:1;const update=()=>{const p=plans.find(p=>p.id===fm.elements.plan_id.value);$('#editMembershipTotal').value=p?(Number(p.price)*Number(fm.elements.months.value)).toFixed(2):''};fm.elements.plan_id.onchange=update;fm.elements.months.oninput=update;update();$('#cancelMembershipEdit').onclick=()=>renderTab('Memberships');fm.onsubmit=async e=>{e.preventDefault();try{await api('/memberships/'+encodeURIComponent(v.id),'PATCH',{plan_id:fm.elements.plan_id.value,starts_on:fm.elements.starts_on.value,months:Number(fm.elements.months.value)});notice('Membership updated');await render()}catch(err){notice(err.message,true)}}})}}else if(t==='Attendance'){content.innerHTML='<p>'+h.attendance.length+' recent check-ins</p>'+rows(h.attendance,v=>'<div class="item">'+safe(new Date(v.checked_at).toLocaleString())+'</div>')}else if(t==='Access & reminders'){renderMemberAccess(content,x,api,signal,list)}else{content.innerHTML='<p>Private staff notes</p>'+(canCreate?'<form id="memberNotes"><textarea name="staff_notes" maxlength="2000" rows="5" style="width:100%;background:var(--tx-control);color:var(--tx-text);border:1px solid var(--tx-line);border-radius:10px;padding:12px">'+safe(x.staff_notes||'')+'</textarea><button class="primary" type="submit">Save Notes</button></form>':'<p>'+safe(x.staff_notes||'No notes')+'</p>');if(canCreate)$('#memberNotes').onsubmit=async e=>{e.preventDefault();try{const saved=await api('/members/'+encodeURIComponent(x.id),'PATCH',{staff_notes:e.target.elements.staff_notes.value});Object.assign(x,saved);notice('Notes saved')}catch(err){notice(err.message,true)}}}};d.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>renderTab(b.dataset.tab));renderTab(initialTab);if(editMembershipId)d.querySelector('[data-edit-membership="'+CSS.escape(editMembershipId)+'"]')?.click();d.scrollIntoView({block:'nearest'});(d.querySelector('#memberTabContent input:not([readonly]),#memberTabContent select')||d.querySelector('#closeMember'))?.focus({preventScroll:true})};$('#memberSearch').oninput=list;$('#memberFilter').onchange=list;$('#exportMembers').onclick=()=>{const columns=['membership_no','attendance_code','full_name','email','phone','age','residential_address','joined_on','plan','trainer_email','ends_on'];downloadCsv('trainerx-members.csv',columns,m.map(x=>columns.map(k=>x[k])))};list();if(canCreate){const addMember=$('#addMember'),enrollWrap=$('#enrollWrap'),memberForm=$('#memberForm');
 const showEnrollment=open=>{
   enrollWrap.classList.toggle('open',open);
   addMember.setAttribute('aria-expanded',String(open));
@@ -948,7 +943,7 @@ bind('feeForm',async data=>{
 if(view==='Gate QR'){el.innerHTML='<div class="kiosk" id="kiosk"><div class="kiosk-top"><div class="kiosk-logo">TX</div><div><div class="kiosk-overline">TRAINERX · GYM ENTRANCE</div><h1 id="kioskName">Welcome to your gym</h1><p>Scan with your phone camera · Enter your 4-digit attendance code</p></div></div><div class="kiosk-main"><div class="kiosk-qr"><img id="gateImage" width="360" height="360" alt="Rotating gym entrance QR code"></div><div class="kiosk-side"><div class="kiosk-live">● LIVE CHECK-IN</div><h2>Ready to train?</h2><p>No app. No login. Just scan, enter your code, and get moving.</p><div id="gateCountdown" class="kiosk-countdown">Updating QR…</div><p id="gateExpiry" class="sub"></p><button class="secondary" id="kioskFull">⛶ Full screen</button></div></div><div class="kiosk-foot"><span>POWERED BY TRAINERX.IO</span><span>SECURE · ROTATING QR</span></div></div>';$('#kioskFull').onclick=()=>{const k=$('#kiosk');if(!document.fullscreenElement)k.requestFullscreen?.().catch(()=>notice('Full screen unavailable',true));else document.exitFullscreen?.()};let expiry=0,refreshing=false;const tick=()=>{if(view!=='Gate QR')return;$('#gateCountdown').textContent=expiry?'QR refresh in '+Math.max(0,Math.ceil((expiry-Date.now())/1000))+'s':'Updating QR…'};const refresh=async()=>{if(refreshing)return;refreshing=true;try{const x=await api('/gate-qr');if(view==='Gate QR'){$('#gateImage').src=x.qr;expiry=new Date(x.expires_at).getTime();$('#gateExpiry').textContent='Valid until '+new Date(x.expires_at).toLocaleTimeString();$('#kioskName').textContent=x.gym?.name||'Welcome to your gym'}}catch(e){if(!signal.aborted)notice(e.message,true)}finally{refreshing=false}};await refresh();if(signal.aborted)return;tick();gateTimer=setInterval(()=>{tick();if(Date.now()>=expiry)refresh()},1000)}
 
 if(view==='Scan QR'){el.innerHTML='<h1>Scan entrance QR</h1><p>Camera scanning requires HTTPS (or localhost) and a browser supporting BarcodeDetector. Alternatively, paste the QR content.</p><div class="card"><video id="scanVideo" autoplay playsinline muted style="width:100%;max-width:420px"></video><div class="row"><button class="primary" id="startScan">Start camera</button><button class="secondary" id="stopScan">Stop camera</button></div></div>'+form([['code','QR content']],'scanForm','Check in');bind('scanForm',async d=>api('/gate-checkin','POST',d));$('#stopScan').onclick=()=>{if(scannerStream){scannerStream.getTracks().forEach(t=>t.stop());scannerStream=null}};$('#startScan').onclick=async()=>{if(!('BarcodeDetector' in window)){notice('Camera QR detection unavailable in this browser. Use QR content input.',true);return}try{const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});if(signal.aborted||scannerStream){stream.getTracks().forEach(t=>t.stop());return}scannerStream=stream;const video=$('#scanVideo');video.srcObject=scannerStream;await video.play();const detector=new BarcodeDetector({formats:['qr_code']});const scan=async()=>{if(scannerStream!==stream||signal.aborted)return;try{const codes=await detector.detect(video);if(codes.length&&scannerStream===stream&&!signal.aborted){$('#scanForm [name=code]').value=codes[0].rawValue;scannerStream.getTracks().forEach(t=>t.stop());scannerStream=null;$('#scanForm').requestSubmit();return}}catch{}setTimeout(scan,300)};scan()}catch(e){notice(e.message,true)}}}
-if(view==='Workouts'||view==='Diets'){const workout=view==='Workouts',key=workout?'exercises':'meals',endpoint=workout?'/workouts':'/diets';const [plans,members]=await Promise.all([api(endpoint),me.role==='member'?[]:api('/members')]);el.innerHTML='<h1>'+safe(pageLabel(view))+'</h1><p>'+ (workout?'Exercise plans with sets and reps':'Meal plans and nutrition guidance')+'</p>'+(me.role==='member'?'':'<form id="trainingForm" class="card form"><label>Member<select name="member_id">'+members.map(m=>'<option value="'+safe(m.id)+'">'+safe(m.email)+'</option>').join('')+'</select></label><label>Plan title<input name="title" required maxlength="120"></label><label style="grid-column:1/-1">'+(workout?'Exercises: one per line (Name | Sets | Reps)':'Meals: one per line (Meal | Food | Calories)')+'<textarea name="lines" required rows="6" style="width:100%;background:var(--tx-control);color:white;padding:12px;border:1px solid var(--tx-line);border-radius:10px"></textarea></label><button class="primary">Save plan</button></form>')+'<div class="card">'+rows(plans,p=>'<div class="item"><b>'+safe(p.title)+'</b><p>'+safe(p.member)+'</p>'+p[key].map(x=>'<div class="sub">'+Object.values(x).map(safe).join(' · ')+'</div>').join('')+'</div>')+'</div>';if($('#trainingForm'))bind('trainingForm',async d=>{const lines=d.lines.split('\n').map(x=>x.trim()).filter(Boolean);if(!lines.length||lines.length>30)throw Error('Enter 1–30 lines');const items=lines.map(line=>{const parts=line.split('|').map(x=>x.trim());return workout?{name:parts[0]||'',sets:parts[1]||'',reps:parts[2]||''}:{meal:parts[0]||'',food:parts[1]||'',calories:parts[2]||''}});return api(endpoint,'POST',{member_id:d.member_id,title:d.title,[key]:items})})}
+if(view==='Workouts'||view==='Diets'){const workout=view==='Workouts',key=workout?'exercises':'meals',endpoint=workout?'/workouts':'/diets';const [plans,members]=await Promise.all([api(endpoint),me.role==='member'?[]:api('/members')]);el.innerHTML='<h1>'+safe(pageLabel(view))+'</h1><p>'+ (workout?'Exercise plans with sets and reps':'Meal plans and nutrition guidance')+'</p>'+(me.role==='member'?'':'<form id="trainingForm" class="card form"><label>Member<select name="member_id">'+members.map(m=>'<option value="'+safe(m.id)+'">'+safe(m.email)+'</option>').join('')+'</select></label><label>Plan title<input name="title" required maxlength="120"></label><label style="grid-column:1/-1">'+(workout?'Exercises: one per line (Name | Sets | Reps)':'Meals: one per line (Meal | Food | Calories)')+'<textarea name="lines" required rows="6" style="width:100%;background:var(--tx-control);color:var(--tx-text);padding:12px;border:1px solid var(--tx-line);border-radius:10px"></textarea></label><button class="primary">Save plan</button></form>')+'<div class="card">'+rows(plans,p=>'<div class="item"><b>'+safe(p.title)+'</b><p>'+safe(p.member)+'</p>'+p[key].map(x=>'<div class="sub">'+Object.values(x).map(safe).join(' · ')+'</div>').join('')+'</div>')+'</div>';if($('#trainingForm'))bind('trainingForm',async d=>{const lines=d.lines.split('\n').map(x=>x.trim()).filter(Boolean);if(!lines.length||lines.length>30)throw Error('Enter 1–30 lines');const items=lines.map(line=>{const parts=line.split('|').map(x=>x.trim());return workout?{name:parts[0]||'',sets:parts[1]||'',reps:parts[2]||''}:{meal:parts[0]||'',food:parts[1]||'',calories:parts[2]||''}});return api(endpoint,'POST',{member_id:d.member_id,title:d.title,[key]:items})})}
 if(view==='Renewals'){const r=await api('/renewals');el.innerHTML='<h1>Upcoming renewals</h1><div class="card">'+rows(r,x=>'<div class="item"><b>'+safe(x.email)+'</b><p>'+safe(x.plan)+' · Expires '+safe(String(x.ends_on).slice(0,10))+'</p></div>')+'</div>'}
 
 if(view==='My plans'){const p=await api('/plans');el.innerHTML='<h1>Available plans</h1><div class="card">'+rows(p,x=>'<div class="item"><b>'+safe(x.name)+'</b> · '+safe(x.months)+' months · '+safe(x.price)+'</div>')+'</div>'}
@@ -958,10 +953,10 @@ function renderExpenseDonut(categories,money){
   const categoryColors=new Map([
     ['Rent','var(--chart-revenue)'],
     ['Payroll','var(--chart-membership)'],
-    ['Utilities','#906000'],
+    ['Utilities','var(--chart-utilities)'],
     ['Equipment','var(--chart-attendance)'],
     ['Marketing','var(--chart-expense)'],
-    ['Other','#526174']
+    ['Other','var(--chart-other)']
   ]);
   const colors=categories.map(([category])=>categoryColors.get(category)||categoryColors.get('Other'));
   const total=categories.reduce((sum,[,cents])=>sum+cents,0);
@@ -1585,16 +1580,10 @@ $('#content').addEventListener('click',async e=>{const button=e.target.closest('
 });
 const sidebarPanel=$('#sidebarPanel');
 const sidebarBody=sidebarPanel.querySelector('.sidebar-panel-body');
-let sidebarMode='light';
-try{if(localStorage.getItem('tx-sidebar-style')==='dark')sidebarMode='dark'}catch{}
 let notificationController,notificationTimer,notificationRequest,notificationData;
 let panelType, completedReminders, showingDone=false, panelRequest=0;
 const reminderLabels={expiry:'Membership expires',overdue:'Overdue balance',fee_due:'Fee due soon'};
-function applySidebarStyle(){
-  $('#nav').dataset.style=sidebarPanel.dataset.style=sidebarMode;
-}
 function renderSidebar(navView){
-  applySidebarStyle();
   const links=views[me.role].map(id=>`<a class="nav-link${navView===id?' active':''}" href="${safe(viewURL(id))}"
     data-view="${safe(id)}"${navView===id?' aria-current="page"':''}>${navIcon(id)}${safe(pageLabel(id))}</a>`).join('');
   const tool=(name,extra='')=>`<button type="button" class="nav-link" data-sidebar-panel="${name}" aria-haspopup="dialog">
@@ -1720,7 +1709,7 @@ function openSidebarPanel(name){
     sidebarBody.innerHTML='<dl>'+topics.map(([label,detail])=>'<dt><strong>'+safe(label)+'</strong></dt><dd>'+safe(detail)+'</dd>').join('')+'</dl>';
   }
   if(name==='Settings'){
-    sidebarBody.innerHTML=`<label>Sidebar appearance<select id="sidebarStyle">${option('light','Light',sidebarMode)}${option('dark','Dark',sidebarMode)}</select></label>
+    sidebarBody.innerHTML=`<label>App appearance<select id="appTheme">${option('light','Light',document.documentElement.dataset.theme||'light')}${option('dark','Dark',document.documentElement.dataset.theme||'light')}</select></label>
       ${me.role==='owner'?'<p><button class="secondary" type="button" data-gym-settings>Open gym settings</button></p>':''}`;
     if(me.role==='owner'){
       sidebarBody.insertAdjacentHTML('beforeend',`<form id="sidebarReminderPreferences">
@@ -1748,11 +1737,7 @@ function openSidebarPanel(name){
         finally{fieldset.disabled=false}
       };
     }
-    $('#sidebarStyle').onchange=event=>{
-      sidebarMode=event.target.value;
-      try{localStorage.setItem('tx-sidebar-style',sidebarMode)}catch{}
-      applySidebarStyle();
-    };
+    $('#appTheme').onchange=event=>window.setTrainerXTheme(event.target.value);
   }
   if(name==='Share'){
     const link=new URL('/',location.origin).href;
