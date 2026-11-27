@@ -165,6 +165,26 @@ export function registerGymOperations(app,db,auth) {
     res.json(rows);
   });
 
+  app.get('/owner-notifications',auth,owner,privateData,async (req,res) => {
+    const {rows}=await db.query(`WITH reminders AS (
+      SELECT membership_id,member_id,kind,due_on,amount,full_name
+        FROM gym_member_alerts WHERE gym_id=$1
+      UNION ALL
+      SELECT membership_id,member_id,kind,due_on,amount,full_name
+        FROM gym_whatsapp_alerts WHERE gym_id=$1 AND kind='fee_due'
+    )
+    SELECT reminders.kind,reminders.due_on::text,reminders.amount,
+      COALESCE(NULLIF(reminders.full_name,''),'Member '||COALESCE(p.membership_no::text,'(no profile)')) AS member,
+      g.currency,count(*) OVER ()::int AS reminder_count
+    FROM reminders CROSS JOIN gyms g
+    LEFT JOIN member_profiles p ON p.gym_id=g.id AND p.user_id=reminders.member_id
+    WHERE g.id=$1
+    ORDER BY CASE reminders.kind WHEN 'overdue' THEN 1 WHEN 'fee_due' THEN 2 ELSE 3 END,
+      reminders.due_on,reminders.membership_id LIMIT 60`,[req.user.gym_id]);
+    res.json({total:rows[0]?.reminder_count??0,
+      items:rows.map(({reminder_count,...item})=>item)});
+  });
+
   app.post('/expenses',auth,owner,async (req,res) => {
     const {incurred_on,category,description='',amount} = req.body || {};
     if (!isoDate(incurred_on) || !categories.includes(category) || typeof description !== 'string' ||

@@ -60,6 +60,11 @@ test('health and role-isolated membership and payment journey',async()=>{
  const alerts=await request('/alerts','GET',null,ownerToken);
  assert.equal(alerts.status,200);
  assert.ok(alerts.data.some(row=>row.kind==='overdue'&&Number(row.amount)===2500));
+ const reminders=await request('/owner-notifications','GET',null,ownerToken);
+ assert.equal(reminders.status,200);
+ assert.ok(reminders.data.total>=reminders.data.items.length);
+ assert.ok(reminders.data.items.some(item=>item.kind==='overdue'&&Number(item.amount)===2500));
+ assert.equal((await request('/owner-notifications','GET',null,memberLogin.data.token)).status,403);
  const trends=await request('/membership-trends','GET',null,ownerToken);
  assert.equal(trends.status,200);
  assert.equal(trends.data.length,6);
@@ -104,6 +109,7 @@ test('health and role-isolated membership and payment journey',async()=>{
  assert.equal((await request(staffPath,'PATCH',{role:'trainer',active:false},otherOwner.data.token)).status,404);
  const otherLedger=await request(ledgerPath,'GET',null,otherOwner.data.token);
  assert.deepEqual(otherLedger.data,{entries:[],revenue:0,expenses:0,net:0});
+ assert.deepEqual((await request('/owner-notifications','GET',null,otherOwner.data.token)).data,{total:0,items:[]});
 
  const account=await request('/gym-account','GET',null,ownerToken);
  assert.equal(account.status,200);

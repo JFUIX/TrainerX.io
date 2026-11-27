@@ -344,6 +344,46 @@ button.secondary{border:1px solid #c9cbd1}
 .trend-guides{stroke:#bfc2c9}
 .trend-tooltip{box-shadow:0 4px 16px #2026371f}
 @media(max-width:720px){.shell{border-radius:19px}.shell #nav{border-radius:14px;padding:5px}}
+
+/* Sidebar variants reuse the workspace typography and neutral palette. */
+#nav{--nav-ink:#272833;--nav-muted:#545665;--nav-hover:#eeedf3;--nav-active:#272833;
+  --nav-active-ink:#fff;--nav-line:#dddee8;--nav-count:#e7e6ef;
+  display:flex;flex-direction:column;gap:12px;min-height:min(490px,calc(100dvh - 32px));
+  max-height:calc(100dvh - 24px);overflow:auto;background:#fcfcff;border-color:#fff}
+#nav[data-style="dark"]{--nav-ink:#f6f6fa;--nav-muted:#d0d1dd;--nav-hover:#30313e;--nav-active:#efeff6;
+  --nav-active-ink:#232430;--nav-line:#404153;--nav-count:#363747;background:#20212b;border-color:#343544}
+.sidebar-navigation,.sidebar-tools{display:grid;gap:3px}
+.sidebar-tools{margin-top:auto;padding-top:9px;border-top:1px solid var(--nav-line)}
+#nav .nav-link{width:100%;color:var(--nav-muted);background:transparent;box-shadow:none;border:0;text-align:left}
+#nav .nav-link:hover{background:var(--nav-hover);color:var(--nav-ink)}
+#nav .nav-link.active{background:var(--nav-active);color:var(--nav-active-ink)}
+#nav .nav-link:focus-visible{outline-color:var(--nav-ink);outline-offset:1px}
+.sidebar-count{margin-left:auto;min-width:22px;border-radius:999px;padding:2px 5px;text-align:center;
+  background:var(--nav-count);color:var(--nav-ink);font-size:11px;font-variant-numeric:tabular-nums}
+#sidebarPanel{width:min(440px,calc(100% - 24px));max-height:calc(100dvh - 24px);margin:auto;padding:16px;
+  overflow:auto;overscroll-behavior:contain;border:1px solid #d4d5df;border-radius:17px;background:#fcfcff;color:#242530;
+  box-shadow:0 12px 34px #1718242b}
+#sidebarPanel[data-style="dark"]{background:#20212b;color:#f6f6fa;border-color:#414256;color-scheme:dark}
+#sidebarPanel::backdrop{background:#1d1f2b63}
+.sidebar-panel-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.sidebar-panel-header h2{margin:0}
+.sidebar-panel-close{display:grid;place-items:center;width:36px;height:36px;padding:0;background:#eeedf3;color:#272833;font-size:23px}
+.sidebar-panel-body p{margin:0 0 10px;color:inherit}
+.sidebar-panel-body :is(h3,dl){margin:8px 0}
+.sidebar-panel-body dd{margin:3px 0 10px}
+.sidebar-panel-body label{color:inherit}
+.sidebar-panel-body input,.sidebar-panel-body select{color:#242530;background:#f5f5f9}
+.sidebar-panel-body a{color:inherit}
+.sidebar-reminders{list-style:none;margin:0 0 10px;padding:0}
+.sidebar-reminders li{display:grid;gap:3px;padding:8px 0;border-top:1px solid #81839355;overflow-wrap:anywhere}
+.sidebar-reminders small{opacity:.8}
+.sidebar-panel-actions{display:flex;flex-wrap:wrap;gap:7px}
+@media(max-width:720px){
+  .shell #nav{max-height:none;min-height:0;overflow:visible;gap:6px}
+  .sidebar-navigation{display:flex;overflow:auto;scrollbar-width:thin;padding:2px}
+  .sidebar-tools{display:flex;flex-wrap:wrap;margin:0;padding-top:4px}
+  #nav .nav-link{width:auto;min-height:36px}
+}
 </style></head><body>
 <div class="shell"><header>
   <div class="header-brand" translate="no">
@@ -355,7 +395,13 @@ button.secondary{border:1px solid #c9cbd1}
   </div><div class="row"><span id="identity" class="sub"></span><button id="logout" class="secondary hidden">Log out</button></div></header>
 <section id="setup" class="card hidden" style="max-width:500px;margin:16px auto"><h1>Set up TrainerX</h1><p>Create the first platform administrator. Enter the BOOTSTRAP_TOKEN from your Railway service variables, along with your administrator credentials.</p><form id="setupForm" class="form"><label>Admin email<input name="email" type="email" required autocomplete="email"></label><label>Admin password (12+ characters)<input name="password" type="password" minlength="12" required autocomplete="new-password"></label><label>Setup token<input name="token" type="password" required autocomplete="off"></label><button class="primary" type="submit">Create administrator</button></form><p id="setupNotice" role="status"></p></section><section id="login" class="card"><div class="sub" style="letter-spacing:.08em;color:var(--tx-accent)">TRAINERX ACCESS PORTAL</div><h1 id="portalTitle">Welcome to TrainerX.</h1><p id="portalDescription">Sign in to access your gym management dashboard.</p><form id="loginForm" class="form"><label>Email<input name="email" type="email" required autocomplete="username"></label><label>Password<input name="password" type="password" required autocomplete="current-password"></label><button class="primary" type="submit">Sign in</button><p id="loginNotice" role="status" style="grid-column:1/-1"></p></form><div style="margin-top:24px;display:flex;flex-direction:column;align-items:flex-start;gap:12px"><a id="adminAccess" href="/admin" style="font-size:13px;color:var(--tx-muted);text-decoration:underline;text-underline-offset:4px">Super Admin access</a><a id="backToGym" href="/gym" class="hidden" style="font-size:13px;color:var(--tx-muted);text-decoration:underline;text-underline-offset:4px">Back to gym owner sign in</a><button id="recoverToggle" type="button" style="font-size:12px;font-weight:400;background:transparent;color:var(--tx-muted);padding:0;text-decoration:underline;text-underline-offset:3px" class="hidden">Forgot Super Admin password?</button></div><form id="recoverForm" class="form hidden" style="margin-top:18px"><label>Super Admin email<input name="email" type="email" required></label><label>New password (12+ characters)<input name="password" type="password" minlength="12" required autocomplete="new-password"></label><label>Railway BOOTSTRAP_TOKEN<input name="token" type="password" required autocomplete="off"></label><button class="primary" type="submit">Reset Super Admin password</button></form><p id="recoverNotice" role="status"></p></section>
 <footer id="loginFooter" style="text-align:center;margin:14px auto 8px;font-size:12px;color:var(--tx-muted);line-height:1.9"><div>Designed &amp; Developed by <strong style="color:var(--tx-accent);font-weight:600">JFUIX</strong></div><div>© 2026 ARTIOSIS – Digital Solutions. All rights reserved.</div></footer>
-<div id="workspace" class="grid hidden"><a class="skip-link" href="#mainContent">Skip to content</a><nav id="nav" aria-label="Main navigation"></nav><main id="mainContent" tabindex="-1"><div id="notice" role="status"></div><div id="content"></div></main></div></div>
+<div id="workspace" class="grid hidden"><a class="skip-link" href="#mainContent">Skip to content</a><nav id="nav" aria-label="Main navigation"></nav>
+<dialog id="sidebarPanel" aria-labelledby="sidebarPanelTitle">
+  <div class="sidebar-panel-header"><h2 id="sidebarPanelTitle"></h2>
+    <form method="dialog"><button class="sidebar-panel-close" aria-label="Close panel" autofocus>×</button></form>
+  </div>
+  <div class="sidebar-panel-body"></div>
+</dialog><main id="mainContent" tabindex="-1"><div id="notice" role="status"></div><div id="content"></div></main></div></div>
 <script>
 let gateTimer=null,scannerStream=null;let token=sessionStorage.getItem('tx-token')||'',me=null,view='';
 const portal=location.pathname==='/admin'?'admin':'gym';
@@ -395,7 +441,11 @@ const navIcons={
   Plans:'<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8" cy="11" r="2"/><path d="M5 16c0-3 6-3 6 0m3-6h4m-4 4h4"/>',
   Fees:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/>',
   'Gate QR':'<rect x="3" y="3" width="5" height="5" rx="1"/><rect x="16" y="3" width="5" height="5" rx="1"/><rect x="3" y="16" width="5" height="5" rx="1"/><path d="M3 12h5m4-9v5m0 4h5v5h4m-9 0v4m5 0h4m0-9v1"/>',
-  Financials:'<path d="M4 3v17h17M8 15v-3m5 3V8m5 7V5"/>'
+  Financials:'<path d="M4 3v17h17M8 15v-3m5 3V8m5 7V5"/>',
+  Notifications:'<path d="M18 8a6 6 0 0 0-12 0c0 5-2 6-2 8h16c0-2-2-3-2-8m-8 12h4"/>',
+  Help:'<circle cx="12" cy="12" r="9"/><path d="M9.3 9a2.8 2.8 0 1 1 4.2 2.5c-1 .5-1.5 1-1.5 2.5m0 3h.01"/>',
+  Settings:'<path d="M4 7h16M4 12h16M4 17h16"/><circle cx="8" cy="7" r="2" fill="var(--nav-hover)"/><circle cx="15" cy="12" r="2" fill="var(--nav-hover)"/><circle cx="10" cy="17" r="2" fill="var(--nav-hover)"/>',
+  Share:'<circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="5" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="M8.2 10.7l7.6-4.4m-7.6 7l7.6 4.4"/>'
 };
 const navIcon=id=>navIcons[id]?'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">'+navIcons[id]+'</svg>':'';
 const option=(value,label,selected)=>'<option value="'+safe(value)+'" '+(selected===value?'selected':'')+'>'+safe(label)+'</option>';
@@ -428,9 +478,9 @@ function stopView(){
   if(gateTimer){clearInterval(gateTimer);gateTimer=null}
   if(scannerStream){scannerStream.getTracks().forEach(t=>t.stop());scannerStream=null}
 }
-function showShell(){const logged=!!me;$('#setup').classList.add('hidden');$('#login').classList.toggle('hidden',logged);$('#workspace').classList.toggle('hidden',!logged);$('#loginFooter').classList.toggle('hidden',logged);$('#logout').classList.toggle('hidden',!logged);$('#identity').textContent=logged?me.role+' · '+me.email:'';if(logged){view=viewFromURL();render({replaceURL:true})}else{stopView();financeDates=null}}
+function showShell(){const logged=!!me;$('#setup').classList.add('hidden');$('#login').classList.toggle('hidden',logged);$('#workspace').classList.toggle('hidden',!logged);$('#loginFooter').classList.toggle('hidden',logged);$('#logout').classList.toggle('hidden',!logged);$('#identity').textContent=logged?me.role+' · '+me.email:'';if(logged){view=viewFromURL();render({replaceURL:true});startOwnerNotifications()}else{stopOwnerNotifications();$('#sidebarPanel').close();stopView();financeDates=null}}
 const request=api;
-async function render({enrollMember=false,replaceURL=false}={}){
+async function render({enrollMember=false,replaceURL=false,openGymSettings=false}={}){
   if(new URL(location.href).searchParams.get('view')!==routeSlug(view)){
     const url=viewURL(view);
     if(replaceURL)history.replaceState(null,'',url);
@@ -447,8 +497,7 @@ async function render({enrollMember=false,replaceURL=false}={}){
   let memberData;
   const navView=me.role==='owner'&&['Alerts','Workouts'].includes(view)?'Insight':view;
   notice('');
-  $('#nav').innerHTML=views[me.role].map(id=>`<a class="nav-link${navView===id?' active':''}" href="${safe(viewURL(id))}"
-    data-view="${safe(id)}"${navView===id?' aria-current="page"':''}>${navIcon(id)}${safe(pageLabel(id))}</a>`).join('');
+  renderSidebar(navView);
   const el=$('#content');el.innerHTML='<p>Loading…</p>';try{
 if(view==='Alerts'){
   const [alerts,delivery]=await Promise.all([api('/alerts'),api('/reminder-status').catch(()=>null)]);
@@ -556,7 +605,14 @@ if(view==='Insight'){
   const trendPanel=el.querySelector('#weeklyAttendanceChart');
   let trendRequest=0;
   void accountRequest.then(account=>{
-    if(!signal.aborted)renderDashboardAccount(accountPanel,account,api,signal);
+    if(signal.aborted)return;
+    renderDashboardAccount(accountPanel,account,api,signal);
+    if(openGymSettings){
+      const details=accountPanel.querySelector('details');
+      if(details)details.open=true;
+      accountPanel.scrollIntoView({block:'nearest'});
+      (details?.querySelector('summary')??accountPanel).focus();
+    }
   });
   void initialTrend.then(trend=>{
     if(!signal.aborted&&trendRequest===0)trendPanel.innerHTML=renderWeeklyAttendance(trend);
@@ -1478,7 +1534,146 @@ $('#content').addEventListener('click',async e=>{const button=e.target.closest('
   popup.document.write(receipt);popup.document.close();popup.focus();popup.print()
   }catch(err){popup?.close();notice(err.message,true)}
 });
+const sidebarPanel=$('#sidebarPanel');
+const sidebarBody=sidebarPanel.querySelector('.sidebar-panel-body');
+let sidebarMode='light';
+try{if(localStorage.getItem('tx-sidebar-style')==='dark')sidebarMode='dark'}catch{}
+let notificationController,notificationTimer,notificationRequest,notificationData;
+let panelType;
+function applySidebarStyle(){
+  $('#nav').dataset.style=sidebarPanel.dataset.style=sidebarMode;
+}
+function renderSidebar(navView){
+  applySidebarStyle();
+  const links=views[me.role].map(id=>`<a class="nav-link${navView===id?' active':''}" href="${safe(viewURL(id))}"
+    data-view="${safe(id)}"${navView===id?' aria-current="page"':''}>${navIcon(id)}${safe(pageLabel(id))}</a>`).join('');
+  const tool=(name,extra='')=>`<button type="button" class="nav-link" data-sidebar-panel="${name}" aria-haspopup="dialog">
+    ${navIcon(name)}${name}${extra}</button>`;
+  $('#nav').innerHTML=`<div class="sidebar-navigation">${links}${
+    me.role==='owner'?tool('Notifications','<span class="sidebar-count hidden" aria-hidden="true"></span>'):''
+  }</div><div class="sidebar-tools">${tool('Help')}${tool('Settings')}${tool('Share')}</div>`;
+  updateNotificationBadge();
+}
+function updateNotificationBadge(){
+  const button=$('[data-sidebar-panel="Notifications"]');
+  if(!button)return;
+  const count=notificationData?.total??0;
+  const badge=button.querySelector('.sidebar-count');
+  badge.textContent=count>99?'99+':String(count);
+  badge.classList.toggle('hidden',count===0);
+  button.setAttribute('aria-label',count?`Notifications, ${count} current reminders`:'Notifications');
+}
+function stopOwnerNotifications(){
+  notificationController?.abort();
+  notificationController=null;
+  clearInterval(notificationTimer);
+  notificationTimer=null;
+  notificationRequest=null;
+  notificationData=null;
+}
+function startOwnerNotifications(){
+  stopOwnerNotifications();
+  if(me.role!=='owner')return;
+  notificationController=new AbortController();
+  void refreshOwnerNotifications();
+  notificationTimer=setInterval(()=>{
+    if(document.visibilityState==='visible')void refreshOwnerNotifications();
+  },5*60_000);
+}
+function refreshOwnerNotifications(){
+  if(!notificationController)return Promise.resolve();
+  if(notificationRequest)return notificationRequest;
+  const {signal}=notificationController;
+  notificationRequest=api('/owner-notifications','GET',undefined,signal).then(data=>{
+    if(signal.aborted)return;
+    notificationData=data;
+    updateNotificationBadge();
+    if(sidebarPanel.open&&panelType==='Notifications')showNotificationPanel();
+  }).catch(()=>{
+    if(!signal.aborted&&sidebarPanel.open&&panelType==='Notifications'&&!notificationData)
+      sidebarBody.innerHTML='<p role="status">Unable to load reminders. Close and reopen Notifications to try again.</p>';
+  }).finally(()=>{if(!signal.aborted)notificationRequest=null});
+  return notificationRequest;
+}
+function showNotificationPanel(){
+  if(!notificationData){
+    sidebarBody.innerHTML='<p role="status">Loading reminders…</p>';
+    return;
+  }
+  const {total,items}=notificationData;
+  const labels={expiry:'Membership expires',overdue:'Overdue balance',fee_due:'Fee due soon'};
+  const reminders=items.map(item=>{
+    const date=new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'})
+      .format(new Date(item.due_on+'T00:00:00Z'));
+    const amount=item.amount==null?'':new Intl.NumberFormat(undefined,{style:'currency',currency:item.currency})
+      .format(Number(item.amount))+' · ';
+    return `<li><strong>${safe(item.member)}</strong><small>${safe(labels[item.kind]+' · '+amount+date)}</small></li>`;
+  }).join('');
+  sidebarBody.innerHTML=`<p>${total===0?'No membership or payment reminders right now.':
+    total===1?'1 current reminder':total+' current reminders'+(total>items.length?' · Showing '+items.length:'')}</p>
+    ${total?`<ul class="sidebar-reminders">${reminders}</ul>
+      <div class="sidebar-panel-actions"><button class="secondary" type="button" data-panel-view="Alerts">View member alerts</button>
+      <button class="secondary" type="button" data-panel-view="Fees">Open payments</button></div>`:''}`;
+}
+function openSidebarPanel(name){
+  panelType=name;
+  $('#sidebarPanelTitle').textContent=name;
+  if(name==='Notifications'){showNotificationPanel();void refreshOwnerNotifications()}
+  if(name==='Help'){
+    const topics=me.role==='owner'?[
+      ['Members','Open a member profile to manage memberships and review attendance.'],
+      ['Payments','Choose a member and a billing month to record payment.'],
+      ['Check-in QR','Display the entrance QR so members can check in with their code.'],
+      ['Notifications','Review membership expiries, upcoming fees, and overdue balances.']
+    ]:[['Navigation','Use the sidebar to open the tools available to your account.'],
+       ['Access','Contact your gym owner if you need help with your account or permissions.']];
+    sidebarBody.innerHTML='<dl>'+topics.map(([label,detail])=>'<dt><strong>'+safe(label)+'</strong></dt><dd>'+safe(detail)+'</dd>').join('')+'</dl>';
+  }
+  if(name==='Settings'){
+    sidebarBody.innerHTML=`<label>Sidebar appearance<select id="sidebarStyle">${option('light','Light',sidebarMode)}${option('dark','Dark',sidebarMode)}</select></label>
+      ${me.role==='owner'?'<p><button class="secondary" type="button" data-gym-settings>Open gym settings</button></p>':''}`;
+    $('#sidebarStyle').onchange=event=>{
+      sidebarMode=event.target.value;
+      try{localStorage.setItem('tx-sidebar-style',sidebarMode)}catch{}
+      applySidebarStyle();
+    };
+  }
+  if(name==='Share'){
+    const link=new URL('/',location.origin).href;
+    sidebarBody.innerHTML=`<label>TrainerX sign-in link<input id="sidebarShareLink" type="url" readonly value="${safe(link)}"></label>
+      <p><button class="secondary" type="button" data-copy-signin>Copy link</button></p><p data-share-status role="status"></p>`;
+  }
+  sidebarPanel.showModal();
+}
+sidebarBody.addEventListener('click',async event=>{
+  const target=event.target.closest('button');
+  if(!target)return;
+  if(target.hasAttribute('data-copy-signin')){
+    const input=$('#sidebarShareLink'),status=sidebarBody.querySelector('[data-share-status]');
+    try{await navigator.clipboard.writeText(input.value);status.textContent='Link copied.'}
+    catch{input.select();status.textContent='Copy the selected link.'}
+    return;
+  }
+  if(target.hasAttribute('data-gym-settings')){
+    sidebarPanel.close();
+    view='Insight';
+    await render({openGymSettings:true});
+    return;
+  }
+  if(target.dataset.panelView){
+    sidebarPanel.close();
+    view=target.dataset.panelView;
+    await render();
+    $('#mainContent').focus();
+  }
+});
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible')void refreshOwnerNotifications();
+});
+
 $('#nav').onclick=event=>{
+  const tool=event.target.closest('[data-sidebar-panel]');
+  if(tool){openSidebarPanel(tool.dataset.sidebarPanel);return}
   const next=event.target.closest('a[data-view]')?.dataset.view;
   if(!next||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
   event.preventDefault();
