@@ -7,15 +7,19 @@
 }
 
 :root {
-  --chart-revenue: #175cd3;
-  --chart-expense: #b54708;
-  --chart-surplus: #087443;
-  --chart-deficit: #b42346;
-  --chart-attendance: #007c83;
-  --chart-hourly: #316682;
-  --chart-membership: #713bb4;
-  --chart-utilities: #906000;
-  --chart-other: #526174;
+  --chart-revenue: #202020;
+  --chart-expense: #c22032;
+  --chart-surplus: #202020;
+  --chart-deficit: #c22032;
+  --chart-attendance: #ac1729;
+  --chart-hourly: #545454;
+  --chart-membership: #77111e;
+  --chart-utilities: #797979;
+  --chart-other: #de6975;
+  --chart-guide: #d0d0d0;
+  --chart-baseline: #777777;
+  --chart-tooltip: #ffffff;
+  --chart-ink: #202020;
   color-scheme: light;
   font-family: Inter, system-ui, sans-serif;
   color: var(--tx-text);
@@ -72,15 +76,19 @@
   --tx-frame-line: #373b49;
   --tx-frame-inset: #ffffff06;
   --tx-backdrop: radial-gradient(ellipse at 85% 0%,#292d3a,transparent 65%);
-  --chart-revenue: #7babff;
-  --chart-expense: #ffad74;
-  --chart-surplus: #58dea1;
-  --chart-deficit: #ff8ca7;
-  --chart-attendance: #58ddd3;
-  --chart-hourly: #85c7ec;
-  --chart-membership: #c7a1fa;
-  --chart-utilities: #ebc467;
-  --chart-other: #aab6cc;
+  --chart-revenue: #f5f5f5;
+  --chart-expense: #ff6877;
+  --chart-surplus: #f5f5f5;
+  --chart-deficit: #ff6877;
+  --chart-attendance: #ff8793;
+  --chart-hourly: #bdbdbd;
+  --chart-membership: #dc4254;
+  --chart-utilities: #ababab;
+  --chart-other: #707070;
+  --chart-guide: #474747;
+  --chart-baseline: #a0a0a0;
+  --chart-tooltip: #262626;
+  --chart-ink: #f5f5f5;
 }
 
 body {
