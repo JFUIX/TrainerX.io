@@ -102,8 +102,12 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .insight-shortcuts button{padding:9px 12px;font-size:13px}
 .insight-shortcuts .secondary{background:#333034}
 .insight-summary,.insight-panels{display:grid;gap:8px;min-width:0}
-.insight-summary{grid-template-columns:repeat(4,minmax(140px,1fr));overflow-x:auto;scrollbar-width:thin}
-.insight-panels{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+.insight-summary{grid-template-columns:repeat(4,minmax(0,1fr));min-width:0}
+.insight-summary .insight-stat{grid-template-rows:auto 1fr auto}
+.insight-panels{grid-template-columns:repeat(2,minmax(0,1fr));align-self:start;align-items:stretch}
+@media(max-width:760px){
+  .insight-summary{grid-template-columns:repeat(4,minmax(140px,1fr));overflow-x:auto;scrollbar-width:thin}
+}
 .insight .card{margin:0;border:1px solid var(--tx-line);border-radius:15px;box-shadow:none;background:var(--tx-panel);padding:10px;min-width:0}
 .insight-summary .card{background:linear-gradient(145deg,#353032,#232225 75%)}
 .insight-summary .insight-featured{background:linear-gradient(125deg,#8c341e,#5b251c 68%,#432322);border-color:#aa533b}
