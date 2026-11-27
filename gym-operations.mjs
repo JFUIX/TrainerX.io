@@ -165,24 +165,58 @@ export function registerGymOperations(app,db,auth) {
     res.json(rows);
   });
 
+  const reminderKinds=['expiry','overdue','fee_due'];
+  const reminderQuery=`SELECT membership_id,member_id,kind,due_on,amount,full_name
+    FROM gym_member_alerts WHERE gym_id=$1
+    UNION ALL
+    SELECT membership_id,member_id,kind,due_on,amount,full_name
+    FROM gym_whatsapp_alerts WHERE gym_id=$1 AND kind='fee_due'`;
+
   app.get('/owner-notifications',auth,owner,privateData,async (req,res) => {
-    const {rows}=await db.query(`WITH reminders AS (
-      SELECT membership_id,member_id,kind,due_on,amount,full_name
-        FROM gym_member_alerts WHERE gym_id=$1
-      UNION ALL
-      SELECT membership_id,member_id,kind,due_on,amount,full_name
-        FROM gym_whatsapp_alerts WHERE gym_id=$1 AND kind='fee_due'
+    const {rows:[{disabled_owner_reminders:disabled}]}=await db.query(
+      'SELECT disabled_owner_reminders FROM users WHERE gym_id=$1 AND id=$2',[req.user.gym_id,req.user.id]);
+    const {rows}=await db.query(`WITH reminders AS (${reminderQuery}), matched AS (
+      SELECT r.membership_id,r.member_id,r.kind,r.due_on::text,r.amount,
+        COALESCE(NULLIF(r.full_name,''),'Member '||COALESCE(p.membership_no::text,'(no profile)')) AS member,
+        g.currency,COALESCE(s.status,'unread') AS status
+      FROM reminders r CROSS JOIN gyms g
+      LEFT JOIN member_profiles p ON p.gym_id=g.id AND p.user_id=r.member_id
+      LEFT JOIN owner_reminder_state s ON s.gym_id=g.id AND s.owner_id=$2
+        AND (s.membership_id,s.kind,s.due_on)=(r.membership_id,r.kind,r.due_on)
+      WHERE g.id=$1 AND NOT (r.kind=ANY($3::text[]))
     )
-    SELECT reminders.kind,reminders.due_on::text,reminders.amount,
-      COALESCE(NULLIF(reminders.full_name,''),'Member '||COALESCE(p.membership_no::text,'(no profile)')) AS member,
-      g.currency,count(*) OVER ()::int AS reminder_count
-    FROM reminders CROSS JOIN gyms g
-    LEFT JOIN member_profiles p ON p.gym_id=g.id AND p.user_id=reminders.member_id
-    WHERE g.id=$1
-    ORDER BY CASE reminders.kind WHEN 'overdue' THEN 1 WHEN 'fee_due' THEN 2 ELSE 3 END,
-      reminders.due_on,reminders.membership_id LIMIT 60`,[req.user.gym_id]);
-    res.json({total:rows[0]?.reminder_count??0,
-      items:rows.map(({reminder_count,...item})=>item)});
+    SELECT *,count(*) OVER ()::int AS reminder_count,
+      (count(*) FILTER (WHERE status='unread') OVER ())::int AS unread_count
+    FROM matched WHERE CASE WHEN $4::boolean THEN status='done' ELSE status<>'done' END
+    ORDER BY (status='unread') DESC,CASE kind WHEN 'overdue' THEN 1 WHEN 'fee_due' THEN 2 ELSE 3 END,
+      due_on,membership_id LIMIT 60`,[req.user.gym_id,req.user.id,disabled,req.query.done==='true']);
+    res.json({total:rows[0]?.reminder_count??0,unread:rows[0]?.unread_count??0,disabled,
+      items:rows.map(({reminder_count,unread_count,...item})=>item)});
+  });
+
+  app.put('/owner-notifications/preferences',auth,owner,privateData,async (req,res) => {
+    const {disabled}=req.body||{};
+    if(!Array.isArray(disabled)||disabled.length>reminderKinds.length||
+      new Set(disabled).size!==disabled.length||disabled.some(kind=>!reminderKinds.includes(kind)))
+      return res.status(400).json({error:'Invalid reminder preferences'});
+    await db.query('UPDATE users SET disabled_owner_reminders=$3 WHERE gym_id=$1 AND id=$2',
+      [req.user.gym_id,req.user.id,disabled]);
+    res.json({disabled});
+  });
+
+  app.put('/owner-notifications/status',auth,owner,privateData,async (req,res) => {
+    const {membership_id,kind,due_on,status}=req.body||{};
+    if(typeof membership_id!=='string'||!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(membership_id)||
+      !reminderKinds.includes(kind)||!isoDate(due_on)||!['read','unread','done'].includes(status))
+      return res.status(400).json({error:'Invalid reminder status'});
+    const result=await db.query(`WITH reminders AS (${reminderQuery})
+      INSERT INTO owner_reminder_state(gym_id,owner_id,membership_id,kind,due_on,status)
+      SELECT $1,$2,membership_id,kind,due_on,$6 FROM reminders
+      WHERE membership_id=$3 AND kind=$4 AND due_on=$5
+      ON CONFLICT (gym_id,owner_id,membership_id,kind,due_on) DO UPDATE SET status=EXCLUDED.status`,
+      [req.user.gym_id,req.user.id,membership_id,kind,due_on,status]);
+    if(!result.rowCount)return res.status(404).json({error:'This reminder is no longer active'});
+    res.json({status});
   });
 
   app.post('/expenses',auth,owner,async (req,res) => {

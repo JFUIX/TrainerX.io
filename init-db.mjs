@@ -13,7 +13,7 @@ try {
   await client.query("INSERT INTO app_schema_migrations(name) VALUES('initial_schema')");
  }
  await client.query(readFileSync(new URL('./migrations/004-member-profiles.sql',import.meta.url),'utf8'));
- for (const migration of ['005-gym-operations.sql','006-membership-cancellation.sql','007-member-weight.sql','008-member-freeze-history.sql','009-whatsapp-due-reminders.sql','010-reliability.sql']) {
+ for (const migration of ['005-gym-operations.sql','006-membership-cancellation.sql','007-member-weight.sql','008-member-freeze-history.sql','009-whatsapp-due-reminders.sql','010-reliability.sql','011-owner-notifications.sql']) {
   const applied = await client.query('SELECT 1 FROM app_schema_migrations WHERE name=$1',[migration]);
   if (applied.rowCount) continue;
   await client.query(readFileSync(new URL('./migrations/'+migration,import.meta.url),'utf8'));

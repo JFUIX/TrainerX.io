@@ -65,6 +65,22 @@ test('health and role-isolated membership and payment journey',async()=>{
  assert.ok(reminders.data.total>=reminders.data.items.length);
  assert.ok(reminders.data.items.some(item=>item.kind==='overdue'&&Number(item.amount)===2500));
  assert.equal((await request('/owner-notifications','GET',null,memberLogin.data.token)).status,403);
+ const reminder=reminders.data.items.find(item=>item.kind==='overdue'&&item.member_id===member.data.id);
+ assert.equal(reminder.status,'unread');
+ const {membership_id,kind,due_on}=reminder;
+ const statusPath='/owner-notifications/status';
+ const setReminder=status=>request(statusPath,'PUT',{membership_id,kind,due_on,status},ownerToken);
+ assert.equal((await setReminder('read')).status,200);
+ assert.equal((await request('/owner-notifications','GET',null,ownerToken)).data.unread,reminders.data.unread-1);
+ assert.equal((await setReminder('done')).status,200);
+ const completed=await request('/owner-notifications?done=true','GET',null,ownerToken);
+ assert.ok(completed.data.items.some(item=>item.membership_id===membership_id&&item.status==='done'));
+ assert.equal((await setReminder('unread')).status,200);
+ assert.equal((await request('/owner-notifications','GET',null,ownerToken)).data.unread,reminders.data.unread);
+ const preferences='/owner-notifications/preferences';
+ assert.equal((await request(preferences,'PUT',{disabled:['overdue']},ownerToken)).status,200);
+ assert.ok((await request('/owner-notifications','GET',null,ownerToken)).data.items.every(item=>item.kind!=='overdue'));
+ assert.equal((await request(preferences,'PUT',{disabled:[]},ownerToken)).status,200);
  const trends=await request('/membership-trends','GET',null,ownerToken);
  assert.equal(trends.status,200);
  assert.equal(trends.data.length,6);
@@ -107,9 +123,10 @@ test('health and role-isolated membership and payment journey',async()=>{
  assert.equal(otherOwner.status,200);
  assert.equal((await request(memberFreeze,'PUT',freeze,otherOwner.data.token)).status,404);
  assert.equal((await request(staffPath,'PATCH',{role:'trainer',active:false},otherOwner.data.token)).status,404);
+ assert.equal((await request(statusPath,'PUT',{membership_id,kind,due_on,status:'done'},otherOwner.data.token)).status,404);
  const otherLedger=await request(ledgerPath,'GET',null,otherOwner.data.token);
  assert.deepEqual(otherLedger.data,{entries:[],revenue:0,expenses:0,net:0});
- assert.deepEqual((await request('/owner-notifications','GET',null,otherOwner.data.token)).data,{total:0,items:[]});
+ assert.deepEqual((await request('/owner-notifications','GET',null,otherOwner.data.token)).data,{total:0,unread:0,disabled:[],items:[]});
 
  const account=await request('/gym-account','GET',null,ownerToken);
  assert.equal(account.status,200);

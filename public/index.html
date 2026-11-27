@@ -377,6 +377,14 @@ button.secondary{border:1px solid #c9cbd1}
 .sidebar-reminders{list-style:none;margin:0 0 10px;padding:0}
 .sidebar-reminders li{display:grid;gap:3px;padding:8px 0;border-top:1px solid #81839355;overflow-wrap:anywhere}
 .sidebar-reminders small{opacity:.8}
+.sidebar-reminders li{grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}
+.sidebar-reminder-link{display:grid;gap:3px;text-align:left;min-width:0;background:none;color:inherit;border:0;padding:4px;cursor:pointer}
+.sidebar-reminder-link:hover strong{text-decoration:underline}
+.sidebar-reminder-controls{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px}
+.sidebar-reminders [data-unread] strong::before{content:'● ';font-size:.65em}
+.sidebar-preferences{margin-top:12px;padding:10px;border:1px solid #81839355;border-radius:8px}
+.sidebar-preferences label{display:flex;align-items:center;gap:8px;margin:6px 0}
+.sidebar-preferences input[type="checkbox"]{width:auto}
 .sidebar-panel-actions{display:flex;flex-wrap:wrap;gap:7px}
 @media(max-width:720px){
   .shell #nav{max-height:none;min-height:0;overflow:visible;gap:6px}
@@ -480,7 +488,7 @@ function stopView(){
 }
 function showShell(){const logged=!!me;$('#setup').classList.add('hidden');$('#login').classList.toggle('hidden',logged);$('#workspace').classList.toggle('hidden',!logged);$('#loginFooter').classList.toggle('hidden',logged);$('#logout').classList.toggle('hidden',!logged);$('#identity').textContent=logged?me.role+' · '+me.email:'';if(logged){view=viewFromURL();render({replaceURL:true});startOwnerNotifications()}else{stopOwnerNotifications();$('#sidebarPanel').close();stopView();financeDates=null}}
 const request=api;
-async function render({enrollMember=false,replaceURL=false,openGymSettings=false}={}){
+async function render({enrollMember=false,replaceURL=false,openGymSettings=false,reminderTarget=null}={}){
   if(new URL(location.href).searchParams.get('view')!==routeSlug(view)){
     const url=viewURL(view);
     if(replaceURL)history.replaceState(null,'',url);
@@ -820,7 +828,7 @@ $('#closeMember').onclick=()=>{
   d.replaceChildren();
   action?.focus();
 };
-const renderTab=t=>{d.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));const content=$('#memberTabContent');if(t==='Details'){content.innerHTML=canCreate?'<form id="editMemberForm" class="form"><label>Name<input name="full_name" required maxlength="150" value="'+safe(x.full_name||'')+'"></label><label>Phone<input name="phone" maxlength="40" value="'+safe(x.phone||'')+'"></label><label>Age<input name="age" type="number" min="1" max="120" value="'+safe(x.age||'')+'"></label><label>Weight (kg)<input name="weight_kg" type="number" min="0.1" max="500" step="0.1" value="'+safe(x.weight_kg??'')+'"></label><label>Address<input name="residential_address" maxlength="500" value="'+safe(x.residential_address||'')+'"></label><label>Trainer<select name="trainer_id"><option value="">Unassigned</option>'+trainers.map(t=>'<option value="'+safe(t.id)+'" '+(x.trainer_id===t.id?'selected':'')+'>'+safe(t.email)+'</option>').join('')+'</select></label><label>Emergency Name<input name="emergency_name" maxlength="150" value="'+safe(x.emergency_name||'')+'"></label><label>Emergency Phone<input name="emergency_phone" maxlength="150" value="'+safe(x.emergency_phone||'')+'"></label><button class="primary" type="submit">Save Changes</button></form>':'<p class="sub">Member details are shown above.</p>';if(canCreate){$('#editMemberForm').onsubmit=async e=>{e.preventDefault();try{const data=formData(e.target);if(data.age==='')delete data.age;else data.age=Number(data.age);data.weight_kg=data.weight_kg===''?null:Number(data.weight_kg);const saved=await api('/members/'+encodeURIComponent(x.id),'PATCH',data);Object.assign(x,saved,{joined_on:x.joined_on});notice('Member updated');renderTab('Details');list()}catch(err){notice(err.message,true)}}}}else if(t==='Memberships'){content.innerHTML=rows(h.memberships,v=>'<div class="item"><b>'+safe(v.plan)+(v.cancelled_on?' · Cancelled':'')+'</b><p>'+safe(String(v.starts_on).slice(0,10))+' → '+safe(String(v.ends_on).slice(0,10))+' · PKR '+safe(v.price)+'</p>'+(canCreate&&!v.cancelled_on?'<button class="secondary" data-edit-membership="'+safe(v.id)+'">Edit membership</button>':'')+'</div>')+(canCreate?'<button class="secondary" id="renewMember">Renew / Change Plan</button>':'');if(canCreate){$('#renewMember').onclick=()=>window.openRenewalFor(x.id);content.querySelectorAll('[data-edit-membership]').forEach(button=>button.onclick=async()=>{const v=h.memberships.find(item=>item.id===button.dataset.editMembership);const plans=enrollmentPlans;const current=plans.find(p=>p.id===v.plan_id);content.innerHTML='<form id="editMembershipForm" class="form"><h3>Edit existing membership</h3><label>Plan<select name="plan_id" required>'+plans.map(p=>'<option value="'+safe(p.id)+'" '+(p.id===v.plan_id?'selected':'')+'>'+safe(p.name)+'</option>').join('')+'</select></label><label>Start date<input name="starts_on" type="date" value="'+safe(String(v.starts_on).slice(0,10))+'" required></label><label>Duration (months)<input name="months" type="number" min="1" max="120" required></label><label>Total fee (PKR)<input id="editMembershipTotal" readonly></label><button class="primary" type="submit">Save membership changes</button><button class="secondary" type="button" id="cancelMembershipEdit">Cancel</button></form>';const fm=$('#editMembershipForm');fm.elements.months.value=current?Math.max(1,Math.round(Number(v.price)/Number(current.price)))||current.months:1;const update=()=>{const p=plans.find(p=>p.id===fm.elements.plan_id.value);$('#editMembershipTotal').value=p?(Number(p.price)*Number(fm.elements.months.value)).toFixed(2):''};fm.elements.plan_id.onchange=update;fm.elements.months.oninput=update;update();$('#cancelMembershipEdit').onclick=()=>renderTab('Memberships');fm.onsubmit=async e=>{e.preventDefault();try{await api('/memberships/'+encodeURIComponent(v.id),'PATCH',{plan_id:fm.elements.plan_id.value,starts_on:fm.elements.starts_on.value,months:Number(fm.elements.months.value)});notice('Membership updated');await render()}catch(err){notice(err.message,true)}}})}}else if(t==='Attendance'){content.innerHTML='<p>'+h.attendance.length+' recent check-ins</p>'+rows(h.attendance,v=>'<div class="item">'+safe(new Date(v.checked_at).toLocaleString())+'</div>')}else if(t==='Access & reminders'){renderMemberAccess(content,x,api,signal,list)}else{content.innerHTML='<p>Private staff notes</p>'+(canCreate?'<form id="memberNotes"><textarea name="staff_notes" maxlength="2000" rows="5" style="width:100%;background:var(--tx-control);color:#fff;border:1px solid var(--tx-line);border-radius:10px;padding:12px">'+safe(x.staff_notes||'')+'</textarea><button class="primary" type="submit">Save Notes</button></form>':'<p>'+safe(x.staff_notes||'No notes')+'</p>');if(canCreate)$('#memberNotes').onsubmit=async e=>{e.preventDefault();try{const saved=await api('/members/'+encodeURIComponent(x.id),'PATCH',{staff_notes:e.target.elements.staff_notes.value});Object.assign(x,saved);notice('Notes saved')}catch(err){notice(err.message,true)}}}};d.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>renderTab(b.dataset.tab));renderTab(initialTab);if(editMembershipId)d.querySelector('[data-edit-membership="'+CSS.escape(editMembershipId)+'"]')?.click();d.scrollIntoView({block:'nearest'});(d.querySelector('#memberTabContent input:not([readonly]),#memberTabContent select')||d.querySelector('#closeMember'))?.focus({preventScroll:true})};$('#memberSearch').oninput=list;$('#memberFilter').onchange=list;$('#exportMembers').onclick=()=>{const columns=['membership_no','attendance_code','full_name','email','phone','age','residential_address','joined_on','plan','trainer_email','ends_on'];downloadCsv('trainerx-members.csv',columns,m.map(x=>columns.map(k=>x[k])))};list();if(canCreate){const addMember=$('#addMember'),enrollWrap=$('#enrollWrap'),memberForm=$('#memberForm');
+const renderTab=t=>{d.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));const content=$('#memberTabContent');if(t==='Details'){content.innerHTML=canCreate?'<form id="editMemberForm" class="form"><label>Name<input name="full_name" required maxlength="150" value="'+safe(x.full_name||'')+'"></label><label>Phone<input name="phone" maxlength="40" value="'+safe(x.phone||'')+'"></label><label>Age<input name="age" type="number" min="1" max="120" value="'+safe(x.age||'')+'"></label><label>Weight (kg)<input name="weight_kg" type="number" min="0.1" max="500" step="0.1" value="'+safe(x.weight_kg??'')+'"></label><label>Address<input name="residential_address" maxlength="500" value="'+safe(x.residential_address||'')+'"></label><label>Trainer<select name="trainer_id"><option value="">Unassigned</option>'+trainers.map(t=>'<option value="'+safe(t.id)+'" '+(x.trainer_id===t.id?'selected':'')+'>'+safe(t.email)+'</option>').join('')+'</select></label><label>Emergency Name<input name="emergency_name" maxlength="150" value="'+safe(x.emergency_name||'')+'"></label><label>Emergency Phone<input name="emergency_phone" maxlength="150" value="'+safe(x.emergency_phone||'')+'"></label><button class="primary" type="submit">Save Changes</button></form>':'<p class="sub">Member details are shown above.</p>';if(canCreate){$('#editMemberForm').onsubmit=async e=>{e.preventDefault();try{const data=formData(e.target);if(data.age==='')delete data.age;else data.age=Number(data.age);data.weight_kg=data.weight_kg===''?null:Number(data.weight_kg);const saved=await api('/members/'+encodeURIComponent(x.id),'PATCH',data);Object.assign(x,saved,{joined_on:x.joined_on});notice('Member updated');renderTab('Details');list()}catch(err){notice(err.message,true)}}}}else if(t==='Memberships'){content.innerHTML=rows(h.memberships,v=>'<div class="item" tabindex="-1" data-membership-card="'+safe(v.id)+'"><b>'+safe(v.plan)+(v.cancelled_on?' · Cancelled':'')+'</b><p>'+safe(String(v.starts_on).slice(0,10))+' → '+safe(String(v.ends_on).slice(0,10))+' · PKR '+safe(v.price)+'</p>'+(canCreate&&!v.cancelled_on?'<button class="secondary" data-edit-membership="'+safe(v.id)+'">Edit membership</button>':'')+'</div>')+(canCreate?'<button class="secondary" id="renewMember">Renew / Change Plan</button>':'');if(canCreate){$('#renewMember').onclick=()=>window.openRenewalFor(x.id);content.querySelectorAll('[data-edit-membership]').forEach(button=>button.onclick=async()=>{const v=h.memberships.find(item=>item.id===button.dataset.editMembership);const plans=enrollmentPlans;const current=plans.find(p=>p.id===v.plan_id);content.innerHTML='<form id="editMembershipForm" class="form"><h3>Edit existing membership</h3><label>Plan<select name="plan_id" required>'+plans.map(p=>'<option value="'+safe(p.id)+'" '+(p.id===v.plan_id?'selected':'')+'>'+safe(p.name)+'</option>').join('')+'</select></label><label>Start date<input name="starts_on" type="date" value="'+safe(String(v.starts_on).slice(0,10))+'" required></label><label>Duration (months)<input name="months" type="number" min="1" max="120" required></label><label>Total fee (PKR)<input id="editMembershipTotal" readonly></label><button class="primary" type="submit">Save membership changes</button><button class="secondary" type="button" id="cancelMembershipEdit">Cancel</button></form>';const fm=$('#editMembershipForm');fm.elements.months.value=current?Math.max(1,Math.round(Number(v.price)/Number(current.price)))||current.months:1;const update=()=>{const p=plans.find(p=>p.id===fm.elements.plan_id.value);$('#editMembershipTotal').value=p?(Number(p.price)*Number(fm.elements.months.value)).toFixed(2):''};fm.elements.plan_id.onchange=update;fm.elements.months.oninput=update;update();$('#cancelMembershipEdit').onclick=()=>renderTab('Memberships');fm.onsubmit=async e=>{e.preventDefault();try{await api('/memberships/'+encodeURIComponent(v.id),'PATCH',{plan_id:fm.elements.plan_id.value,starts_on:fm.elements.starts_on.value,months:Number(fm.elements.months.value)});notice('Membership updated');await render()}catch(err){notice(err.message,true)}}})}}else if(t==='Attendance'){content.innerHTML='<p>'+h.attendance.length+' recent check-ins</p>'+rows(h.attendance,v=>'<div class="item">'+safe(new Date(v.checked_at).toLocaleString())+'</div>')}else if(t==='Access & reminders'){renderMemberAccess(content,x,api,signal,list)}else{content.innerHTML='<p>Private staff notes</p>'+(canCreate?'<form id="memberNotes"><textarea name="staff_notes" maxlength="2000" rows="5" style="width:100%;background:var(--tx-control);color:#fff;border:1px solid var(--tx-line);border-radius:10px;padding:12px">'+safe(x.staff_notes||'')+'</textarea><button class="primary" type="submit">Save Notes</button></form>':'<p>'+safe(x.staff_notes||'No notes')+'</p>');if(canCreate)$('#memberNotes').onsubmit=async e=>{e.preventDefault();try{const saved=await api('/members/'+encodeURIComponent(x.id),'PATCH',{staff_notes:e.target.elements.staff_notes.value});Object.assign(x,saved);notice('Notes saved')}catch(err){notice(err.message,true)}}}};d.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>renderTab(b.dataset.tab));renderTab(initialTab);if(editMembershipId)d.querySelector('[data-edit-membership="'+CSS.escape(editMembershipId)+'"]')?.click();d.scrollIntoView({block:'nearest'});(d.querySelector('#memberTabContent input:not([readonly]),#memberTabContent select')||d.querySelector('#closeMember'))?.focus({preventScroll:true})};$('#memberSearch').oninput=list;$('#memberFilter').onchange=list;$('#exportMembers').onclick=()=>{const columns=['membership_no','attendance_code','full_name','email','phone','age','residential_address','joined_on','plan','trainer_email','ends_on'];downloadCsv('trainerx-members.csv',columns,m.map(x=>columns.map(k=>x[k])))};list();if(canCreate){const addMember=$('#addMember'),enrollWrap=$('#enrollWrap'),memberForm=$('#memberForm');
 const showEnrollment=open=>{
   enrollWrap.classList.toggle('open',open);
   addMember.setAttribute('aria-expanded',String(open));
@@ -828,7 +836,21 @@ const showEnrollment=open=>{
 };
 addMember.onclick=()=>showEnrollment(!enrollWrap.classList.contains('open'));
 if(enrollMember)showEnrollment(true);
-const updateEnrollmentFee=()=>{const p=enrollmentPlans.find(p=>p.id===memberForm.elements.plan_id.value);const months=Number(memberForm.elements.membership_months.value);memberForm.elements.amount.value=p&&Number.isInteger(months)&&months>0&&months<=120&&true?(Number(p.price)*months).toFixed(2):'';memberForm.elements.membership_months.setCustomValidity('')};memberForm.elements.plan_id.addEventListener('change',()=>{updateEnrollmentFee()});memberForm.elements.membership_months.addEventListener('input',updateEnrollmentFee);$('#memberForm').elements.joined_on.value=today;bind('memberForm',async d=>api('/members/register','POST',{...d,age:Number(d.age),amount:Number(d.amount),membership_months:Number(d.membership_months)}))}}
+const updateEnrollmentFee=()=>{const p=enrollmentPlans.find(p=>p.id===memberForm.elements.plan_id.value);const months=Number(memberForm.elements.membership_months.value);memberForm.elements.amount.value=p&&Number.isInteger(months)&&months>0&&months<=120&&true?(Number(p.price)*months).toFixed(2):'';memberForm.elements.membership_months.setCustomValidity('')};memberForm.elements.plan_id.addEventListener('change',()=>{updateEnrollmentFee()});memberForm.elements.membership_months.addEventListener('input',updateEnrollmentFee);$('#memberForm').elements.joined_on.value=today;bind('memberForm',async d=>api('/members/register','POST',{...d,age:Number(d.age),amount:Number(d.amount),membership_months:Number(d.membership_months)}))}
+if(reminderTarget){
+  const card=memberList.querySelector('[data-card-member="'+CSS.escape(reminderTarget.member_id)+'"]');
+  if(card){
+    const toggle=card.querySelector('[data-member-action="toggle"]');
+    if(toggle?.getAttribute('aria-expanded')==='false')toggle.click();
+    await showMember(m.find(member=>member.id===reminderTarget.member_id),
+      card.querySelector('[data-member-action="profile"]'),'Memberships');
+    if(signal.aborted)return;
+    const destination=card.querySelector('[data-membership-card="'+CSS.escape(reminderTarget.membership_id)+'"]')||toggle;
+    destination?.focus();
+    destination?.scrollIntoView({block:'center'});
+  }else notice('This member is no longer available.',true);
+}
+}
 if(view==='Trainer Clients'){const members=await api('/members');el.innerHTML='<h1>Trainer clients</h1><p>Member directory for assigning workout and diet plans.</p><div class="card">'+rows(members,x=>'<div class="item"><b>'+safe(x.full_name||x.email)+'</b><p>#'+safe(x.membership_no||'—')+' · '+safe(x.phone||'')+'</p></div>')+'</div>'}
 if(view==='Attendance'||view==='My attendance'){const a=await api('/attendance');el.innerHTML='<h1>Today’s attendance</h1>'+((me.role==='owner'||me.role==='reception')?'<form id="codeCheckinForm" class="card form"><label>4-digit member attendance code<input name="code" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" minlength="4" autocomplete="off" required placeholder="0000"></label><button class="primary">Check In</button></form>':'')+'<div class="card">'+rows(a,x=>'<div class="item">'+safe(x.email)+' <span class="badge">'+safe(new Date(x.checked_at).toLocaleTimeString())+'</span></div>')+'</div>';if($('#codeCheckinForm'))bind('codeCheckinForm',async d=>{const result=await api('/attendance/code','POST',d);notice(result.name+' checked in')})}
 
@@ -840,7 +862,7 @@ const clearBilling=label=>{
   monthField.innerHTML='<option value="">'+safe(label)+'</option>';
   updateHint();
 };
-const loadBilling=async()=>{
+const loadBilling=async preferredMonth=>{
   const requestId=++billingRequest;
   const id=membershipField.value;
   clearBilling(id?'Loading billing months…':'Select a membership first');
@@ -850,10 +872,15 @@ const loadBilling=async()=>{
     if(requestId!==billingRequest)return;
     billing=schedule;
     const unpaid=billing.schedule.filter(period=>period.due>0);
+    const preferredAvailable=unpaid.some(period=>period.month===preferredMonth);
     monthField.disabled=!unpaid.length;
     monthField.innerHTML=unpaid.length?unpaid.map(period=>option(period.month,
       new Date(period.month+'-01T12:00:00Z').toLocaleDateString('en-US',{month:'long',year:'numeric',timeZone:'UTC'})+' · '+period.status,
-      billing.next?.month)).join(''):'<option value="">No unpaid billing months</option>';
+      (preferredAvailable?preferredMonth:billing.next?.month))).join(''):'<option value="">No unpaid billing months</option>';
+    if(preferredMonth&&!preferredAvailable){
+      monthField.value='';
+      notice('This billing month no longer has a balance.',true);
+    }
     updateHint();
   }catch(error){
     if(signal.aborted||requestId!==billingRequest)return;
@@ -861,7 +888,7 @@ const loadBilling=async()=>{
     notice(error.message,true);
   }
 };
-const chooseMember=async id=>{
+const chooseMember=async (id,target)=>{
   const requestId=++billingRequest;
   const member=members.find(record=>record.id===id);
   if(!member)return;
@@ -877,9 +904,13 @@ const chooseMember=async id=>{
     const unpaid=memberships.filter(record=>Number(record.price)>Number(record.paid)+0.001);
     membershipField.disabled=!unpaid.length;
     membershipField.innerHTML=unpaid.length?unpaid.map(record=>option(record.id,
-      record.plan+' · '+record.starts_on+' – '+record.ends_on+(record.cancelled_on?' · Cancelled':''),unpaid[0].id)).join(''):
+      record.plan+' · '+record.starts_on+' – '+record.ends_on+(record.cancelled_on?' · Cancelled':''),(unpaid.some(record=>record.id===target?.membership_id)?target.membership_id:unpaid[0].id))).join(''):
       '<option value="">No memberships with a balance</option>';
-    if(unpaid.length)await loadBilling();
+    if(target&&!unpaid.some(record=>record.id===target.membership_id)){
+      membershipField.value='';
+      clearBilling('Choose a membership');
+      notice('This membership no longer has a balance.',true);
+    }else if(unpaid.length)await loadBilling(target?.kind==='fee_due'?target.due_on.slice(0,7):undefined);
   }catch(error){
     if(signal.aborted||requestId!==billingRequest)return;
     membershipField.innerHTML='<option value="">Unable to load memberships</option>';
@@ -898,6 +929,13 @@ search.onfocus=matches;
 membershipField.onchange=loadBilling;
 monthField.onchange=updateHint;
 matches();
+if(reminderTarget){
+  await chooseMember(reminderTarget.member_id,reminderTarget);
+  if(signal.aborted)return;
+  if(!search.value)notice('This member is no longer available.',true);
+  fm.scrollIntoView({block:'center'});
+  (billing?fm.elements.amount:search).focus({preventScroll:true});
+}
 bind('feeForm',async data=>{
   if(!billing||!data.membership_id||!data.billing_month)throw Error('Select a membership and an unpaid billing month.');
   return api('/fees','POST',{...data,amount:Number(data.amount)});
@@ -1539,7 +1577,8 @@ const sidebarBody=sidebarPanel.querySelector('.sidebar-panel-body');
 let sidebarMode='light';
 try{if(localStorage.getItem('tx-sidebar-style')==='dark')sidebarMode='dark'}catch{}
 let notificationController,notificationTimer,notificationRequest,notificationData;
-let panelType;
+let panelType, completedReminders, showingDone=false, panelRequest=0;
+const reminderLabels={expiry:'Membership expires',overdue:'Overdue balance',fee_due:'Fee due soon'};
 function applySidebarStyle(){
   $('#nav').dataset.style=sidebarPanel.dataset.style=sidebarMode;
 }
@@ -1557,11 +1596,11 @@ function renderSidebar(navView){
 function updateNotificationBadge(){
   const button=$('[data-sidebar-panel="Notifications"]');
   if(!button)return;
-  const count=notificationData?.total??0;
+  const count=notificationData?.unread??0;
   const badge=button.querySelector('.sidebar-count');
   badge.textContent=count>99?'99+':String(count);
   badge.classList.toggle('hidden',count===0);
-  button.setAttribute('aria-label',count?`Notifications, ${count} current reminders`:'Notifications');
+  button.setAttribute('aria-label',count?`Notifications, ${count} unread reminders`:'Notifications');
 }
 function stopOwnerNotifications(){
   notificationController?.abort();
@@ -1570,6 +1609,8 @@ function stopOwnerNotifications(){
   notificationTimer=null;
   notificationRequest=null;
   notificationData=null;
+  completedReminders=null;
+  panelRequest++;
 }
 function startOwnerNotifications(){
   stopOwnerNotifications();
@@ -1586,9 +1627,10 @@ function refreshOwnerNotifications(){
   const {signal}=notificationController;
   notificationRequest=api('/owner-notifications','GET',undefined,signal).then(data=>{
     if(signal.aborted)return;
+    const changed=JSON.stringify(notificationData)!==JSON.stringify(data);
     notificationData=data;
     updateNotificationBadge();
-    if(sidebarPanel.open&&panelType==='Notifications')showNotificationPanel();
+    if(changed&&sidebarPanel.open&&panelType==='Notifications'&&!showingDone)showNotificationPanel();
   }).catch(()=>{
     if(!signal.aborted&&sidebarPanel.open&&panelType==='Notifications'&&!notificationData)
       sidebarBody.innerHTML='<p role="status">Unable to load reminders. Close and reopen Notifications to try again.</p>';
@@ -1596,29 +1638,66 @@ function refreshOwnerNotifications(){
   return notificationRequest;
 }
 function showNotificationPanel(){
-  if(!notificationData){
-    sidebarBody.innerHTML='<p role="status">Loading reminders…</p>';
-    return;
-  }
-  const {total,items}=notificationData;
-  const labels={expiry:'Membership expires',overdue:'Overdue balance',fee_due:'Fee due soon'};
-  const reminders=items.map(item=>{
-    const date=new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'})
-      .format(new Date(item.due_on+'T00:00:00Z'));
+  const data=showingDone?completedReminders:notificationData;
+  const dateFormat=new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});
+  const reminders=data?.items.map((item,index)=>{
+    const date=dateFormat.format(new Date(item.due_on+'T00:00:00Z'));
     const amount=item.amount==null?'':new Intl.NumberFormat(undefined,{style:'currency',currency:item.currency})
       .format(Number(item.amount))+' · ';
-    return `<li><strong>${safe(item.member)}</strong><small>${safe(labels[item.kind]+' · '+amount+date)}</small></li>`;
+    const unread=item.status==='unread';
+    const action=item.kind==='expiry'?'Open membership':'Open payment form';
+    return `<li data-reminder-index="${index}">
+      <button type="button" class="sidebar-reminder-link" data-open-reminder ${unread?'data-unread':''}>
+        <strong>${safe(item.member)}</strong><small>${safe(reminderLabels[item.kind]+' · '+amount+date)}</small>
+        <small>${action} →</small>
+      </button>
+      <div class="sidebar-reminder-controls">
+        <button class="secondary" type="button" data-reminder-status="${unread?'read':'unread'}">${unread?'Mark as read':'Mark as unread'}</button>
+        ${showingDone?'':'<button class="secondary" type="button" data-reminder-status="done">Done</button>'}
+      </div>
+    </li>`;
   }).join('');
-  sidebarBody.innerHTML=`<p>${total===0?'No membership or payment reminders right now.':
-    total===1?'1 current reminder':total+' current reminders'+(total>items.length?' · Showing '+items.length:'')}</p>
-    ${total?`<ul class="sidebar-reminders">${reminders}</ul>
-      <div class="sidebar-panel-actions"><button class="secondary" type="button" data-panel-view="Alerts">View member alerts</button>
-      <button class="secondary" type="button" data-panel-view="Fees">Open payments</button></div>`:''}`;
+  sidebarBody.innerHTML=`<div class="sidebar-panel-actions" aria-label="Reminder list">
+    <button type="button" class="secondary" data-reminder-list="active" aria-pressed="${!showingDone}">Active</button>
+    <button type="button" class="secondary" data-reminder-list="done" aria-pressed="${showingDone}">Done</button>
+    </div><p data-reminder-message role="status">${!data?'Loading reminders…':data.total?
+    `${data.total} ${showingDone?'completed':'active'} · Showing ${data.items.length}`:
+    showingDone?'No completed reminders for current memberships or fees.':'No active reminders.'}</p>
+    <ul class="sidebar-reminders">${reminders||''}</ul>`;
+}
+async function loadCompletedReminders(){
+  const requestId=++panelRequest;
+  try{
+    const data=await api('/owner-notifications?done=true','GET',undefined,notificationController?.signal);
+    if(requestId!==panelRequest)return;
+    completedReminders=data;
+    if(requestId===panelRequest&&sidebarPanel.open&&panelType==='Notifications'&&showingDone)showNotificationPanel();
+  }catch(error){
+    if(requestId===panelRequest&&sidebarPanel.open&&panelType==='Notifications'&&showingDone)
+      sidebarBody.querySelector('[data-reminder-message]').textContent=error.message;
+  }
+}
+async function saveReminderStatus(item,status){
+  const {membership_id,kind,due_on}=item;
+  await api('/owner-notifications/status','PUT',{membership_id,kind,due_on,status});
+  await notificationRequest;
+  await refreshOwnerNotifications();
+}
+async function loadReminderPreferences(form){
+  try{
+    await refreshOwnerNotifications();
+    if(!form.isConnected)return;
+    if(!notificationData)throw Error('Unable to load reminder preferences. Reopen Settings to retry.');
+    for(const input of form.querySelectorAll('input'))input.checked=!notificationData.disabled.includes(input.value);
+    form.querySelector('fieldset').disabled=false;
+  }catch(error){
+    if(form.isConnected)form.querySelector('[role="status"]').textContent=error.message;
+  }
 }
 function openSidebarPanel(name){
   panelType=name;
   $('#sidebarPanelTitle').textContent=name;
-  if(name==='Notifications'){showNotificationPanel();void refreshOwnerNotifications()}
+  if(name==='Notifications'){showingDone=false;showNotificationPanel();void refreshOwnerNotifications()}
   if(name==='Help'){
     const topics=me.role==='owner'?[
       ['Members','Open a member profile to manage memberships and review attendance.'],
@@ -1632,6 +1711,32 @@ function openSidebarPanel(name){
   if(name==='Settings'){
     sidebarBody.innerHTML=`<label>Sidebar appearance<select id="sidebarStyle">${option('light','Light',sidebarMode)}${option('dark','Dark',sidebarMode)}</select></label>
       ${me.role==='owner'?'<p><button class="secondary" type="button" data-gym-settings>Open gym settings</button></p>':''}`;
+    if(me.role==='owner'){
+      sidebarBody.insertAdjacentHTML('beforeend',`<form id="sidebarReminderPreferences">
+        <fieldset class="sidebar-preferences" disabled><legend>Owner notifications</legend>
+          <label><input type="checkbox" value="expiry"> Memberships expiring within 7 days</label>
+          <label><input type="checkbox" value="fee_due"> Fees due within 3 days</label>
+          <label><input type="checkbox" value="overdue"> Overdue balances</label>
+          <button class="secondary" type="submit">Save notification preferences</button>
+        </fieldset><p role="status"></p>
+      </form>`);
+      const form=$('#sidebarReminderPreferences');
+      void loadReminderPreferences(form);
+      form.onsubmit=async event=>{
+        event.preventDefault();
+        const fieldset=form.querySelector('fieldset'), message=form.querySelector('[role="status"]');
+        const disabled=[...form.querySelectorAll('input:not(:checked)')].map(input=>input.value);
+        fieldset.disabled=true;
+        message.textContent='Saving…';
+        try{
+          await api('/owner-notifications/preferences','PUT',{disabled});
+          await notificationRequest;
+          await refreshOwnerNotifications();
+          message.textContent='Notification preferences saved.';
+        }catch(error){message.textContent=error.message}
+        finally{fieldset.disabled=false}
+      };
+    }
     $('#sidebarStyle').onchange=event=>{
       sidebarMode=event.target.value;
       try{localStorage.setItem('tx-sidebar-style',sidebarMode)}catch{}
@@ -1648,6 +1753,45 @@ function openSidebarPanel(name){
 sidebarBody.addEventListener('click',async event=>{
   const target=event.target.closest('button');
   if(!target)return;
+  if(target.dataset.reminderList){
+    showingDone=target.dataset.reminderList==='done';
+    showNotificationPanel();
+    sidebarBody.querySelector('[aria-pressed="true"]')?.focus();
+    if(showingDone)await loadCompletedReminders();
+    return;
+  }
+  const row=target.closest('[data-reminder-index]');
+  if(row){
+    const item=(showingDone?completedReminders:notificationData)?.items[Number(row.dataset.reminderIndex)];
+    if(!item)return;
+    if(target.hasAttribute('data-open-reminder')){
+      sidebarPanel.close();
+      view=item.kind==='expiry'?'Members':'Fees';
+      void render({reminderTarget:item});
+      if(item.status==='unread')void saveReminderStatus(item,'read').catch(()=>{});
+      return;
+    }
+    const status=target.dataset.reminderStatus;
+    if(status){
+      row.querySelectorAll('button').forEach(button=>button.disabled=true);
+      try{
+        await saveReminderStatus(item,status);
+        if(showingDone)await loadCompletedReminders();
+        if(sidebarPanel.open&&panelType==='Notifications')
+          sidebarBody.querySelector('[aria-pressed="true"]')?.focus();
+      }catch(error){
+        if(row.isConnected){
+          sidebarBody.querySelector('[data-reminder-message]').textContent=error.message;
+        }
+      }finally{
+        if(row.isConnected){
+          row.querySelectorAll('button').forEach(button=>button.disabled=false);
+          target.focus();
+        }
+      }
+    }
+    return;
+  }
   if(target.hasAttribute('data-copy-signin')){
     const input=$('#sidebarShareLink'),status=sidebarBody.querySelector('[data-share-status]');
     try{await navigator.clipboard.writeText(input.value);status.textContent='Link copied.'}
@@ -1660,12 +1804,7 @@ sidebarBody.addEventListener('click',async event=>{
     await render({openGymSettings:true});
     return;
   }
-  if(target.dataset.panelView){
-    sidebarPanel.close();
-    view=target.dataset.panelView;
-    await render();
-    $('#mainContent').focus();
-  }
+
 });
 document.addEventListener('visibilitychange',()=>{
   if(document.visibilityState==='visible')void refreshOwnerNotifications();
