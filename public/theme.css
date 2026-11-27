@@ -31,7 +31,9 @@
 }
 
 body {
-  background: var(--tx-backdrop) fixed;
+  background: var(--tx-backdrop) no-repeat;
+  background-size: 100% max(820px, 100vh);
+  background-color: var(--tx-bg);
 }
 
 button, input, select, textarea, optgroup, option {

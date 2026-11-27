@@ -42,7 +42,7 @@
 
 /* TrainerX interface refresh: layered surfaces, clearer hierarchy and tactile controls. */
 
-html{scroll-behavior:smooth}body{min-height:100vh}
+body{min-height:100vh}
 .shell{max-width:1340px;padding:14px clamp(12px,2vw,26px)}header{padding:0 0 10px;position:relative}header:after{content:"";position:absolute;bottom:-1px;left:0;width:110px;height:2px;background:linear-gradient(90deg,var(--tx-accent),transparent)}
 .header-brand{display:flex;align-items:center;gap:10px;min-width:0}
 .header-brand-mark{display:grid;place-items:center;width:42px;height:42px;flex:none;border:1px solid #404149;border-radius:11px;background:linear-gradient(155deg,#4c4f59,var(--tx-accent) 62%,#212228);box-shadow:inset 0 1px 0 #ffffff52}
@@ -58,14 +58,13 @@ html{scroll-behavior:smooth}body{min-height:100vh}
 .sub{letter-spacing:.02em}
 .grid{grid-template-columns:190px minmax(0,1fr);gap:14px;margin-top:12px}nav{position:sticky;top:12px;align-self:start;gap:2px;padding:6px;background:var(--tx-control);border:1px solid var(--tx-line);border-radius:16px}
 nav button{position:relative;min-height:38px;border-radius:8px;padding:8px 10px;transition:background .18s,color .18s;font-weight:600;font-size:14px;line-height:1.3}nav button:not(.active):hover{background:#e9eaee;color:var(--tx-text)}
-@media (prefers-reduced-motion:no-preference){main{animation:txEnter .28s ease both}}@keyframes txEnter{from{opacity:.65;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
 h1,h2{letter-spacing:-.035em}h1{font-size:clamp(26px,3vw,38px);line-height:1.12}h2{font-size:20px}p{line-height:1.55}
-.card{background:var(--tx-panel);border:1px solid var(--tx-line);border-radius:20px;box-shadow:0 10px 32px rgba(0,0,0,.12);transition:border-color .18s,box-shadow .18s}
+.card{background:var(--tx-panel);border:1px solid var(--tx-line);border-radius:20px;box-shadow:0 10px 32px rgba(0,0,0,.12);transition:none}
 .card:hover{border-color:#a8abb4}.dash-kpi,.member-mini .card{overflow:hidden}.dash-kpi:after,.member-mini .card:after{content:"";display:block;width:32px;height:3px;margin-top:7px;border-radius:8px;background:var(--tx-accent);opacity:.8}
 .dashboard-hero{position:relative;overflow:hidden;padding:clamp(24px,3.5vw,43px);border-radius:24px;background:radial-gradient(circle at 88% 8%,color-mix(in srgb,var(--tx-accent) calc(.19 * 100%),transparent),transparent 35%),linear-gradient(125deg,#e6e7eb,var(--tx-control) 72%);border:1px solid #c5c8cf;box-shadow:0 18px 44px rgba(0,0,0,.16)}
 .dashboard-hero:after{content:"";position:absolute;width:190px;height:190px;right:-45px;bottom:-115px;border:30px solid color-mix(in srgb,var(--tx-accent) calc(.07 * 100%),transparent);border-radius:50%;pointer-events:none}
-button{transition:transform .16s ease,background .16s ease,box-shadow .16s ease}button:hover:not(:disabled){transform:translateY(-1px)}button:active:not(:disabled){transform:translateY(1px)}button.primary{box-shadow:0 5px 18px color-mix(in srgb,var(--tx-accent) calc(.12 * 100%),transparent)}button.primary:hover{background:var(--tx-accent-hover);box-shadow:0 7px 24px color-mix(in srgb,var(--tx-accent) calc(.2 * 100%),transparent)}button.secondary:hover{background:#d7d9de}
-button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--tx-accent);outline-offset:3px}input,select,textarea{border-color:var(--tx-line);transition:border-color .18s,box-shadow .18s}input:focus,select:focus,textarea:focus{border-color:var(--tx-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--tx-accent) calc(.09 * 100%),transparent);outline:none}
+button{transition:transform .12s ease}button:hover:not(:disabled){transform:translateY(-1px)}button:active:not(:disabled){transform:translateY(1px)}button.primary{box-shadow:0 5px 18px color-mix(in srgb,var(--tx-accent) calc(.12 * 100%),transparent)}button.primary:hover{background:var(--tx-accent-hover);box-shadow:0 7px 24px color-mix(in srgb,var(--tx-accent) calc(.2 * 100%),transparent)}button.secondary:hover{background:#d7d9de}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--tx-accent);outline-offset:3px}input,select,textarea{border-color:var(--tx-line);transition:none}input:focus,select:focus,textarea:focus{border-color:var(--tx-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--tx-accent) calc(.09 * 100%),transparent);outline:none}
 .member-avatar{border-radius:14px;background:linear-gradient(135deg,#e8e9ed,#cdd0d8);box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}.member-list .item{padding:8px 4px}.member-list .item:hover{background:color-mix(in srgb,var(--tx-accent) calc(.025 * 100%),transparent)}
 .member-tabs button{border-radius:10px}
 #login{max-width:440px;margin:clamp(16px,4vh,38px) auto 12px;padding:clamp(14px,3vw,22px);border-color:var(--tx-line);box-shadow:0 30px 90px rgba(0,0,0,.3)}#login:before{content:"";display:block;width:48px;height:5px;border-radius:10px;background:var(--tx-accent);margin-bottom:12px}
@@ -330,9 +329,8 @@ nav a.nav-link.active{background:var(--tx-accent);color:var(--tx-accent-ink)}
 
 /* Frosted frame and neutral surfaces shared by the TrainerX workspace. */
 .shell{margin:clamp(10px,2vw,30px) auto;width:calc(100% - clamp(20px,4vw,60px));
-  background:linear-gradient(150deg,#ffffff9c,#eef0f38c);
-  border:1px solid #ffffffcc;border-radius:26px;box-shadow:0 22px 60px #1b20301c,inset 0 0 0 4px #ffffff38;
-  backdrop-filter:blur(14px)}
+  background:linear-gradient(150deg,#ffffffb5,#eef0f3a8);
+  border:1px solid #ffffffcc;border-radius:26px;box-shadow:0 12px 30px #1b203015,inset 0 0 0 4px #ffffff38}
 .shell>header{border-bottom:1px solid #5a60662e}
 .shell>header::after{width:0}
 #nav{background:#fffffff0;border-color:#fff;border-radius:20px;padding:9px;box-shadow:0 6px 22px #2429360a}
@@ -342,7 +340,6 @@ nav a.nav-link.active{background:var(--tx-accent);color:var(--tx-accent-ink)}
 button.primary,button.secondary,.member-tabs button,.plan-templates button{border-radius:999px}
 button.primary{color:var(--tx-accent-ink);border:1px solid transparent;box-shadow:none}
 button.secondary{border:1px solid #c9cbd1}
-button.primary:hover:not(:disabled){box-shadow:0 4px 12px #26293226}
 #login{box-shadow:0 14px 34px #1c203016}
 .trend-guides{stroke:#bfc2c9}
 .trend-tooltip{box-shadow:0 4px 16px #2026371f}
@@ -547,19 +544,27 @@ if(view==='Financials'){
 }
 if(view==='Insight'){
   const attendanceTrendUrl='/attendance-trends';
-  const [report,insights,trends,account,attendance,attendanceTrend]=await Promise.all([
-    api('/report'),api('/business-insights'),api('/membership-trends'),
-    api('/gym-account').catch(()=>null),api('/attendance').catch(()=>null),api(attendanceTrendUrl).catch(()=>null)
+  const accountRequest=api('/gym-account').catch(()=>null);
+  const initialTrend=api(attendanceTrendUrl).catch(()=>null);
+  const [report,insights,trends,attendance]=await Promise.all([
+    api('/report'),api('/business-insights'),api('/membership-trends'),api('/attendance').catch(()=>null)
   ]);
   signal.throwIfAborted();
-  renderInsight(el,report,insights,trends,attendanceTrend);
+  renderInsight(el,report,insights,trends);
   startDashboardClock(el.querySelector('.dashboard-clock'),signal);
-  renderDashboardAccount($('#dashboardAccount'),account,api,signal);
+  const accountPanel=el.querySelector('#dashboardAccount');
+  const trendPanel=el.querySelector('#weeklyAttendanceChart');
   let trendRequest=0;
+  void accountRequest.then(account=>{
+    if(!signal.aborted)renderDashboardAccount(accountPanel,account,api,signal);
+  });
+  void initialTrend.then(trend=>{
+    if(!signal.aborted&&trendRequest===0)trendPanel.innerHTML=renderWeeklyAttendance(trend);
+  });
   renderDashboardCheckIn($('#dashboardCheckIn'),attendance,api,signal,report.active,async()=>{
     const request=++trendRequest;
     const trend=await api(attendanceTrendUrl);
-    if(request===trendRequest)$('#weeklyAttendanceChart').innerHTML=renderWeeklyAttendance(trend);
+    if(!signal.aborted&&request===trendRequest)trendPanel.innerHTML=renderWeeklyAttendance(trend);
   });
 }
 if(view==='Gyms'){const gyms=await api('/gyms');el.innerHTML='<h1>Gym management</h1><p>Manage gym accounts and reset owner passwords securely.</p><div class="card">'+rows(gyms,g=>'<div class="item"><strong>'+safe(g.name)+'</strong><p>'+safe(g.owner_email||'No owner')+' · '+safe(g.currency)+'</p><form class="row" data-reset-gym="'+safe(g.id)+'"><label style="flex:1;min-width:210px">New owner password<input type="password" name="password" minlength="12" maxlength="128" autocomplete="new-password" placeholder="12+ characters" required></label><button class="secondary" type="submit">Reset owner password</button></form>'+subscriptionForm(g)+'</div>')+'</div><h2>Add gym</h2>'+form([['name','Gym name'],['currency','Currency (e.g. PKR)'],['email','Owner email','email'],['password','Owner password (12+ characters)','password']],'gymForm','Create gym');bind('gymForm',async d=>{await api('/gyms','POST',{...d,currency:(d.currency||'PKR').trim().toUpperCase()})});el.querySelectorAll('[data-reset-gym]').forEach(form=>form.addEventListener('submit',async e=>{e.preventDefault();const gym=gyms.find(g=>g.id===form.dataset.resetGym);if(!confirm('Reset the owner password for '+gym.name+'? Existing owner sessions will be signed out.'))return;try{await api('/gyms/'+encodeURIComponent(gym.id)+'/reset-owner-password','POST',{password:form.elements.password.value});form.reset();notice('Owner password reset. Sign in with the new password.')}catch(err){notice(err.message,true)}}));el.querySelectorAll('[data-subscription]').forEach(node=>bindForm(node,data=>
@@ -982,6 +987,7 @@ function startDashboardClock(clock,signal){
 }
 
 function renderWeeklyAttendance(trend){
+  if(trend===undefined)return '<p class="insight-period">Loading attendance trends…</p>';
   if(!trend)return '<p class="insight-period">Attendance trends are temporarily unavailable.</p>';
   const {days,hours,timezone}=trend;
   const total=days.reduce((sum,day)=>sum+day.visits,0);
@@ -1128,7 +1134,7 @@ function renderInsight(el,report,insights,trends,attendanceTrend){
             </div>
             </div>
           </section>
-        <section class="card" id="dashboardAccount"></section>
+        <section class="card" id="dashboardAccount"><p class="insight-period">Loading gym settings…</p></section>
         <details class="card insight-disclosure">
           <summary>
             <div><span class="insight-disclosure-title">Retention and churn</span><span class="insight-period">Last 6 months</span></div>
