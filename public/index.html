@@ -158,6 +158,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .analytics-header{justify-content:space-between;align-items:center}
 .analytics-controls label{gap:4px}
 .analytics-controls input,.analytics-controls button{padding:8px 11px;font-size:13px}
+.plan-template-header{margin-bottom:10px}
+.plan-template-header h2{margin:0;font-size:20px;line-height:1.25;text-wrap:balance}
+.plan-template-header p{margin:4px 0 0;font-size:13px;color:var(--tx-muted)}
 .plan-templates{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,165px),1fr));gap:8px}
 .plan-templates button{display:flex;align-items:center;gap:7px;min-height:38px;text-align:left;padding:7px 9px}
 .plan-templates svg{width:20px;height:20px;flex:none;fill:none;stroke:var(--tx-accent-soft);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
@@ -493,7 +496,13 @@ if(view==='Plans'){
   const templateButtons=templates.map(([label,icon])=>`<button type="button" class="secondary" data-plan-template="${safe(label)}">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="${icon}"/></svg>${safe(label)}</button>`).join('');
   el.innerHTML='<h1>'+safe(pageLabel(view))+'</h1><p>Create and manage the plans offered to your members.</p>'+
-    '<section class="card"><h2>Plan templates by facility type</h2><p>Choose a template to fill in the plan name, then set the duration and fee.</p><div class="plan-templates">'+templateButtons+'</div></section>'+
+    `<section class="card" aria-labelledby="planTemplatesHeading" aria-describedby="planTemplatesHelp">
+      <div class="plan-template-header">
+        <h2 id="planTemplatesHeading">Plan templates by facility type</h2>
+        <p id="planTemplatesHelp">Choose a template to fill in the plan name, then set the duration and fee.</p>
+      </div>
+      <div class="plan-templates">${templateButtons}</div>
+    </section>`+
     form([['name','Plan name'],['months','Duration (months)','number','min="1" max="120" required'],['price','Fee (PKR)','number','min="0" step="0.01" required']],'planForm','Create plan')+
     '<div class="card"><h2>Available plans</h2>'+rows(plans,x=>'<div class="item"><strong>'+safe(x.name)+'</strong><p>'+safe(x.months)+' months · PKR '+safe(x.price)+'</p></div>')+'</div>';
   const planForm=$('#planForm');
