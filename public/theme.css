@@ -7,6 +7,13 @@
 }
 
 :root {
+  --chart-revenue: #175cd3;
+  --chart-expense: #b54708;
+  --chart-surplus: #087443;
+  --chart-deficit: #b42346;
+  --chart-attendance: #007c83;
+  --chart-hourly: #316682;
+  --chart-membership: #713bb4;
   color-scheme: light;
   font-family: Inter, system-ui, sans-serif;
   color: var(--tx-text);

@@ -206,7 +206,7 @@ nav a.nav-link.active{background:var(--tx-accent);color:var(--tx-accent-ink)}
 .analytics-legend-label{min-width:0;overflow-wrap:anywhere}
 .analytics-legend-value{justify-content:end;flex-wrap:wrap;text-align:right;font-variant-numeric:tabular-nums}
 .analytics-legend-value small{min-width:3.5ch;color:var(--tx-muted)}
-.analytics-gain{--swatch:#292c34}.analytics-loss{--swatch:#777b89}
+.analytics-gain{--swatch:var(--chart-surplus)}.analytics-loss{--swatch:var(--chart-deficit)}
 .trend-baseline{stroke:#858995;vector-effect:non-scaling-stroke}
 .analytics .card{margin:0;border-radius:14px;padding:11px;min-width:0;box-shadow:none}
 .analytics .analytics-total{display:grid;align-content:start;gap:5px;padding:10px 12px}
@@ -225,8 +225,8 @@ nav a.nav-link.active{background:var(--tx-accent);color:var(--tx-accent-ink)}
 .analytics-keys span{display:flex;align-items:center;gap:6px}
 .analytics-swatch{width:8px;height:8px;background:var(--swatch);border-radius:50%;flex:none}
 .analytics-keys{display:flex;flex-wrap:wrap;gap:12px;color:var(--tx-muted);font-size:12px}
-.analytics-revenue{--swatch:#24262e}
-.analytics-expense{--swatch:#777c89}
+.analytics-revenue{--swatch:var(--chart-revenue)}
+.analytics-expense{--swatch:var(--chart-expense)}
 .analytics-table-wrap{overflow-x:auto}
 .analytics-table{width:100%;border-collapse:collapse;text-align:left;font-size:13px}
 .analytics-table th,.analytics-table td{padding:6px 8px;border-bottom:1px solid var(--tx-line)}
@@ -271,13 +271,16 @@ nav a.nav-link.active{background:var(--tx-accent);color:var(--tx-accent-ink)}
 .trend-plot svg{display:block;width:100%;height:var(--plot-height)}
 .trend-guides,.trend-trace{fill:none;vector-effect:non-scaling-stroke}
 .trend-guides{stroke:var(--tx-line);stroke-dasharray:2 3}
-.trend-trace{stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round}
+.trend-trace{stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
 .trend-points{position:absolute;inset:0 0 auto;height:var(--plot-height);display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
 .trend-point{position:relative;min-width:0;outline-offset:-2px}
 .trend-point:is(:hover,:focus){z-index:1}
 .trend-point:is(:hover,:focus)::before{content:'';position:absolute;inset:0 auto 0 50%;border-left:1px solid #767984}
-.trend-dot{display:none;position:absolute;left:50%;width:6px;height:6px;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none}
-.trend-point:is(:hover,:focus) .trend-dot{display:block}
+.trend-dot{position:absolute;left:50%;width:5px;height:5px;border-radius:50%;transform:translate(-50%,-50%);pointer-events:none}
+.trend-dot.inspection-only{visibility:hidden}
+.trend-point:is(:hover,:focus) .trend-dot{visibility:visible;width:8px;height:8px;box-shadow:0 0 0 1px #fff}
+.trend-tooltip-value{display:grid;grid-template-columns:6px minmax(0,1fr);align-items:baseline;gap:4px}
+.trend-tooltip-value i{width:6px;height:6px;border-radius:50%;background:var(--point-color)}
 .trend-label{position:absolute;top:calc(100% + 4px);left:50%;transform:translateX(-50%);padding:2px 3px;border-radius:99px;white-space:nowrap}
 .trend-point:not(:is(:hover,:focus)) .trend-label.sparse{visibility:hidden}
 .trend-point:is(:hover,:focus) .trend-label{background:#30313a;color:#fff}
@@ -554,8 +557,8 @@ if(view==='Financials'){
           <span><i class="analytics-swatch analytics-expense" aria-hidden="true"></i>Expenses</span></div>
         </div>
         ${renderTrendChart('financial-activity','Financial activity in '+account.currency,points,[
-          {color:'#24262e',format:value=>'Revenue '+money(value)},
-          {color:'#777c89',format:value=>'Expenses '+money(value)}
+          {color:'var(--chart-revenue)',format:value=>'Revenue '+money(value)},
+          {color:'var(--chart-expense)',dash:'5 4',format:value=>'Expenses '+money(value)}
         ],{minStep:.01})}
       </section>
       <section class="card">
@@ -952,19 +955,27 @@ if(view==='My plans'){const p=await api('/plans');el.innerHTML='<h1>Available pl
 }catch(e){if(!signal.aborted)el.innerHTML='<p class="error">'+safe(e.message)+'</p>'}}
 function renderExpenseDonut(categories,money){
   if(!categories.length)return '<p class="sub">No expenses recorded for this period.</p>';
-  const colors=['#24262c','#7b7e88','#a4a7b0','#4e515d','#c7c9d0','#636674'];
+  const categoryColors=new Map([
+    ['Rent','var(--chart-revenue)'],
+    ['Payroll','var(--chart-membership)'],
+    ['Utilities','#906000'],
+    ['Equipment','var(--chart-attendance)'],
+    ['Marketing','var(--chart-expense)'],
+    ['Other','#526174']
+  ]);
+  const colors=categories.map(([category])=>categoryColors.get(category)||categoryColors.get('Other'));
   const total=categories.reduce((sum,[,cents])=>sum+cents,0);
   let end=0;
   const segments=categories.map(([,cents],index)=>{
     const start=end;
     end+=100*cents/total;
-    return colors[index%colors.length]+' '+start+'% '+end+'%';
+    return colors[index]+' '+start+'% '+end+'%';
   }).join(',');
   const share=new Intl.NumberFormat(undefined,{style:'percent',maximumFractionDigits:1});
   return `<div class="analytics-donut" style="--segments:${segments}">
     <div class="analytics-donut-total"><strong>${safe(money(total/100))}</strong><span>Total expenses</span></div>
   </div><ul class="analytics-legend">${categories.map(([category,cents],index)=>`<li>
-    <span class="analytics-legend-label"><i class="analytics-swatch" aria-hidden="true" style="--swatch:${colors[index%colors.length]}"></i>${safe(category)}</span>
+    <span class="analytics-legend-label"><i class="analytics-swatch" aria-hidden="true" style="--swatch:${colors[index]}"></i>${safe(category)}</span>
     <span class="analytics-legend-value"><strong>${safe(money(cents/100))}</strong><small>${safe(share.format(cents/total))}</small></span>
   </li>`).join('')}</ul>`;
 }
@@ -1012,8 +1023,8 @@ function renderTrendChart(id,label,points,series,{bars=false,minStep=1}={}){
   const width=700;
   const slot=width/points.length;
   const x=index=>slot*(index+.5);
-  const palette=series.map(item=>item.color||'#333640');
-  const barColor=value=>value<0?'#777b89':'#292c34';
+  const barColor=value=>value<0?'var(--chart-deficit)':'var(--chart-surplus)';
+  const pointColor=(value,index)=>bars?barColor(value):series[index].color;
   const barsMarkup=()=>points.map((point,index)=>{
     const value=point.values[0];
     const base=y(0),tip=y(value);
@@ -1021,7 +1032,7 @@ function renderTrendChart(id,label,points,series,{bars=false,minStep=1}={}){
     return `<rect x="${x(index)-barWidth/2}" y="${Math.min(base,tip)}" width="${barWidth}" height="${Math.abs(base-tip)}"
       rx="3" fill="${barColor(value)}" fill-opacity=".86"/>`;
   }).join('');
-  const paths=bars?barsMarkup():palette.map((color,index)=>{
+  const paths=bars?barsMarkup():series.map(({color,dash},index)=>{
     const gradient=id+'-fill-'+index;
     const fill='url(#'+gradient+')';
     const shade=`<defs><linearGradient id="${gradient}" x2="0%" y2="100%">
@@ -1033,7 +1044,7 @@ function renderTrendChart(id,label,points,series,{bars=false,minStep=1}={}){
     const start=points.length===1?0:x(0);
     const end=points.length===1?width:x(points.length-1);
     return shade+`<path d="${line} L${end},100 H${start} Z" fill="${fill}"/>
-      <path class="trend-trace" d="${line}" stroke="${color}"/>`;
+      <path class="trend-trace" d="${line}" stroke="${color}"${dash?` stroke-dasharray="${dash}"`:''}/>`;
   }).join('');
   return `<div class="trend-chart" role="group" aria-label="${safe(label)}">
     <div class="trend-axis" aria-hidden="true">${ticks.map(tick=>`<span style="--tick-y:${tick.y}%">${safe(tick.value)}</span>`).join('')}</div>
@@ -1049,9 +1060,9 @@ function renderTrendChart(id,label,points,series,{bars=false,minStep=1}={}){
           const values=series.map((item,i)=>item.format(point.values[i]));
           return `<div class="trend-point${index>=points.length/2?' trend-point-right':''}" tabindex="${index===points.length-1?0:-1}" role="group"
             aria-label="${safe([detail,...values].join(', '))}">
-            ${point.values.map((value,i)=>`<span class="trend-dot" aria-hidden="true" style="top:${y(value)}%;background:${bars?barColor(value):palette[i]}"></span>`).join('')}
+            ${point.values.map((value,i)=>`<span class="trend-dot${bars||point.sparse?' inspection-only':''}" aria-hidden="true" style="top:${y(value)}%;background:${pointColor(value,i)}"></span>`).join('')}
             <span class="trend-label${point.sparse?' sparse':''}" aria-hidden="true">${safe(point.label)}</span>
-            <span class="trend-tooltip" aria-hidden="true"><strong>${safe(detail)}</strong>${values.map(value=>`<span>${safe(value)}</span>`).join('')}</span>
+            <span class="trend-tooltip" aria-hidden="true"><strong>${safe(detail)}</strong>${values.map((value,i)=>`<span class="trend-tooltip-value"><i style="--point-color:${pointColor(point.values[i],i)}"></i><span>${safe(value)}</span></span>`).join('')}</span>
           </div>`;
         }).join('')}
       </div>
@@ -1104,10 +1115,10 @@ function renderWeeklyAttendance(trend){
     <div class="attendance-peak" title="${safe(timezone)}"><strong>Peak hour</strong>
       <span>${hourlyMax?safe(hourRange(peak)+' · '+chartVisitLabel(hourlyMax)):'No check-ins yet'}</span></div>
   </div>
-  ${renderTrendChart('weekly-attendance','Daily check-ins for the last seven days',dailyPoints,[{format:chartVisitLabel}])}
+  ${renderTrendChart('weekly-attendance','Daily check-ins for the last seven days',dailyPoints,[{color:'var(--chart-attendance)',format:chartVisitLabel}])}
   <div class="attendance-hourly">
     <h3>Check-ins by hour</h3>
-    ${renderTrendChart('hourly-attendance','Check-ins by hour in '+timezone,hourlyPoints,[{format:chartVisitLabel}])}
+    ${renderTrendChart('hourly-attendance','Check-ins by hour in '+timezone,hourlyPoints,[{color:'var(--chart-hourly)',format:chartVisitLabel}])}
   </div>`;
 }
 
@@ -1178,7 +1189,7 @@ function renderInsight(el,report,insights,trends,attendanceTrend){
           <details class="card insight-disclosure attendance-trends-card" open>
             <summary><div><span class="insight-disclosure-title">Monthly attendance</span><span class="insight-period">Last 6 months</span></div></summary>
             <div class="insight-disclosure-body">
-              ${renderTrendChart('monthly-attendance','Check-ins for the last six months',monthlyPoints('visits'),[{format:chartVisitLabel}])}
+              ${renderTrendChart('monthly-attendance','Check-ins for the last six months',monthlyPoints('visits'),[{color:'var(--chart-attendance)',format:chartVisitLabel}])}
             </div>
           </details>
       </div>
@@ -1186,7 +1197,7 @@ function renderInsight(el,report,insights,trends,attendanceTrend){
         <div class="insight-panels">
             <section class="card">
               <div class="insight-panel-head"><h2>Revenue</h2><span class="insight-period">Last 7 days</span></div>
-              ${renderTrendChart('weekly-revenue','Revenue for the last seven days',weeklyRevenue,[{format:money}],{minStep:.01})}
+              ${renderTrendChart('weekly-revenue','Revenue for the last seven days',weeklyRevenue,[{color:'var(--chart-revenue)',format:money}],{minStep:.01})}
               <div class="insight-details">
                 ${stat('Collected this month',report.revenue_month,{key:'revenue'})}
                 ${stat('Collected in the past 30 days',insights.collected_30d,{key:'rolling'})}
@@ -1203,7 +1214,7 @@ function renderInsight(el,report,insights,trends,attendanceTrend){
               <div class="insight-months">
                 <h3>New members · 6 months</h3>
                 ${renderTrendChart('membership-growth','New members for the last six months',monthlyPoints('joined'),
-                  [{format:count=>count+(count===1?' new member':' new members')}])}
+                  [{color:'var(--chart-membership)',format:count=>count+(count===1?' new member':' new members')}])}
               </div>
             </section>
         </div>
