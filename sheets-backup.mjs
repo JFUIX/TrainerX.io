@@ -1,6 +1,8 @@
 import {execFile} from 'node:child_process';
 import {createCipheriv,createDecipheriv,createSign,randomBytes} from 'node:crypto';
-import {writeFile} from 'node:fs/promises';
+import {mkdtemp,rm,writeFile} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {promisify} from 'node:util';
 import pg from 'pg';
@@ -149,6 +151,19 @@ function databaseEnvironment(){
   return env;
 }
 
+// Exercise the full archive reader without writing restored data to a database.
+async function verifyBackup(sheet,key,date){
+  const archive=await loadBackup(sheet,key,date);
+  const directory=await mkdtemp(join(tmpdir(),'trainerx-backup-'));
+  try{
+    const file=join(directory,'snapshot.dump');
+    await writeFile(file,archive,{mode:0o600});
+    try{await runFile('pg_restore',['--file=/dev/null',file],{timeout:180000})}
+    catch{throw new Error('Saved backup archive could not be read by pg_restore')}
+  }finally{await rm(directory,{recursive:true,force:true})}
+  console.log('Google Sheets backup decrypt and archive verification complete for '+date);
+}
+
 async function backUp(db,date){
   const config=configuration();
   const client=await db.connect();
@@ -160,7 +175,10 @@ async function backUp(db,date){
     const sheet=await openSheet(config);
     const title=slotFor(date);
     const existing=metadata(title,await sheetTabs(sheet))?await getManifest(sheet,title):null;
-    if(existing?.state==='complete'&&existing.date===date)return true;
+    if(existing?.state==='complete'&&existing.date===date){
+      await verifyBackup(sheet,config.key,date);
+      return true;
+    }
     let archive;
     try{
       const {stdout}=await runFile('pg_dump',['--format=custom','--no-owner','--no-acl'],{
@@ -170,6 +188,7 @@ async function backUp(db,date){
     }catch(error){throw new Error('Postgres backup failed ('+(error.code||error.signal||'pg_dump')+')')}
     const written=await storeBackup(sheet,config.key,archive,date);
     if(written)console.log('Google Sheets database backup complete for '+date);
+    await verifyBackup(sheet,config.key,date);
     return true;
   }finally{
     try{if(locked)await client.query('SELECT pg_advisory_unlock($1)',[lockId])}

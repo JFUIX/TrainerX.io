@@ -83,7 +83,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 button.primary,.member-tabs button.active{background:var(--tx-accent);color:var(--tx-accent-ink)}
 nav button:hover:not(:disabled),nav button:active:not(:disabled){transform:none}
 nav button:has(svg){display:flex;align-items:center;gap:9px}
-nav button svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+nav svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 nav button.active{background:#382723;color:var(--tx-accent-soft);box-shadow:inset 3px 0 var(--tx-accent)}
 button.primary:hover{background:var(--tx-accent-hover)}input::placeholder,textarea::placeholder{color:var(--tx-muted);opacity:.8}.member-status,.badge{color:var(--tx-accent-soft)}
 header:after,.member-mini .card:after,.dash-kpi:after,#login:before{background:var(--tx-accent)}
@@ -102,6 +102,20 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .insight-shortcuts button{padding:9px 12px;font-size:13px}
 .insight-shortcuts .secondary{background:#333034}
 .insight-summary,.insight-panels{display:grid;gap:8px;min-width:0}
+.insight-summary-region{grid-area:summary;min-width:0}
+.insight-summary-cue{display:none;margin:0 0 5px;color:var(--tx-muted);font-size:11px;text-align:right}
+@media(max-width:603px),(min-width:721px) and (max-width:760px){.insight-summary-cue{display:block}}
+.insight-summary .card{position:relative;overflow:hidden}
+.insight-summary .card::before{content:'';position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,var(--metric-accent,#ff9b78),transparent 80%)}
+.insight-summary .card:nth-child(3){--metric-accent:#8ce0bd}
+.insight-summary .card:nth-child(4){--metric-accent:#c5adf2}
+.insight-panels .insight-panel-head{padding-bottom:7px;border-bottom:1px solid var(--tx-line)}
+.skip-link{position:absolute;left:12px;top:12px;z-index:5;background:var(--tx-panel);color:var(--tx-text);padding:8px 12px;border-radius:8px;transform:translateY(-200%)}
+.skip-link:focus{transform:none}
+nav a.nav-link{position:relative;display:flex;align-items:center;gap:9px;min-height:38px;border-radius:8px;padding:8px 10px;color:var(--tx-muted);font-size:14px;font-weight:600;line-height:1.3;text-decoration:none}
+nav a.nav-link:hover{background:#302829;color:var(--tx-text)}
+nav a.nav-link.active{background:#382723;color:var(--tx-accent-soft);box-shadow:inset 3px 0 var(--tx-accent)}
+@media(max-width:720px){nav a.nav-link{flex:none;white-space:nowrap}}
 .insight-summary{grid-template-columns:repeat(4,minmax(0,1fr));min-width:0}
 .insight-summary .insight-stat{grid-template-rows:auto 1fr auto}
 .insight-panels{grid-template-columns:repeat(2,minmax(0,1fr));align-self:start;align-items:stretch}
@@ -109,6 +123,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
   .insight-summary{grid-template-columns:repeat(4,minmax(140px,1fr));overflow-x:auto;scrollbar-width:thin}
 }
 .insight .card{margin:0;border:1px solid var(--tx-line);border-radius:15px;box-shadow:none;background:var(--tx-panel);padding:10px;min-width:0}
+.insight .insight-panels>.card{background:linear-gradient(165deg,#2b282c,var(--tx-panel) 56%)}
 .insight-summary .card{background:linear-gradient(145deg,#353032,#232225 75%)}
 .insight-summary .insight-featured{background:linear-gradient(125deg,#8c341e,#5b251c 68%,#432322);border-color:#aa533b}
 .insight-stat{display:grid;align-content:start;gap:5px;min-width:0}
@@ -224,7 +239,6 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .insight-lead,.insight-content,.insight-attendance-stack{min-width:0;display:grid;gap:8px;align-content:start}
 .insight-main{display:contents}
 .insight-lead{grid-area:lead;align-self:center}
-.insight-summary{grid-area:summary}
 .insight-panels{grid-area:panels}
 .insight-attendance-stack{grid-area:attendance}
 .insight-content{grid-area:content}
@@ -319,7 +333,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
   </div><div class="row"><span id="identity" class="sub"></span><button id="logout" class="secondary hidden">Log out</button></div></header>
 <section id="setup" class="card hidden" style="max-width:500px;margin:16px auto"><h1>Set up TrainerX</h1><p>Create the first platform administrator. Enter the BOOTSTRAP_TOKEN from your Railway service variables, along with your administrator credentials.</p><form id="setupForm" class="form"><label>Admin email<input name="email" type="email" required autocomplete="email"></label><label>Admin password (12+ characters)<input name="password" type="password" minlength="12" required autocomplete="new-password"></label><label>Setup token<input name="token" type="password" required autocomplete="off"></label><button class="primary" type="submit">Create administrator</button></form><p id="setupNotice" role="status"></p></section><section id="login" class="card"><div class="sub" style="letter-spacing:.08em;color:var(--tx-accent)">TRAINERX ACCESS PORTAL</div><h1 id="portalTitle">Welcome to TrainerX.</h1><p id="portalDescription">Sign in to access your gym management dashboard.</p><form id="loginForm" class="form"><label>Email<input name="email" type="email" required autocomplete="username"></label><label>Password<input name="password" type="password" required autocomplete="current-password"></label><button class="primary" type="submit">Sign in</button><p id="loginNotice" role="status" style="grid-column:1/-1"></p></form><div style="margin-top:24px;display:flex;flex-direction:column;align-items:flex-start;gap:12px"><a id="adminAccess" href="/admin" style="font-size:13px;color:var(--tx-muted);text-decoration:underline;text-underline-offset:4px">Super Admin access</a><a id="backToGym" href="/gym" class="hidden" style="font-size:13px;color:var(--tx-muted);text-decoration:underline;text-underline-offset:4px">Back to gym owner sign in</a><button id="recoverToggle" type="button" style="font-size:12px;font-weight:400;background:transparent;color:var(--tx-muted);padding:0;text-decoration:underline;text-underline-offset:3px" class="hidden">Forgot Super Admin password?</button></div><form id="recoverForm" class="form hidden" style="margin-top:18px"><label>Super Admin email<input name="email" type="email" required></label><label>New password (12+ characters)<input name="password" type="password" minlength="12" required autocomplete="new-password"></label><label>Railway BOOTSTRAP_TOKEN<input name="token" type="password" required autocomplete="off"></label><button class="primary" type="submit">Reset Super Admin password</button></form><p id="recoverNotice" role="status"></p></section>
 <footer id="loginFooter" style="text-align:center;margin:14px auto 8px;font-size:12px;color:var(--tx-muted);line-height:1.9"><div>Designed &amp; Developed by <strong style="color:var(--tx-accent);font-weight:600">JFUIX</strong></div><div>© 2026 ARTIOSIS – Digital Solutions. All rights reserved.</div></footer>
-<div id="workspace" class="grid hidden"><nav id="nav" aria-label="Main navigation"></nav><main><div id="notice" role="status"></div><div id="content"></div></main></div></div>
+<div id="workspace" class="grid hidden"><a class="skip-link" href="#mainContent">Skip to content</a><nav id="nav" aria-label="Main navigation"></nav><main id="mainContent" tabindex="-1"><div id="notice" role="status"></div><div id="content"></div></main></div></div>
 <script>
 let gateTimer=null,scannerStream=null;let token=sessionStorage.getItem('tx-token')||'',me=null,view='';
 const portal=location.pathname==='/admin'?'admin':'gym';
@@ -336,6 +350,20 @@ function formData(form){return Object.fromEntries(new FormData(form))}
 function form(fields,id,button){return '<form id="'+id+'" class="card form">'+fields.map(f=>'<label>'+f[1]+'<input name="'+f[0]+'" type="'+(f[2]||'text')+'" '+(f[3]||'required')+'></label>').join('')+'<button class="primary" type="submit">'+button+'</button></form>'}
 function rows(data,fn){return data.length?data.map(fn).join(''):'<p>No records yet.</p>'}
 const views={superadmin:['Gyms'],owner:['Insight','Members','Plans','Fees','Gate QR','Financials'],reception:['Members','Fees','Attendance','Gate QR','Alerts'],trainer:['Trainer Clients','Workouts','Diets'],member:['My attendance','Scan QR','My plans','Workouts','Diets']};
+function routeSlug(id){
+  return ({Insight:'dashboard',Plans:'memberships',Fees:'payments','Gate QR':'check-in-qr',Financials:'analytics'})[id]??id.toLowerCase().replaceAll(' ','-');
+}
+function viewURL(id){
+  const url=new URL(location.href);
+  url.searchParams.set('view',routeSlug(id));
+  url.hash='';
+  return url;
+}
+function viewFromURL(){
+  const allowed=me.role==='owner'?[...views.owner,'Alerts','Workouts']:views[me.role];
+  const slug=new URL(location.href).searchParams.get('view');
+  return allowed.find(id=>routeSlug(id)===slug)??allowed[0];
+}
 const sharedLabels={Fees:'Fee Collection',Plans:'Membership Plans','Gate QR':'Check-in QR'};
 const ownerLabels={Insight:'Dashboard',Plans:'Memberships',Fees:'Payments',Financials:'Analytics',Workouts:'Workout'};
 const pageLabel=id=>(me.role==='owner'&&ownerLabels[id])||sharedLabels[id]||id;
@@ -378,9 +406,14 @@ function stopView(){
   if(gateTimer){clearInterval(gateTimer);gateTimer=null}
   if(scannerStream){scannerStream.getTracks().forEach(t=>t.stop());scannerStream=null}
 }
-function showShell(){const logged=!!me;$('#setup').classList.add('hidden');$('#login').classList.toggle('hidden',logged);$('#workspace').classList.toggle('hidden',!logged);$('#loginFooter').classList.toggle('hidden',logged);$('#logout').classList.toggle('hidden',!logged);$('#identity').textContent=logged?me.role+' · '+me.email:'';if(logged){view=views[me.role][0];render()}else{stopView();financeDates=null}}
+function showShell(){const logged=!!me;$('#setup').classList.add('hidden');$('#login').classList.toggle('hidden',logged);$('#workspace').classList.toggle('hidden',!logged);$('#loginFooter').classList.toggle('hidden',logged);$('#logout').classList.toggle('hidden',!logged);$('#identity').textContent=logged?me.role+' · '+me.email:'';if(logged){view=viewFromURL();render({replaceURL:true})}else{stopView();financeDates=null}}
 const request=api;
-async function render({enrollMember=false}={}){
+async function render({enrollMember=false,replaceURL=false}={}){
+  if(new URL(location.href).searchParams.get('view')!==routeSlug(view)){
+    const url=viewURL(view);
+    if(replaceURL)history.replaceState(null,'',url);
+    else history.pushState(null,'',url);
+  }
   stopView();
   const {signal}=renderController=new AbortController();
   const api=async(url,method='GET',body)=>{
@@ -391,7 +424,10 @@ async function render({enrollMember=false}={}){
   };
   let memberData;
   const navView=me.role==='owner'&&['Alerts','Workouts'].includes(view)?'Insight':view;
-  notice('');$('#nav').innerHTML=views[me.role].map(v=>'<button class="'+(navView===v?'active':'')+'" data-view="'+safe(v)+'"'+(navView===v?' aria-current="page"':'')+'>'+navIcon(v)+safe(pageLabel(v))+'</button>').join('');const el=$('#content');el.innerHTML='<p>Loading…</p>';try{
+  notice('');
+  $('#nav').innerHTML=views[me.role].map(id=>`<a class="nav-link${navView===id?' active':''}" href="${safe(viewURL(id))}"
+    data-view="${safe(id)}"${navView===id?' aria-current="page"':''}>${navIcon(id)}${safe(pageLabel(id))}</a>`).join('');
+  const el=$('#content');el.innerHTML='<p>Loading…</p>';try{
 if(view==='Alerts'){
   const [alerts,delivery]=await Promise.all([api('/alerts'),api('/reminder-status').catch(()=>null)]);
   el.innerHTML='<h1>Member alerts</h1><p>Expiries in the next seven days and unpaid balances from previous billing months.</p>'+
@@ -887,7 +923,7 @@ function renderTrendChart(id,label,points,series,{bars=false,minStep=1}={}){
         ${points.map((point,index)=>{
           const detail=point.detail||point.label;
           const values=series.map((item,i)=>item.format(point.values[i]));
-          return `<div class="trend-point${index>=points.length/2?' trend-point-right':''}" tabindex="0" role="group"
+          return `<div class="trend-point${index>=points.length/2?' trend-point-right':''}" tabindex="${index===points.length-1?0:-1}" role="group"
             aria-label="${safe([detail,...values].join(', '))}">
             ${point.values.map((value,i)=>`<span class="trend-dot" aria-hidden="true" style="top:${y(value)}%;background:${bars?barColor(value):palette[i]}"></span>`).join('')}
             <span class="trend-label${point.sparse?' sparse':''}" aria-hidden="true">${safe(point.label)}</span>
@@ -989,11 +1025,14 @@ function renderInsight(el,report,insights,trends,attendanceTrend){
         <time class="dashboard-clock-date"></time>
         <time class="dashboard-clock-time"></time>
       </div>
-      <section class="insight-summary" aria-label="Key metrics">
+      <section class="insight-summary-region" aria-label="Key metrics">
+        <p class="insight-summary-cue" aria-hidden="true">Swipe to see all metrics →</p>
+        <div class="insight-summary">
           ${stat('Total Revenue',report.revenue_total,{key:'total',target:'Financials',link:'View reports'})}
           ${stat('Collected today',report.revenue_today,{key:'today',target:'Financials',link:'View reports'})}
           ${stat('Active Members',report.active,{target:'Members',link:'View members'})}
           ${stat('Today’s check-ins',report.attendance,{target:'Attendance',link:'Open check-in',metric:'today-check-ins'})}
+        </div>
       </section>
       <div class="insight-attendance-stack">
       <aside class="card dashboard-attendance-rail" aria-labelledby="dashboardAttendanceHeading">
@@ -1361,7 +1400,7 @@ function bind(id,handler,options){bindForm($('#'+id),handler,options)}
 function bindForm(node,handler,{financial=false}={}){
   const controller=renderController;
   let pending=false;
-  let previous;
+  const inMemory=new Map();
   node.addEventListener('submit',async event=>{
     event.preventDefault();
     if(pending)return;
@@ -1369,14 +1408,25 @@ function bindForm(node,handler,{financial=false}={}){
     const submitters=[...node.querySelectorAll('button:not([type]),button[type="submit"],input[type="submit"]')].filter(button=>!button.disabled);
     submitters.forEach(button=>button.disabled=true);
     const data=formData(node);
+    let storageKey;
     try{
       if(financial){
-        const payload=JSON.stringify(data);
-        if(previous?.payload!==payload)previous={payload,id:crypto.randomUUID()};
-        data.request_id=previous.id;
+        const canonical={...data,amount:Number(data.amount)};
+        if(typeof canonical.description==='string')canonical.description=canonical.description.trim();
+        const payload=JSON.stringify(Object.entries(canonical).sort(([a],[b])=>a.localeCompare(b)));
+        const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(payload));
+        const fingerprint=Array.from(new Uint8Array(digest),byte=>byte.toString(16).padStart(2,'0')).join('');
+        storageKey=['tx-financial',me.gym_id,me.id,node.id,fingerprint].join(':');
+        try{data.request_id=sessionStorage.getItem(storageKey)}catch{}
+        data.request_id||=inMemory.get(storageKey)||crypto.randomUUID();
+        inMemory.set(storageKey,data.request_id);
+        try{sessionStorage.setItem(storageKey,data.request_id)}catch{}
       }
       await handler(data);
-      previous=undefined;
+      if(storageKey){
+        inMemory.delete(storageKey);
+        try{sessionStorage.removeItem(storageKey)}catch{}
+      }
       if(controller.signal.aborted)return;
       const rendering=render();
       const updatedView=renderController;
@@ -1397,7 +1447,34 @@ $('#content').addEventListener('click',async e=>{const button=e.target.closest('
   popup.document.write(receipt);popup.document.close();popup.focus();popup.print()
   }catch(err){popup?.close();notice(err.message,true)}
 });
-$('#nav').onclick=e=>{const v=e.target.closest('[data-view]')?.dataset.view;if(v&&v!==view){view=v;render()}};
+$('#nav').onclick=event=>{
+  const next=event.target.closest('a[data-view]')?.dataset.view;
+  if(!next||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
+  event.preventDefault();
+  if(next!==view){view=next;render();$('#mainContent').focus()}
+};
+window.addEventListener('popstate',()=>{
+  if(!me)return;
+  const next=viewFromURL();
+  if(next!==view){view=next;render({replaceURL:true})}
+});
+$('#content').addEventListener('keydown',event=>{
+  const point=event.target.closest('.trend-point');
+  if(!point||!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+  const points=point.parentElement.children;
+  const index=Array.prototype.indexOf.call(points,point);
+  const next=event.key==='Home'?0:event.key==='End'?points.length-1:
+    Math.max(0,Math.min(points.length-1,index+(event.key==='ArrowLeft'?-1:1)));
+  event.preventDefault();
+  points[next].focus();
+});
+$('#content').addEventListener('focusin',event=>{
+  const point=event.target.closest('.trend-point');
+  if(!point)return;
+  const last=point.parentElement.querySelector('[tabindex="0"]');
+  if(last)last.tabIndex=-1;
+  point.tabIndex=0;
+});
 $('#setupForm').onsubmit=async e=>{e.preventDefault();try{await api('/bootstrap','POST',formData(e.target));$('#setup').classList.add('hidden');$('#login').classList.remove('hidden');$('#setupNotice').textContent='';alert('Administrator created. Sign in using your new credentials.')}catch(err){$('#setupNotice').textContent=err.message;$('#setupNotice').className='error'}};
 const loginEmail=$('#loginForm input[name="email"]'),recoveryEmail=$('#recoverForm input[name="email"]');
 const rememberedEmail=localStorage.getItem('tx-login-email');if(rememberedEmail)loginEmail.value=rememberedEmail;

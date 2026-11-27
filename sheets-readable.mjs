@@ -1,8 +1,8 @@
-import {createHash} from 'node:crypto';
 import {openSheet} from './sheets-backup.mjs';
 
 const title='TrainerX.io Readable Data';
 const width=9;
+const protectionDescription='TrainerX managed report';
 const intervals=5*60_000;
 const membershipNumber="COALESCE(mp.membership_no::text,m.member_id::text)";
 const sections=[
@@ -94,17 +94,21 @@ function row(values,kind,index=0){
 }
 
 export async function writeReadableSnapshot(sheet,sheetId,{gym,tables},now=new Date()){
-  const meta=await sheet('?fields=sheets(properties(sheetId,title,gridProperties))');
-  const properties=meta.sheets?.find(tab=>tab.properties.sheetId===sheetId)?.properties;
+  const meta=await sheet('?fields=sheets(properties(sheetId,title,gridProperties),protectedRanges(protectedRangeId,description,warningOnly,range))');
+  const target=meta.sheets?.find(tab=>tab.properties.sheetId===sheetId);
+  const properties=target?.properties;
+  const protection=target?.protectedRanges?.find(item=>item.description===protectionDescription);
   if(!properties)throw new Error('The linked tab was not found');
   if(/^TrainerX Backup [1-7]$/.test(properties.title))throw new Error('The linked tab belongs to the encrypted backup');
   if(properties.title!==title&&meta.sheets.some(tab=>tab.properties.title===title))
     throw new Error('The requested title already belongs to a different tab');
   const range=encodeURIComponent("'"+properties.title.replaceAll("'","''")+"'");
-  const preview=await sheet('/values/'+range+'!A1:A2');
-  if(properties.title!==title||preview.values?.[0]?.[0]!==title||preview.values?.[1]?.[0]!=='Managed by TrainerX'){
-    const existing=await sheet('/values/'+range);
-    const occupied=existing.values?.some((row,i)=>row.some((value,j)=>value!==''&&!(i===0&&j===0&&value===title)));
+  const existing=await sheet('/values/'+range+(!protection?'':'!A:I')+'?valueRenderOption=UNFORMATTED_VALUE');
+  const entries=existing.values??[];
+  const managed=properties.title===title&&(protection||
+    (entries[0]?.[0]===title&&entries[1]?.[0]==='Managed by TrainerX'));
+  if(!managed){
+    const occupied=entries.some((row,i)=>row.some((value,j)=>value!==''&&!(i===0&&j===0&&value===title)));
     if(occupied)throw new Error('The target tab already has content. Sync requires a blank tab.');
   }
   const updated=new Intl.DateTimeFormat('en-GB',{timeZone:gym.timezone,dateStyle:'medium',timeStyle:'short'}).format(now);
@@ -120,6 +124,16 @@ export async function writeReadableSnapshot(sheet,sheetId,{gym,tables},now=new D
     if(!table.data.length)rows.push(row(['No records']));
     table.data.forEach((values,index)=>rows.push(row(values,'data',index)));
   }
+  const oldEnd=protection?.range?.endRowIndex??entries.length;
+  const activeRange={sheetId,startRowIndex:0,endRowIndex:rows.length,startColumnIndex:0,endColumnIndex:width};
+  const valuesMatch=rows.every((record,r)=>record.values.every((cell,c)=>{
+    if(r===2&&c===1)return typeof entries[r]?.[c]==='string'&&entries[r][c].trim()!=='';
+    const expected=cell.userEnteredValue?.numberValue??cell.userEnteredValue?.stringValue??'';
+    return (entries[r]?.[c]??'')===expected;
+  }));
+  if(protection?.warningOnly&&oldEnd===rows.length&&valuesMatch)return false;
+  if(protection&&rows.length>oldEnd&&entries.slice(oldEnd,rows.length).some(record=>record.some(value=>value!=='')))
+    throw new Error('Manual notes overlap the expanded report. Move them outside columns A–I.');
   const rowCount=Math.max(properties.gridProperties.rowCount,rows.length);
   const columnCount=Math.max(properties.gridProperties.columnCount,width);
   await sheet(':batchUpdate','POST',{requests:[
@@ -127,9 +141,14 @@ export async function writeReadableSnapshot(sheet,sheetId,{gym,tables},now=new D
       fields:'title,gridProperties.rowCount,gridProperties.columnCount,gridProperties.frozenRowCount'}},
     {updateDimensionProperties:{range:{sheetId,dimension:'COLUMNS',startIndex:0,endIndex:width},
       properties:{pixelSize:165},fields:'pixelSize'}},
-    {updateCells:{range:{sheetId,startRowIndex:0,endRowIndex:rowCount,startColumnIndex:0,endColumnIndex:width},
-      rows,fields:'userEnteredValue,userEnteredFormat'}}
+    {updateCells:{range:{...activeRange,endRowIndex:Math.max(oldEnd,rows.length)},
+      rows,fields:'userEnteredValue,userEnteredFormat'}},
+    protection?
+      {updateProtectedRange:{protectedRange:{protectedRangeId:protection.protectedRangeId,range:activeRange},
+        fields:'range'}}:
+      {addProtectedRange:{protectedRange:{range:activeRange,description:protectionDescription,warningOnly:true}}}
   ]});
+  return true;
 }
 
 export function startReadableSheet(db){
@@ -140,18 +159,15 @@ export function startReadableSheet(db){
     console.error('Readable Sheets sync configuration is incomplete');
     return;
   }
-  let busy=false,lastHash;
+  let busy=false;
   async function tick(){
     if(busy)return;
     busy=true;
     try{
       const data=await snapshot(db,gymName.trim());
-      const hash=createHash('sha256').update(JSON.stringify(data)).digest('hex');
-      if(hash===lastHash)return;
       const sheet=await openSheet({sheetId:book,account:JSON.parse(credentials)});
-      await writeReadableSnapshot(sheet,Number(tab),data);
-      lastHash=hash;
-      console.log('Readable Sheets sync complete. '+data.tables.reduce((sum,table)=>sum+table.data.length,0)+' rows.');
+      const written=await writeReadableSnapshot(sheet,Number(tab),data);
+      if(written)console.log('Readable Sheets sync complete. '+data.tables.reduce((sum,table)=>sum+table.data.length,0)+' rows.');
     }catch(error){
       console.error('Readable Sheets sync failed:',error.code||error.message);
     }finally{busy=false}
