@@ -14,17 +14,19 @@
     {id:'gold', name:'Gold', shades:['#5a4a0d','#7a5e12','#a67917','#cc961f','#e8b84a','#f3d789','#fff3d8']},
     {id:'sky-blue', name:'Sky Blue', shades:['#04202e','#0a3c55','#0f5e83','#1786b4','#4fb3da','#98d5ee','#e1f2fa']},
     {id:'lime', name:'Lime', shades:['#1f2a05','#3d520b','#648215','#8fb61f','#b4d944','#d6ee8d','#f1fbd3']},
-    {id:'neon-green', name:'Neon Green', shades:['#0f0f0f','#202020','#337418','#5dd62c','#f8f8f8']}
+    {id:'neon-green', name:'Neon Green', shades:['#0f0f0f','#202020','#337418','#5dd62c','#f8f8f8']},
+    {id:'purple-lime', name:'Purple & Lime', shades:['#3c1a47','#624070','#719500','#b6ff00','#d8f49f','#f2ebf5']}
   ];
   const presetKey = 'tx-accent-preset';
   let selectedPreset;
   function applyPreset(preset) {
     selectedPreset = preset;
-    root.toggleAttribute('data-accent-preset', Boolean(preset));
     if (!preset) {
+      root.removeAttribute('data-accent-preset');
       applyAccent(colors.accent);
       return;
     }
+    root.dataset.accentPreset = preset.id;
     root.removeAttribute('data-custom-accent');
     const shades = preset.shades;
     const [deep, dark, medium, vivid] = shades;
