@@ -63,7 +63,7 @@ h1,h2{letter-spacing:-.035em}h1{font-size:clamp(26px,3vw,38px);line-height:1.12}
 .card:hover{border-color:var(--tx-line-hover)}.dash-kpi,.member-mini .card{overflow:hidden}.dash-kpi:after,.member-mini .card:after{content:"";display:block;width:32px;height:3px;margin-top:7px;border-radius:8px;background:var(--tx-accent);opacity:.8}
 .dashboard-hero{position:relative;overflow:hidden;padding:clamp(24px,3.5vw,43px);border-radius:24px;background:radial-gradient(circle at 88% 8%,color-mix(in srgb,var(--tx-accent) calc(.19 * 100%),transparent),transparent 35%),linear-gradient(125deg,var(--tx-subtle),var(--tx-control) 72%);border:1px solid var(--tx-line);box-shadow:0 18px 44px rgba(0,0,0,.16)}
 .dashboard-hero:after{content:"";position:absolute;width:190px;height:190px;right:-45px;bottom:-115px;border:30px solid color-mix(in srgb,var(--tx-accent) calc(.07 * 100%),transparent);border-radius:50%;pointer-events:none}
-button{transition:transform .12s ease}button:hover:not(:disabled){transform:translateY(-1px)}button:active:not(:disabled){transform:translateY(1px)}button.primary{box-shadow:0 5px 18px color-mix(in srgb,var(--tx-accent) calc(.12 * 100%),transparent)}button.primary:hover{background:var(--tx-accent-hover);box-shadow:0 7px 24px color-mix(in srgb,var(--tx-accent) calc(.2 * 100%),transparent)}button.secondary:hover{background:var(--tx-hover)}
+button{transition:transform .12s ease}button:hover:not(:disabled){transform:translateY(-1px)}button:active:not(:disabled){transform:translateY(1px)}button.primary{box-shadow:0 5px 18px color-mix(in srgb,var(--tx-accent) calc(.12 * 100%),transparent)}button.primary:hover{background:var(--tx-accent-hover);box-shadow:0 0 16px var(--tx-red-halo-strong)}button.secondary:hover{background:var(--tx-hover)}
 button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--tx-focus);outline-offset:3px}input,select,textarea{border-color:var(--tx-line);transition:none}input:focus,select:focus,textarea:focus{border-color:var(--tx-accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--tx-accent) calc(.09 * 100%),transparent);outline:none}
 .member-avatar{border-radius:14px;background:linear-gradient(135deg,var(--tx-subtle),var(--tx-line));box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}.member-list .item{padding:8px 4px}.member-list .item:hover{background:color-mix(in srgb,var(--tx-accent) calc(.025 * 100%),transparent)}
 .member-tabs button{border-radius:10px}
@@ -342,7 +342,7 @@ nav a.nav-link.active{background:var(--tx-accent);color:var(--tx-accent-ink)}
 .card:hover,.insight .card:hover{border-color:var(--tx-line-hover)}
 .analytics .card.analytics-total:first-child,.insight .insight-summary .insight-featured{border-color:var(--tx-featured-line)}
 button.primary,button.secondary,.member-tabs button,.plan-templates button{border-radius:999px}
-button.primary{color:var(--tx-accent-ink);border:1px solid transparent;box-shadow:none}
+button.primary{color:var(--tx-accent-ink);border:1px solid transparent;box-shadow:0 0 13px var(--tx-red-halo)}
 button.secondary{border:1px solid var(--tx-line)}
 #login{box-shadow:0 14px 34px #1c203016}
 .trend-tooltip{box-shadow:0 4px 16px #2026371f}
@@ -390,6 +390,29 @@ button.secondary{border:1px solid var(--tx-line)}
   .sidebar-tools{display:flex;flex-wrap:wrap;margin:0;padding-top:4px}
   #nav .nav-link{width:auto;min-height:36px}
 }
+
+/* Static halos keep data marks sharp and avoid continuous animation. */
+#nav .nav-link.active,.member-tabs button.active,.member-contact,
+.sidebar-count,.attendance-peak,.header-brand-mark,
+.insight .insight-summary .insight-featured,.analytics .card.analytics-total:first-child{
+  box-shadow:0 0 13px var(--tx-red-halo)
+}
+.header-brand-mark{box-shadow:inset 0 1px 0 #ffffff52,0 0 13px var(--tx-red-halo)}
+.brand-x,a:not(.nav-link),.attendance-peak strong,.insight-text-button,.sidebar-reminders [data-unread] strong::before,
+.kiosk-overline,.kiosk-live,.kiosk-countdown,.error{text-shadow:0 0 8px var(--tx-red-halo)}
+.insight .dashboard-clock,.insight .dashboard-attendance-rail h2::before{
+  box-shadow:4px 0 10px -4px var(--tx-red-halo)
+}
+.analytics-expense,.analytics-loss,.chart-glow-dot{box-shadow:0 0 7px var(--tx-red-halo-strong)}
+.chart-glow-mark{filter:drop-shadow(0 0 3px var(--tx-red-halo-strong))}
+.trend-point:is(:hover,:focus) .trend-dot.chart-glow-dot{
+  box-shadow:0 0 0 1px var(--chart-tooltip),0 0 8px var(--tx-red-halo-strong)
+}
+.analytics-donut-halo{position:absolute;inset:0;pointer-events:none;
+  filter:drop-shadow(0 0 7px var(--tx-red-halo-strong))}
+.analytics-donut-halo::before{content:'';position:absolute;inset:0;border-radius:50%;
+  background:conic-gradient(var(--red-segments));
+  mask:radial-gradient(circle closest-side,transparent 65%,#000 67%)}
 </style></head><body>
 <div class="shell"><header>
   <div class="header-brand" translate="no">
@@ -948,6 +971,10 @@ if(view==='Renewals'){const r=await api('/renewals');el.innerHTML='<h1>Upcoming 
 
 if(view==='My plans'){const p=await api('/plans');el.innerHTML='<h1>Available plans</h1><div class="card">'+rows(p,x=>'<div class="item"><b>'+safe(x.name)+'</b> · '+safe(x.months)+' months · '+safe(x.price)+'</div>')+'</div>'}
 }catch(e){if(!signal.aborted)el.innerHTML='<p class="error">'+safe(e.message)+'</p>'}}
+const glowingChartColors=new Set([
+  'var(--chart-expense)','var(--chart-deficit)','var(--chart-attendance)','var(--chart-membership)','var(--chart-other)'
+]);
+
 function renderExpenseDonut(categories,money){
   if(!categories.length)return '<p class="sub">No expenses recorded for this period.</p>';
   const categoryColors=new Map([
@@ -960,17 +987,21 @@ function renderExpenseDonut(categories,money){
   ]);
   const colors=categories.map(([category])=>categoryColors.get(category)||categoryColors.get('Other'));
   const total=categories.reduce((sum,[,cents])=>sum+cents,0);
+  const redSegments=[];
   let end=0;
   const segments=categories.map(([,cents],index)=>{
     const start=end;
     end+=100*cents/total;
-    return colors[index]+' '+start+'% '+end+'%';
+    const range=' '+start+'% '+end+'%';
+    redSegments.push((glowingChartColors.has(colors[index])?colors[index]:'transparent')+range);
+    return colors[index]+range;
   }).join(',');
   const share=new Intl.NumberFormat(undefined,{style:'percent',maximumFractionDigits:1});
   return `<div class="analytics-donut" style="--segments:${segments}">
+    ${colors.some(color=>glowingChartColors.has(color))?`<span class="analytics-donut-halo" aria-hidden="true" style="--red-segments:${redSegments.join(',')}"></span>`:''}
     <div class="analytics-donut-total"><strong>${safe(money(total/100))}</strong><span>Total expenses</span></div>
   </div><ul class="analytics-legend">${categories.map(([category,cents],index)=>`<li>
-    <span class="analytics-legend-label"><i class="analytics-swatch" aria-hidden="true" style="--swatch:${colors[index]}"></i>${safe(category)}</span>
+    <span class="analytics-legend-label"><i class="analytics-swatch${glowingChartColors.has(colors[index])?' chart-glow-dot':''}" aria-hidden="true" style="--swatch:${colors[index]}"></i>${safe(category)}</span>
     <span class="analytics-legend-value"><strong>${safe(money(cents/100))}</strong><small>${safe(share.format(cents/total))}</small></span>
   </li>`).join('')}</ul>`;
 }
@@ -1025,7 +1056,7 @@ function renderTrendChart(id,label,points,series,{bars=false,minStep=1}={}){
     const base=y(0),tip=y(value);
     const barWidth=Math.min(48,slot*.5);
     return `<rect x="${x(index)-barWidth/2}" y="${Math.min(base,tip)}" width="${barWidth}" height="${Math.abs(base-tip)}"
-      rx="3" fill="${barColor(value)}" fill-opacity=".86"/>`;
+      rx="3"${value<0?' class="chart-glow-mark"':''} fill="${barColor(value)}" fill-opacity=".86"/>`;
   }).join('');
   const paths=bars?barsMarkup():series.map(({color,dash},index)=>{
     const gradient=id+'-fill-'+index;
@@ -1039,7 +1070,7 @@ function renderTrendChart(id,label,points,series,{bars=false,minStep=1}={}){
     const start=points.length===1?0:x(0);
     const end=points.length===1?width:x(points.length-1);
     return shade+`<path d="${line} L${end},100 H${start} Z" fill="${fill}"/>
-      <path class="trend-trace" d="${line}" stroke="${color}"${dash?` stroke-dasharray="${dash}"`:''}/>`;
+      <path class="trend-trace${glowingChartColors.has(color)?' chart-glow-mark':''}" d="${line}" stroke="${color}"${dash?` stroke-dasharray="${dash}"`:''}/>`;
   }).join('');
   return `<div class="trend-chart" role="group" aria-label="${safe(label)}">
     <div class="trend-axis" aria-hidden="true">${ticks.map(tick=>`<span style="--tick-y:${tick.y}%">${safe(tick.value)}</span>`).join('')}</div>
@@ -1055,9 +1086,9 @@ function renderTrendChart(id,label,points,series,{bars=false,minStep=1}={}){
           const values=series.map((item,i)=>item.format(point.values[i]));
           return `<div class="trend-point${index>=points.length/2?' trend-point-right':''}" tabindex="${index===points.length-1?0:-1}" role="group"
             aria-label="${safe([detail,...values].join(', '))}">
-            ${point.values.map((value,i)=>`<span class="trend-dot${bars||point.sparse?' inspection-only':''}" aria-hidden="true" style="top:${y(value)}%;background:${pointColor(value,i)}"></span>`).join('')}
+            ${point.values.map((value,i)=>`<span class="trend-dot${bars||point.sparse?' inspection-only':''}${glowingChartColors.has(pointColor(value,i))?' chart-glow-dot':''}" aria-hidden="true" style="top:${y(value)}%;background:${pointColor(value,i)}"></span>`).join('')}
             <span class="trend-label${point.sparse?' sparse':''}" aria-hidden="true">${safe(point.label)}</span>
-            <span class="trend-tooltip" aria-hidden="true"><strong>${safe(detail)}</strong>${values.map((value,i)=>`<span class="trend-tooltip-value"><i style="--point-color:${pointColor(point.values[i],i)}"></i><span>${safe(value)}</span></span>`).join('')}</span>
+            <span class="trend-tooltip" aria-hidden="true"><strong>${safe(detail)}</strong>${values.map((value,i)=>`<span class="trend-tooltip-value"><i${glowingChartColors.has(pointColor(point.values[i],i))?' class="chart-glow-dot"':''} style="--point-color:${pointColor(point.values[i],i)}"></i><span>${safe(value)}</span></span>`).join('')}</span>
           </div>`;
         }).join('')}
       </div>

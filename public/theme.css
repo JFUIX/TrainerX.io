@@ -40,6 +40,8 @@
   --tx-line: #c9cbd0;
   --tx-text: #17181c;
   --tx-muted: #555861;
+  --tx-red-halo: #e0002338;
+  --tx-red-halo-strong: #f51b426a;
   --tx-accent: #d90019;
   --tx-accent-hover: #b40016;
   --tx-accent-soft: #a60016;
@@ -70,6 +72,8 @@
   --tx-line-hover: #697086;
   --tx-text: #f1f2f6;
   --tx-muted: #b7bdcd;
+  --tx-red-halo: #ff23445c;
+  --tx-red-halo-strong: #ff345aaf;
   --tx-accent: #d90019;
   --tx-accent-hover: #be0016;
   --tx-accent-soft: #ff929d;
@@ -92,7 +96,7 @@
   --chart-hourly: #bdbdbd;
   --chart-membership: #dc4254;
   --chart-utilities: #ababab;
-  --chart-other: #707070;
+  --chart-other: #bc727c;
   --chart-guide: #474747;
   --chart-baseline: #a0a0a0;
   --chart-tooltip: #262626;
