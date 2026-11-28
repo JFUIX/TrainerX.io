@@ -469,9 +469,7 @@ button.secondary{border:1px solid var(--tx-line)}
 
 /* Workspace hierarchy */
 .shell:has(#workspace:not(.hidden)){max-width:1680px}
-.shell:has(#workspace:not(.hidden))>header{display:grid;grid-template-columns:190px minmax(0,1fr) auto;align-items:center;gap:14px}
-.shell:has(#workspace:not(.hidden))>header>.row{grid-column:3;grid-row:1}
-.workspace-search{display:flex;align-items:center;gap:9px;max-width:360px;min-height:40px;border:1px solid var(--tx-line);border-radius:10px;background:var(--tx-control);color:var(--tx-muted);font-weight:600;text-align:left}
+.workspace-search{display:flex;align-items:center;gap:9px;min-height:39px;border:1px solid var(--tx-line);border-radius:10px;background:var(--tx-control);color:var(--tx-muted);font-weight:600;text-align:left}
 .workspace-search svg,.insight-stat-icon svg,.insight-shortcuts svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 .workspace-search:hover{color:var(--tx-text);border-color:var(--tx-line-hover)}
 #sidebarPanel[data-panel="member-search"]{width:min(600px,calc(100% - 24px))}
@@ -495,19 +493,21 @@ button.secondary{border:1px solid var(--tx-line)}
 .insight-summary .insight-stat:nth-child(2){background:linear-gradient(145deg,color-mix(in srgb,var(--tx-danger-surface) 45%,var(--tx-raised)),var(--tx-panel) 78%)}
 .insight-summary .insight-stat:nth-child(2) .insight-stat-icon{background:var(--tx-danger-surface);color:var(--tx-danger)}
 .insight .dashboard-revenue .trend-chart{--plot-height:148px}
-@media(max-width:900px){
-  .shell:has(#workspace:not(.hidden))>header{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:8px}
-}
 @media(max-width:720px){
-  .shell:has(#workspace:not(.hidden))>header{grid-template-columns:minmax(0,1fr) auto}
-  .shell:has(#workspace:not(.hidden))>header>.row{grid-column:2}
-  .shell>header>.workspace-search{grid-column:1/-1;grid-row:2;max-width:none;width:100%}
+  .insight{grid-template-areas:"lead clock" "shortcuts shortcuts" "summary summary" "attendance attendance" "panels panels" "content content"}
+  .insight .insight-lead{display:contents}
+  .insight-header{grid-area:lead;align-self:center}
+  .insight-shortcuts{grid-area:shortcuts}
   .nav-group{display:flex;flex:none}
   .nav-group+.nav-group{margin-top:0}
   .nav-group-label{display:none}
   .insight-summary{grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible}
   .insight-summary .insight-stat.card{padding:9px}
   .insight .dashboard-revenue .trend-chart{--plot-height:110px}
+}
+@media(max-width:430px){
+  .insight-shortcuts .workspace-search{width:100%}
+  .insight-shortcuts [data-insight-view]{flex:1;justify-content:center}
 }
 </style></head><body>
 <div class="shell"><header>
@@ -517,9 +517,7 @@ button.secondary{border:1px solid var(--tx-line)}
       <span class="header-wordmark">TRAINER<span class="brand-x">X</span><small>.io</small></span>
       <span class="header-brand-subtitle">Gym Management Suite</span>
     </div>
-  </div><button type="button" class="workspace-search hidden" id="quickMemberSearch" aria-haspopup="dialog">
-    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 4 4"/></svg>Find a member
-  </button><div class="row"><span id="identity" class="sub"></span><button id="logout" class="secondary hidden">Log out</button></div></header>
+  </div><div class="row"><span id="identity" class="sub"></span><button id="logout" class="secondary hidden">Log out</button></div></header>
 <section id="setup" class="card hidden" style="max-width:500px;margin:16px auto"><h1>Set up TrainerX</h1><p>Create the first platform administrator. Enter the BOOTSTRAP_TOKEN from your Railway service variables, along with your administrator credentials.</p><form id="setupForm" class="form"><label>Admin email<input name="email" type="email" required autocomplete="email"></label><label>Admin password (12+ characters)<input name="password" type="password" minlength="12" required autocomplete="new-password"></label><label>Setup token<input name="token" type="password" required autocomplete="off"></label><button class="primary" type="submit">Create administrator</button></form><p id="setupNotice" role="status"></p></section><section id="login" class="card"><div class="sub" style="letter-spacing:.08em;color:var(--tx-accent)">TRAINERX ACCESS PORTAL</div><h1 id="portalTitle">Welcome to TrainerX.</h1><p id="portalDescription">Sign in to access your gym management dashboard.</p><form id="loginForm" class="form"><label>Email<input name="email" type="email" required autocomplete="username"></label><label>Password<input name="password" type="password" required autocomplete="current-password"></label><button class="primary" type="submit">Sign in</button><p id="loginNotice" role="status" style="grid-column:1/-1"></p></form><div style="margin-top:24px;display:flex;flex-direction:column;align-items:flex-start;gap:12px"><a id="adminAccess" href="/admin" style="font-size:13px;color:var(--tx-muted);text-decoration:underline;text-underline-offset:4px">Super Admin access</a><a id="backToGym" href="/gym" class="hidden" style="font-size:13px;color:var(--tx-muted);text-decoration:underline;text-underline-offset:4px">Back to gym owner sign in</a><button id="recoverToggle" type="button" style="font-size:12px;font-weight:400;background:transparent;color:var(--tx-muted);padding:0;text-decoration:underline;text-underline-offset:3px" class="hidden">Forgot Super Admin password?</button></div><form id="recoverForm" class="form hidden" style="margin-top:18px"><label>Super Admin email<input name="email" type="email" required></label><label>New password (12+ characters)<input name="password" type="password" minlength="12" required autocomplete="new-password"></label><label>Railway BOOTSTRAP_TOKEN<input name="token" type="password" required autocomplete="off"></label><button class="primary" type="submit">Reset Super Admin password</button></form><p id="recoverNotice" role="status"></p></section>
 <footer id="loginFooter" style="text-align:center;margin:14px auto 8px;font-size:12px;color:var(--tx-muted);line-height:1.9"><div>Designed &amp; Developed by <strong style="color:var(--tx-accent-soft);font-weight:600">JFUIX</strong></div><div>© 2026 ARTIOSIS – Digital Solutions. All rights reserved.</div></footer>
 <div id="workspace" class="grid hidden"><a class="skip-link" href="#mainContent">Skip to content</a><nav id="nav" aria-label="Main navigation"></nav>
@@ -607,7 +605,7 @@ function stopView(){
   if(gateTimer){clearInterval(gateTimer);gateTimer=null}
   if(scannerStream){scannerStream.getTracks().forEach(t=>t.stop());scannerStream=null}
 }
-function showShell(){const logged=!!me;$('#setup').classList.add('hidden');$('#login').classList.toggle('hidden',logged);$('#workspace').classList.toggle('hidden',!logged);$('#loginFooter').classList.toggle('hidden',logged);$('#logout').classList.toggle('hidden',!logged);$('#quickMemberSearch').classList.toggle('hidden',!['owner','reception'].includes(me?.role));$('#identity').textContent=logged?me.role+' · '+me.email:'';if(logged){view=viewFromURL();render({replaceURL:true});startOwnerNotifications()}else{stopOwnerNotifications();$('#sidebarPanel').close();stopView();financeDates=null}}
+function showShell(){const logged=!!me;$('#setup').classList.add('hidden');$('#login').classList.toggle('hidden',logged);$('#workspace').classList.toggle('hidden',!logged);$('#loginFooter').classList.toggle('hidden',logged);$('#logout').classList.toggle('hidden',!logged);$('#identity').textContent=logged?me.role+' · '+me.email:'';if(logged){view=viewFromURL();render({replaceURL:true});startOwnerNotifications()}else{stopOwnerNotifications();$('#sidebarPanel').close();stopView();financeDates=null}}
 const request=api;
 async function render({enrollMember=false,replaceURL=false,openGymSettings=false,reminderTarget=null,duesKind='overdue'}={}){
   if(new URL(location.href).searchParams.get('view')!==routeSlug(view)){
@@ -1350,6 +1348,9 @@ function renderInsight(el,report,insights,attendanceTrend){
           <h1>Dashboard</h1>
         </div>
         <div class="insight-shortcuts">
+          <button type="button" class="workspace-search" id="quickMemberSearch" aria-haspopup="dialog">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 4 4"/></svg>Find a member
+          </button>
           <button type="button" class="primary" data-insight-view="Attendance">${navIcon('Attendance')}Check in member</button>
           <button type="button" class="secondary" data-insight-view="Members" data-enroll-member>Add member</button>
         </div>
@@ -1423,6 +1424,7 @@ function renderInsight(el,report,insights,attendanceTrend){
       </div>
     </div>`;
 
+  el.querySelector('#quickMemberSearch').onclick=()=>openSidebarPanel('Find a member');
   el.querySelectorAll('[data-insight-view]').forEach(button=>button.onclick=()=>{
     if(button.dataset.insightView==='Attendance'){
       $('#dashboardCheckInCode')?.focus();
@@ -2041,7 +2043,6 @@ async function loadReminderPreferences(form){
     if(form.isConnected)form.querySelector('[role="status"]').textContent=error.message;
   }
 }
-$('#quickMemberSearch').onclick=()=>openSidebarPanel('Find a member');
 function openSidebarPanel(name){
   panelType=name;
   $('#sidebarPanelTitle').textContent=name;
