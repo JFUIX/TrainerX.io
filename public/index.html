@@ -103,8 +103,6 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 .insight-shortcuts .secondary{background:var(--tx-subtle)}
 .insight-summary,.insight-panels{display:grid;gap:8px;min-width:0}
 .insight-summary-region{grid-area:summary;min-width:0}
-.insight-summary-cue{display:none;margin:0 0 5px;color:var(--tx-muted);font-size:11px;text-align:right}
-@media(max-width:603px),(min-width:721px) and (max-width:760px){.insight-summary-cue{display:block}}
 .insight-summary .card{position:relative;overflow:hidden}
 .insight-summary .card::before{content:'';position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,var(--metric-accent,#666974),transparent 80%)}
 .insight-summary .card:nth-child(3){--metric-accent:#90949d}
@@ -468,6 +466,49 @@ button.secondary{border:1px solid var(--tx-line)}
   .dues-worklist .dues-row button,.front-desk-lookup .dues-row button{grid-column:1/-1;justify-self:start}
   .member-toolbar .member-search-field{width:100%;flex-basis:100%}
 }
+
+/* Workspace hierarchy */
+.shell:has(#workspace:not(.hidden)){max-width:1680px}
+.shell:has(#workspace:not(.hidden))>header{display:grid;grid-template-columns:190px minmax(0,1fr) auto;align-items:center;gap:14px}
+.shell:has(#workspace:not(.hidden))>header>.row{grid-column:3;grid-row:1}
+.workspace-search{display:flex;align-items:center;gap:9px;max-width:360px;min-height:40px;border:1px solid var(--tx-line);border-radius:10px;background:var(--tx-control);color:var(--tx-muted);font-weight:600;text-align:left}
+.workspace-search svg,.insight-stat-icon svg,.insight-shortcuts svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.workspace-search:hover{color:var(--tx-text);border-color:var(--tx-line-hover)}
+#sidebarPanel[data-panel="member-search"]{width:min(600px,calc(100% - 24px))}
+#sidebarPanel[data-panel="member-search"] .front-desk-lookup{padding:0;margin:0}
+#nav .nav-link{border-radius:9px}
+.nav-group{display:grid;gap:3px}
+.nav-group+.nav-group{margin-top:10px}
+.nav-group-label{padding:3px 10px;color:var(--tx-muted);font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase}
+.sidebar-tools .nav-group-label{margin-top:0}
+.insight .insight-lead{gap:8px}
+.insight .dashboard-clock{border:0;padding-right:0;box-shadow:none}
+.dashboard-clock-date{font-size:12px;font-weight:650}
+.insight .dashboard-clock-time{font-size:clamp(17px,2.2vw,27px)}
+.insight-shortcuts button{display:inline-flex;align-items:center;gap:6px;min-height:39px}
+.insight-summary .insight-stat.card{gap:9px;padding:12px}
+.insight-summary .insight-stat.card::before{height:0}
+.insight-summary .insight-stat-label{display:flex;justify-content:space-between;align-items:center;gap:5px;line-height:1.2;font-size:12px;font-weight:700}
+.insight-stat-icon{display:grid;place-items:center;width:27px;height:27px;flex:none;border-radius:7px;background:var(--tx-accent-tint);color:var(--tx-accent-soft)}
+.insight-featured .insight-stat-icon{background:#ffffff28;color:#fff}
+.insight-summary .insight-stat-link{min-height:29px;align-items:center;gap:6px}
+.insight-summary .insight-stat:nth-child(2){background:linear-gradient(145deg,color-mix(in srgb,var(--tx-danger-surface) 45%,var(--tx-raised)),var(--tx-panel) 78%)}
+.insight-summary .insight-stat:nth-child(2) .insight-stat-icon{background:var(--tx-danger-surface);color:var(--tx-danger)}
+.insight .dashboard-revenue .trend-chart{--plot-height:148px}
+@media(max-width:900px){
+  .shell:has(#workspace:not(.hidden))>header{grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:8px}
+}
+@media(max-width:720px){
+  .shell:has(#workspace:not(.hidden))>header{grid-template-columns:minmax(0,1fr) auto}
+  .shell:has(#workspace:not(.hidden))>header>.row{grid-column:2}
+  .shell>header>.workspace-search{grid-column:1/-1;grid-row:2;max-width:none;width:100%}
+  .nav-group{display:flex;flex:none}
+  .nav-group+.nav-group{margin-top:0}
+  .nav-group-label{display:none}
+  .insight-summary{grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible}
+  .insight-summary .insight-stat.card{padding:9px}
+  .insight .dashboard-revenue .trend-chart{--plot-height:110px}
+}
 </style></head><body>
 <div class="shell"><header>
   <div class="header-brand" translate="no">
@@ -476,7 +517,9 @@ button.secondary{border:1px solid var(--tx-line)}
       <span class="header-wordmark">TRAINER<span class="brand-x">X</span><small>.io</small></span>
       <span class="header-brand-subtitle">Gym Management Suite</span>
     </div>
-  </div><div class="row"><span id="identity" class="sub"></span><button id="logout" class="secondary hidden">Log out</button></div></header>
+  </div><button type="button" class="workspace-search hidden" id="quickMemberSearch" aria-haspopup="dialog">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 4 4"/></svg>Find a member
+  </button><div class="row"><span id="identity" class="sub"></span><button id="logout" class="secondary hidden">Log out</button></div></header>
 <section id="setup" class="card hidden" style="max-width:500px;margin:16px auto"><h1>Set up TrainerX</h1><p>Create the first platform administrator. Enter the BOOTSTRAP_TOKEN from your Railway service variables, along with your administrator credentials.</p><form id="setupForm" class="form"><label>Admin email<input name="email" type="email" required autocomplete="email"></label><label>Admin password (12+ characters)<input name="password" type="password" minlength="12" required autocomplete="new-password"></label><label>Setup token<input name="token" type="password" required autocomplete="off"></label><button class="primary" type="submit">Create administrator</button></form><p id="setupNotice" role="status"></p></section><section id="login" class="card"><div class="sub" style="letter-spacing:.08em;color:var(--tx-accent)">TRAINERX ACCESS PORTAL</div><h1 id="portalTitle">Welcome to TrainerX.</h1><p id="portalDescription">Sign in to access your gym management dashboard.</p><form id="loginForm" class="form"><label>Email<input name="email" type="email" required autocomplete="username"></label><label>Password<input name="password" type="password" required autocomplete="current-password"></label><button class="primary" type="submit">Sign in</button><p id="loginNotice" role="status" style="grid-column:1/-1"></p></form><div style="margin-top:24px;display:flex;flex-direction:column;align-items:flex-start;gap:12px"><a id="adminAccess" href="/admin" style="font-size:13px;color:var(--tx-muted);text-decoration:underline;text-underline-offset:4px">Super Admin access</a><a id="backToGym" href="/gym" class="hidden" style="font-size:13px;color:var(--tx-muted);text-decoration:underline;text-underline-offset:4px">Back to gym owner sign in</a><button id="recoverToggle" type="button" style="font-size:12px;font-weight:400;background:transparent;color:var(--tx-muted);padding:0;text-decoration:underline;text-underline-offset:3px" class="hidden">Forgot Super Admin password?</button></div><form id="recoverForm" class="form hidden" style="margin-top:18px"><label>Super Admin email<input name="email" type="email" required></label><label>New password (12+ characters)<input name="password" type="password" minlength="12" required autocomplete="new-password"></label><label>Railway BOOTSTRAP_TOKEN<input name="token" type="password" required autocomplete="off"></label><button class="primary" type="submit">Reset Super Admin password</button></form><p id="recoverNotice" role="status"></p></section>
 <footer id="loginFooter" style="text-align:center;margin:14px auto 8px;font-size:12px;color:var(--tx-muted);line-height:1.9"><div>Designed &amp; Developed by <strong style="color:var(--tx-accent-soft);font-weight:600">JFUIX</strong></div><div>© 2026 ARTIOSIS – Digital Solutions. All rights reserved.</div></footer>
 <div id="workspace" class="grid hidden"><a class="skip-link" href="#mainContent">Skip to content</a><nav id="nav" aria-label="Main navigation"></nav>
@@ -520,6 +563,8 @@ const sharedLabels={Alerts:'Front desk',Fees:'Fee Collection',Plans:'Membership 
 const ownerLabels={Insight:'Dashboard',Plans:'Memberships',Fees:'Payments',Financials:'Analytics',Workouts:'Workout'};
 const pageLabel=id=>(me.role==='owner'&&ownerLabels[id])||sharedLabels[id]||id;
 const navIcons={
+  Alerts:'<path d="M5 6h14M5 12h14M5 18h8"/><circle cx="19" cy="18" r="2"/>',
+  Attendance:'<path d="M2 12h5l3-7 4 14 3-7h5"/>',
   Insight:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
   Members:'<circle cx="9" cy="7" r="3"/><path d="M3 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2m2-6a4 4 0 0 1 4 4v2M16 4a3 3 0 0 1 0 6"/>',
   Plans:'<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8" cy="11" r="2"/><path d="M5 16c0-3 6-3 6 0m3-6h4m-4 4h4"/>',
@@ -562,7 +607,7 @@ function stopView(){
   if(gateTimer){clearInterval(gateTimer);gateTimer=null}
   if(scannerStream){scannerStream.getTracks().forEach(t=>t.stop());scannerStream=null}
 }
-function showShell(){const logged=!!me;$('#setup').classList.add('hidden');$('#login').classList.toggle('hidden',logged);$('#workspace').classList.toggle('hidden',!logged);$('#loginFooter').classList.toggle('hidden',logged);$('#logout').classList.toggle('hidden',!logged);$('#identity').textContent=logged?me.role+' · '+me.email:'';if(logged){view=viewFromURL();render({replaceURL:true});startOwnerNotifications()}else{stopOwnerNotifications();$('#sidebarPanel').close();stopView();financeDates=null}}
+function showShell(){const logged=!!me;$('#setup').classList.add('hidden');$('#login').classList.toggle('hidden',logged);$('#workspace').classList.toggle('hidden',!logged);$('#loginFooter').classList.toggle('hidden',logged);$('#logout').classList.toggle('hidden',!logged);$('#quickMemberSearch').classList.toggle('hidden',!['owner','reception'].includes(me?.role));$('#identity').textContent=logged?me.role+' · '+me.email:'';if(logged){view=viewFromURL();render({replaceURL:true});startOwnerNotifications()}else{stopOwnerNotifications();$('#sidebarPanel').close();stopView();financeDates=null}}
 const request=api;
 async function render({enrollMember=false,replaceURL=false,openGymSettings=false,reminderTarget=null,duesKind='overdue'}={}){
   if(new URL(location.href).searchParams.get('view')!==routeSlug(view)){
@@ -1282,8 +1327,8 @@ function monthlyChartPoints(trends,key){
 function renderInsight(el,report,insights,attendanceTrend){
   const money=value=>(report.currency||'PKR')+' '+Number(value||0).toLocaleString('en-PK',{maximumFractionDigits:0});
   const eye='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
-  const stat=(label,value,{key,target,link,metric}={})=>`<div class="insight-stat${target?' card':''}${key==='today'?' insight-featured':''}">
-    <span class="insight-stat-label">${safe(label)}</span>
+  const stat=(label,value,{key,target,link,metric,icon}={})=>`<div class="insight-stat${target?' card':''}${key==='today'?' insight-featured':''}">
+    <span class="insight-stat-label">${safe(label)}${icon?`<span class="insight-stat-icon" aria-hidden="true">${navIcon(icon)}</span>`: ''}</span>
     <div class="money-line">
       ${key?`<strong class="money-value" data-money="${key}" data-amount="${safe(money(value))}">••••••</strong>
         <button type="button" class="money-toggle" data-money-toggle="${key}" data-money-label="${safe(label)}"
@@ -1305,7 +1350,8 @@ function renderInsight(el,report,insights,attendanceTrend){
           <h1>Dashboard</h1>
         </div>
         <div class="insight-shortcuts">
-          <button type="button" class="primary" data-insight-view="Members" data-enroll-member>+ Add member</button>
+          <button type="button" class="primary" data-insight-view="Attendance">${navIcon('Attendance')}Check in member</button>
+          <button type="button" class="secondary" data-insight-view="Members" data-enroll-member>Add member</button>
         </div>
       </div>
       <div class="dashboard-clock" aria-label="Local date and time">
@@ -1313,12 +1359,11 @@ function renderInsight(el,report,insights,attendanceTrend){
         <time class="dashboard-clock-time"></time>
       </div>
       <section class="insight-summary-region" aria-label="Key metrics">
-        <p class="insight-summary-cue" aria-hidden="true">Swipe to see all metrics →</p>
         <div class="insight-summary">
-          ${stat('Collected today',report.revenue_today,{key:'today',target:'Financials',link:'View reports'})}
-          ${stat('Overdue fees','—',{target:'Alerts',link:'Review overdue fees',metric:'overdue-total'})}
-          ${stat('Renewals due soon','—',{target:'Alerts',link:'Review expiring memberships',metric:'expiry-total'})}
-          ${stat('Today’s check-ins',report.attendance,{target:'Attendance',link:'Open check-in',metric:'today-check-ins'})}
+          ${stat('Collected today',report.revenue_today,{key:'today',target:'Financials',link:'View reports',icon:'Fees'})}
+          ${stat('Overdue fees','—',{target:'Alerts',link:'Review overdue fees',metric:'overdue-total',icon:'Alerts'})}
+          ${stat('Renewals due soon','—',{target:'Alerts',link:'Review expiring memberships',metric:'expiry-total',icon:'Plans'})}
+          ${stat('Today’s check-ins',report.attendance,{target:'Attendance',link:'Open check-in',metric:'today-check-ins',icon:'Attendance'})}
         </div>
         <div id="frontDeskDues"></div>
       </section>
@@ -1380,7 +1425,7 @@ function renderInsight(el,report,insights,attendanceTrend){
 
   el.querySelectorAll('[data-insight-view]').forEach(button=>button.onclick=()=>{
     if(button.dataset.insightView==='Attendance'){
-      $('#dashboardCheckInCode').focus();
+      $('#dashboardCheckInCode')?.focus();
       return;
     }
     view=button.dataset.insightView;
@@ -1588,7 +1633,7 @@ function matchesMemberQuery(member,query){
   return /^[+\d ()-]+$/.test(text)&&text.replace(/\D/g,'').length>=3&&String(member.phone??'').replace(/\D/g,'').includes(text.replace(/\D/g,''));
 }
 
-function bindFrontDeskLookup(panel,api,signal){
+function bindFrontDeskLookup(panel,api,signal,{beforeOpen}={}){
   const search=panel.querySelector('input');
   const results=panel.querySelector('[data-lookup-results]');
   let roster,currentSearch=0;
@@ -1607,6 +1652,7 @@ function bindFrontDeskLookup(panel,api,signal){
           <div class="dues-value"><strong>${safe(memberMoney(member,member.balance_due))}</strong><span class="sub">${member.ends_on?'Ends '+safe(member.ends_on):'No membership end date'}</span></div>
           <button class="secondary" type="button" data-lookup-item="${index}">Open member</button></div>`).join('');
       results.querySelectorAll('[data-lookup-item]').forEach(button=>button.onclick=()=>{
+        beforeOpen?.();
         view='Members';
         void render({reminderTarget:{member_id:matches[Number(button.dataset.lookupItem)].id,kind:'lookup'}});
       });
@@ -1878,13 +1924,20 @@ let notificationController,notificationTimer,notificationRequest,notificationDat
 let panelType, completedReminders, showingDone=false, panelRequest=0;
 const reminderLabels={expiry:'Membership expires',overdue:'Overdue balance',fee_due:'Fee due soon'};
 function renderSidebar(navView){
-  const links=views[me.role].map(id=>`<a class="nav-link${navView===id?' active':''}" href="${safe(viewURL(id))}"
-    data-view="${safe(id)}"${navView===id?' aria-current="page"':''}>${navIcon(id)}${safe(pageLabel(id))}</a>`).join('');
+  const link=id=>`<a class="nav-link${navView===id?' active':''}" href="${safe(viewURL(id))}"
+    data-view="${safe(id)}"${navView===id?' aria-current="page"':''}>${navIcon(id)}${safe(pageLabel(id))}</a>`;
   const tool=(name,extra='')=>`<button type="button" class="nav-link" data-sidebar-panel="${name}" aria-haspopup="dialog">
     ${navIcon(name)}${name}${extra}</button>`;
-  $('#nav').innerHTML=`<div class="sidebar-navigation">${links}${
-    me.role==='owner'?tool('Notifications','<span class="sidebar-count hidden" aria-hidden="true"></span>'):''
-  }</div><div class="sidebar-tools">${tool('Help')}${tool('Settings')}${tool('Share')}</div>`;
+  const alerts=me.role==='owner'?tool('Notifications','<span class="sidebar-count hidden" aria-hidden="true"></span>'):'';
+  const group=(label,items)=>items?`<div class="nav-group"><span class="nav-group-label">${label}</span>${items}</div>`:'';
+  const available=views[me.role];
+  const finance=['Fees','Financials'];
+  const navigation=['owner','reception'].includes(me.role)?
+    group('Operations',available.filter(id=>!finance.includes(id)).map(link).join(''))+
+    group('Finance',available.filter(id=>finance.includes(id)).map(link).join(''))+
+    group('Alerts',alerts):available.map(link).join('');
+  $('#nav').innerHTML=`<div class="sidebar-navigation">${navigation}</div>
+    <div class="sidebar-tools"><span class="nav-group-label">Workspace</span>${tool('Help')}${tool('Settings')}${tool('Share')}</div>`;
   updateNotificationBadge();
 }
 function updateNotificationBadge(){
@@ -1988,9 +2041,18 @@ async function loadReminderPreferences(form){
     if(form.isConnected)form.querySelector('[role="status"]').textContent=error.message;
   }
 }
+$('#quickMemberSearch').onclick=()=>openSidebarPanel('Find a member');
 function openSidebarPanel(name){
   panelType=name;
   $('#sidebarPanelTitle').textContent=name;
+  sidebarPanel.dataset.panel=name==='Find a member'?'member-search':'';
+  if(name==='Find a member'){
+    sidebarBody.innerHTML='<div class="front-desk-lookup"><label for="workspaceMemberSearch">Name, phone, or member number</label><input id="workspaceMemberSearch" type="search" autocomplete="off" autofocus><div data-lookup-results></div></div>';
+    const controller=new AbortController();
+    sidebarPanel.addEventListener('close',()=>controller.abort(),{once:true});
+    bindFrontDeskLookup(sidebarBody.querySelector('.front-desk-lookup'),
+      url=>api(url,'GET',undefined,controller.signal),controller.signal,{beforeOpen:()=>sidebarPanel.close()});
+  }
   if(name==='Notifications'){showingDone=false;showNotificationPanel();void refreshOwnerNotifications()}
   if(name==='Help'){
     const topics=me.role==='owner'?[
