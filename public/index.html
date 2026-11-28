@@ -307,10 +307,9 @@ nav a.nav-link.active{background:var(--tx-accent);color:var(--tx-accent-ink)}
   .insight .dashboard-clock{padding-right:9px}
 }
 @media(min-width:721px) and (max-width:979px){
-  .insight-attendance-stack{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:"today weekly" "monthly weekly"}
+  .insight-attendance-stack{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-areas:"today weekly"}
   .dashboard-attendance-rail{grid-area:today}
   .insight-attendance-stack .attendance-trends-card{grid-area:weekly}
-  .insight-attendance-stack .attendance-trends-card:last-child{grid-area:monthly}
 }
 .dashboard-check-in{display:grid;gap:8px}
 .dashboard-check-in-form{display:grid;gap:5px}
@@ -420,6 +419,13 @@ button.secondary{border:1px solid var(--tx-line)}
 .accent-preset[aria-pressed="true"]{outline:2px solid var(--tx-focus);outline-offset:1px}
 .accent-swatches{display:flex;overflow:hidden;border-radius:5px;height:9px}
 .accent-swatches span{flex:1}
+#memberList,.dashboard-revenue{grid-template-columns:minmax(0,1fr)}
+.member-card-summary,.dues-row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.member-card-summary{font-size:13px;color:var(--tx-muted)}
+.member-card-summary strong{color:var(--tx-text)}
+.dues-worklist h2,.dues-row p{margin:0}
+.dues-worklist [aria-pressed="true"]{background:var(--tx-accent);color:var(--tx-accent-ink)}
+.member-payment-form{margin:10px 0}
 </style></head><body>
 <div class="shell"><header>
   <div class="header-brand" translate="no">
@@ -453,7 +459,7 @@ function notice(msg,error=false){$('#notice').textContent=msg;$('#notice').class
 function formData(form){return Object.fromEntries(new FormData(form))}
 function form(fields,id,button){return '<form id="'+id+'" class="card form">'+fields.map(f=>'<label>'+f[1]+'<input name="'+f[0]+'" type="'+(f[2]||'text')+'" '+(f[3]||'required')+'></label>').join('')+'<button class="primary" type="submit">'+button+'</button></form>'}
 function rows(data,fn){return data.length?data.map(fn).join(''):'<p>No records yet.</p>'}
-const views={superadmin:['Gyms'],owner:['Insight','Members','Plans','Fees','Gate QR','Financials'],reception:['Members','Fees','Attendance','Gate QR','Alerts'],trainer:['Trainer Clients','Workouts','Diets'],member:['My attendance','Scan QR','My plans','Workouts','Diets']};
+const views={superadmin:['Gyms'],owner:['Insight','Members','Plans','Fees','Gate QR','Financials'],reception:['Alerts','Members','Fees','Attendance','Gate QR'],trainer:['Trainer Clients','Workouts','Diets'],member:['My attendance','Scan QR','My plans','Workouts','Diets']};
 function routeSlug(id){
   return ({Insight:'dashboard',Plans:'memberships',Fees:'payments','Gate QR':'check-in-qr',Financials:'analytics'})[id]??id.toLowerCase().replaceAll(' ','-');
 }
@@ -468,7 +474,7 @@ function viewFromURL(){
   const slug=new URL(location.href).searchParams.get('view');
   return allowed.find(id=>routeSlug(id)===slug)??allowed[0];
 }
-const sharedLabels={Fees:'Fee Collection',Plans:'Membership Plans','Gate QR':'Check-in QR'};
+const sharedLabels={Alerts:'Front desk',Fees:'Fee Collection',Plans:'Membership Plans','Gate QR':'Check-in QR'};
 const ownerLabels={Insight:'Dashboard',Plans:'Memberships',Fees:'Payments',Financials:'Analytics',Workouts:'Workout'};
 const pageLabel=id=>(me.role==='owner'&&ownerLabels[id])||sharedLabels[id]||id;
 const navIcons={
@@ -516,7 +522,7 @@ function stopView(){
 }
 function showShell(){const logged=!!me;$('#setup').classList.add('hidden');$('#login').classList.toggle('hidden',logged);$('#workspace').classList.toggle('hidden',!logged);$('#loginFooter').classList.toggle('hidden',logged);$('#logout').classList.toggle('hidden',!logged);$('#identity').textContent=logged?me.role+' · '+me.email:'';if(logged){view=viewFromURL();render({replaceURL:true});startOwnerNotifications()}else{stopOwnerNotifications();$('#sidebarPanel').close();stopView();financeDates=null}}
 const request=api;
-async function render({enrollMember=false,replaceURL=false,openGymSettings=false,reminderTarget=null}={}){
+async function render({enrollMember=false,replaceURL=false,openGymSettings=false,reminderTarget=null,duesKind='overdue'}={}){
   if(new URL(location.href).searchParams.get('view')!==routeSlug(view)){
     const url=viewURL(view);
     if(replaceURL)history.replaceState(null,'',url);
@@ -536,19 +542,14 @@ async function render({enrollMember=false,replaceURL=false,openGymSettings=false
   renderSidebar(navView);
   const el=$('#content');el.innerHTML='<p>Loading…</p>';try{
 if(view==='Alerts'){
-  const [alerts,delivery]=await Promise.all([api('/alerts'),api('/reminder-status').catch(()=>null)]);
-  el.innerHTML='<h1>Member alerts</h1><p>Expiries in the next seven days and unpaid balances from previous billing months.</p>'+
-    [['expiry','Expiring memberships'],['overdue','Overdue fees']].map(([kind,title])=>
-      '<section class="card"><h2>'+title+'</h2>'+rows(alerts.filter(a=>a.kind===kind),a=>
-        '<div class="item"><b>'+safe(a.full_name||a.email)+'</b><p>'+
-        (kind==='expiry'?'Expires '+safe(a.due_on):'Overdue '+safe(a.currency)+' '+safe(a.amount)+' · Through '+safe(a.due_on.slice(0,7)))+
-        '</p></div>')+'</section>').join('')+
-    '<section class="card"><h2>WhatsApp delivery</h2><p>'+safe(reminderSummary(delivery))+'</p></section>';
+  const alerts=await api('/alerts');
+  el.innerHTML='<h1>Front desk</h1><div id="frontDeskDues"></div>';
+  renderDuesWorklist($('#frontDeskDues'),alerts,{initialKind:duesKind});
 }
 if(view==='Financials'){
   const today=localDay();
   const dates=financeDates||{from:today.slice(0,7)+'-01',to:today};
-  const [account,report]=await Promise.all([api('/gym-account'),api('/financial-report?'+new URLSearchParams(dates))]);
+  const [account,report,trends]=await Promise.all([api('/gym-account'),api('/financial-report?'+new URLSearchParams(dates)),api('/membership-trends').catch(()=>[])]);
   const money=value=>account.currency+' '+Number(value).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
   const totals=[['Revenue',report.revenue],['Expenses',report.expenses],['Net cash flow',report.net]];
   const expenseCategories=['Rent','Payroll','Utilities','Equipment','Marketing','Other'];
@@ -595,6 +596,28 @@ if(view==='Financials'){
           points.map(point=>({...point,values:[point.net]})),[{format:money}],{bars:true,minStep:.01})}
       </section>
     </div>
+    <div class="insight-panels">
+      <section class="card"><h2>Monthly attendance</h2>
+        ${renderTrendChart('monthly-attendance','Check-ins for the last six months',monthlyChartPoints(trends,'visits'),[{color:'var(--chart-attendance)',format:chartVisitLabel}])}
+      </section>
+      <section class="card"><h2>Membership growth</h2>
+        ${renderTrendChart('membership-growth','New members for the last six months',monthlyChartPoints(trends,'joined'),[{color:'var(--chart-membership)',format:count=>count+(count===1?' new member':' new members')}])}
+      </section>
+    </div>
+        <details class="card insight-disclosure">
+          <summary>
+            <div><span class="insight-disclosure-title">Retention and churn</span><span class="insight-period">Last 6 months</span></div>
+          </summary>
+          <div class="insight-disclosure-body">
+            <p class="insight-retention-hint">Based on members whose memberships were in force at the start of each month.</p>
+            <table class="insight-table insight-retention">
+              <thead><tr><th scope="col">Month</th><th scope="col">Opening members</th><th scope="col">Retained</th><th scope="col">Churned</th></tr></thead>
+              <tbody>${trends.map(row=>`<tr><th scope="row">${safe(row.month)}</th><td>${row.opening}</td>
+                <td>${row.opening?Math.round(row.retained/row.opening*100)+'%':'—'}</td>
+                <td>${row.opening?row.opening-row.retained:'—'}</td></tr>`).join('')}</tbody>
+            </table>
+          </div>
+        </details>
     <section class="card">
       <div class="analytics-panel-head"><h2>Record an expense</h2></div>
       <form id="expenseForm" class="form">
@@ -631,11 +654,23 @@ if(view==='Insight'){
   const attendanceTrendUrl='/attendance-trends';
   const accountRequest=api('/gym-account').catch(()=>null);
   const initialTrend=api(attendanceTrendUrl).catch(()=>null);
-  const [report,insights,trends,attendance]=await Promise.all([
-    api('/report'),api('/business-insights'),api('/membership-trends'),api('/attendance').catch(()=>null)
+  const duesRequest=api('/alerts').catch(()=>null);
+  const [report,insights,attendance]=await Promise.all([
+    api('/report'),api('/business-insights'),api('/attendance').catch(()=>null)
   ]);
   signal.throwIfAborted();
-  renderInsight(el,report,insights,trends);
+  renderInsight(el,report,insights);
+  void duesRequest.then(alerts=>{
+    if(signal.aborted)return;
+    const worklist=el.querySelector('#frontDeskDues');
+    if(alerts){
+      renderDuesWorklist(worklist,alerts,{dashboard:true});
+      const overdue=alerts.filter(alert=>alert.kind==='overdue');
+      el.querySelector('[data-overdue-total]').textContent=memberMoney({currency:report.currency},overdue.reduce((sum,alert)=>sum+Number(alert.amount),0));
+      el.querySelector('[data-expiry-total]').textContent=alerts.filter(alert=>alert.kind==='expiry').length;
+    }
+    else worklist.textContent='Unable to load the dues worklist.';
+  });
   startDashboardClock(el.querySelector('.dashboard-clock'),signal);
   const accountPanel=el.querySelector('#dashboardAccount');
   const trendPanel=el.querySelector('#weeklyAttendanceChart');
@@ -739,10 +774,13 @@ const memberCard=member=>{
           `<span class="${statusClass}">${safe(state)}</span>`}
         ${canToggleFreeze?`<button type="button" class="secondary member-card-freeze" data-member-action="freeze"
           ${expanded?'':'hidden'} title="${frozen?'Resume check-in access':'Pause check-ins through the end of the current membership'}">${frozen?'Unfreeze':'Freeze'}</button>`:''}
+        <button type="button" class="secondary" data-member-action="payment">Payments</button>
         <button type="button" class="secondary member-card-toggle" data-member-action="toggle"
           aria-controls="${safe(bodyId)}" aria-expanded="${expanded}" aria-label="Details for ${safe(name)}">Details</button>
       </div>
     </div>
+    <div class="member-card-summary"><span>Ends <strong>${safe(termDate(member.ends_on))}</strong></span>
+      <span>Balance <strong data-member-balance>${safe(memberMoney(member,member.balance_due))}</strong></span></div>
     <div class="member-card-body" id="${safe(bodyId)}" ${expanded?'':'hidden'}>
     <dl class="member-card-attendance" aria-label="Attendance for the last 30 calendar days">
       <div><dt>Days attended</dt><dd>${safe(member.attended)}</dd></div>
@@ -755,7 +793,7 @@ const memberCard=member=>{
       ${hasCurrentTerm(member)?`<button type="button" class="secondary" data-member-action="change">Upgrade</button>
       <button type="button" class="secondary member-cancel" data-member-action="cancel">Cancel membership</button>`:''}`:''}
     </div>
-    ${canCreate?`<details class="member-card-records"><summary>Payment history &amp; monthly fees</summary><div data-member-records></div></details>`:''}
+    ${canCreate?`<details class="member-card-records"><summary>Payments, balance &amp; reminders</summary><div data-member-records></div></details>`:''}
     </div>
   </article>`;
 };
@@ -792,6 +830,14 @@ memberList.addEventListener('click',async event=>{
       if(freeze)freeze.hidden=!expanded;
       return;
     }
+    case 'payment': {
+      const toggle=card.querySelector('[data-member-action="toggle"]');
+      if(toggle.getAttribute('aria-expanded')==='false')toggle.click();
+      const details=card.querySelector('.member-card-records');
+      details.open=true;
+      details.querySelector('summary').focus();
+      return;
+    }
     case 'profile':return showMember(member,button);
     case 'freeze': {
       const frozen=!member.frozen;
@@ -810,7 +856,6 @@ memberList.addEventListener('click',async event=>{
     }
     case 'renew':return window.openRenewalFor(member.id);
     case 'change':return showMember(member,button,'Memberships',member.membership_id);
-    case 'payment':view='Fees';return render();
     case 'cancel':
       if(!confirm('Cancel '+(member.full_name||member.email)+'’s '+member.plan+' membership? Access from this plan ends immediately. Existing fees and payments stay on record.'))return;
       button.disabled=true;
@@ -831,11 +876,7 @@ memberList.addEventListener('toggle',async event=>{
   details.dataset.loaded='true';
   panel.textContent='Loading payment history…';
   try{
-    const [history,billing]=await Promise.all([
-      api('/members/'+encodeURIComponent(member.id)+'/history'),
-      member.membership_id?api('/fees/billing?'+new URLSearchParams({membership_id:member.membership_id})):null
-    ]);
-    renderMemberPayments(panel,member,history.payments,billing);
+    await renderMemberPayments(panel,member,api,signal);
   }catch(error){
     if(signal.aborted)return;
     delete details.dataset.loaded;
@@ -870,10 +911,18 @@ if(reminderTarget){
   if(card){
     const toggle=card.querySelector('[data-member-action="toggle"]');
     if(toggle?.getAttribute('aria-expanded')==='false')toggle.click();
-    await showMember(m.find(member=>member.id===reminderTarget.member_id),
+    if(reminderTarget.kind!=='expiry'){
+      const records=card.querySelector('.member-card-records');
+      records.dataset.targetMembership=reminderTarget.membership_id;
+      if(reminderTarget.kind==='fee_due')records.dataset.targetMonth=reminderTarget.due_on.slice(0,7);
+      records.open=true;
+      const summary=records.querySelector('summary');
+      summary.focus();
+      summary.scrollIntoView({block:'center'});
+    }else await showMember(m.find(member=>member.id===reminderTarget.member_id),
       card.querySelector('[data-member-action="profile"]'),'Memberships');
     if(signal.aborted)return;
-    const destination=card.querySelector('[data-membership-card="'+CSS.escape(reminderTarget.membership_id)+'"]')||toggle;
+    const destination=reminderTarget.kind!=='expiry'?card.querySelector('.member-card-records summary'):card.querySelector('[data-membership-card="'+CSS.escape(reminderTarget.membership_id)+'"]')||toggle;
     destination?.focus();
     destination?.scrollIntoView({block:'center'});
   }else notice('This member is no longer available.',true);
@@ -882,8 +931,31 @@ if(reminderTarget){
 if(view==='Trainer Clients'){const members=await api('/members');el.innerHTML='<h1>Trainer clients</h1><p>Member directory for assigning workout and diet plans.</p><div class="card">'+rows(members,x=>'<div class="item"><b>'+safe(x.full_name||x.email)+'</b><p>#'+safe(x.membership_no||'—')+' · '+safe(x.phone||'')+'</p></div>')+'</div>'}
 if(view==='Attendance'||view==='My attendance'){const a=await api('/attendance');el.innerHTML='<h1>Today’s attendance</h1>'+((me.role==='owner'||me.role==='reception')?'<form id="codeCheckinForm" class="card form"><label>4-digit member attendance code<input name="code" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" minlength="4" autocomplete="off" required placeholder="0000"></label><button class="primary">Check In</button></form>':'')+'<div class="card">'+rows(a,x=>'<div class="item">'+safe(x.email)+' <span class="badge">'+safe(new Date(x.checked_at).toLocaleTimeString())+'</span></div>')+'</div>';if($('#codeCheckinForm'))bind('codeCheckinForm',async d=>{const result=await api('/attendance/code','POST',d);notice(result.name+' checked in')})}
 
-if(view==='Members'&&['owner','reception'].includes(me.role)){const {members:m,plans:p,memberships:a}=memberData;const membersById=new Map(m.map(member=>[member.id,member]));const opts=(items,label)=>items.map(x=>'<option value="'+safe(x.id)+'">'+safe(label(x))+'</option>').join('');$('#memberAttention').insertAdjacentHTML('beforebegin','<section id="renewalSection" class="hidden"><h2 style="margin-top:30px">Renew / Change Plan</h2><p>New members receive their plan automatically at enrollment. Use this form only for renewals or plan changes.</p><form id="membershipForm" class="card form"><label>Find Member<input id="renewalMemberSearch" placeholder="Name or Member ID" autocomplete="off"></label><label>Member<select name="member_id" required><option value="">Select member</option>'+opts(m,x=>(x.membership_no?'#'+x.membership_no+' · ':'')+(x.full_name||x.email))+'</select></label><label>Plan<select name="plan_id" required><option value="">Select plan</option>'+opts(p,x=>x.name+' · '+x.months+' mo · '+x.price+' PKR')+'</select></label><label>Start Date<input name="starts_on" type="date" required></label><label>Fee (PKR)<input id="renewFee" readonly></label><label>Duration<input id="renewDuration" readonly></label><button class="primary" type="submit">Renew / Change Plan</button></form><div class="card">'+rows(a,x=>'<div class="item"><b>'+safe(x.full_name||x.email)+'</b> · #'+safe(x.membership_no||'—')+' · '+safe(x.plan)+'<p>'+safe(String(x.starts_on).slice(0,10))+' to '+safe(String(x.ends_on).slice(0,10))+' · Paid '+safe(x.paid)+' / '+safe(x.price)+'</p></div>')+'</div></section>');const fm=$('#membershipForm');const updatePlan=()=>{const p0=p.find(x=>x.id===fm.elements.plan_id.value);$('#renewFee').value=p0?p0.price:'';$('#renewDuration').value=p0?p0.months+' months':''};fm.elements.plan_id.addEventListener('change',updatePlan);fm.elements.member_id.addEventListener('change',()=>{const x=a.filter(x=>x.member_id===fm.elements.member_id.value&&!x.cancelled_on).sort((a,b)=>String(b.ends_on).localeCompare(String(a.ends_on)))[0];if(x){fm.elements.plan_id.value=x.plan_id;const next=new Date(String(x.ends_on).slice(0,10)+'T12:00:00Z');next.setUTCDate(next.getUTCDate()+1);const today=new Date().toISOString().slice(0,10);fm.elements.starts_on.value=next.toISOString().slice(0,10)>today?next.toISOString().slice(0,10):today}else fm.elements.starts_on.value=new Date().toISOString().slice(0,10);updatePlan()});$('#renewalMemberSearch').addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();for(const opt of fm.elements.member_id.options){if(!opt.value)continue;const x=membersById.get(opt.value);opt.hidden=!!q&&!((x?.full_name||'').toLowerCase().includes(q)||(x?.email||'').toLowerCase().includes(q)||String(x?.membership_no||'').includes(q))}});bind('membershipForm',async d=>api('/memberships','POST',d));window.openRenewalFor=id=>{const member=membersById.get(id);if(!member)return;$('#renewalSection').classList.remove('hidden');fm.elements.member_id.value=id;fm.elements.member_id.dispatchEvent(new Event('change'));$('#renewalSection').scrollIntoView({behavior:'smooth',block:'start'})};$('#memberAttention').querySelectorAll('[data-renew]').forEach(b=>b.onclick=()=>window.openRenewalFor(b.dataset.renew))}
-if(view==='Fees'){const [members,fees]=await Promise.all([api('/members'),api('/fees')]);el.innerHTML='<h1>'+safe(pageLabel(view))+'</h1><p>Find a member, choose the pending billing month and record the amount received.</p><form id="feeForm" class="card form"><div style="grid-column:1/-1"><label>Find member by name, membership number or phone<input id="feeMemberSearch" type="search" autocomplete="off" placeholder="Type name, member ID or phone number" aria-controls="feeMemberResults"></label><div id="feeMemberResults" class="card" style="max-height:250px;overflow-y:auto;margin-top:8px"></div><p id="feeSelectedMember" class="sub" aria-live="polite"></p></div><label>Membership<select name="membership_id" required disabled><option value="">Select a member first</option></select></label><label>Billing month<select name="billing_month" required disabled><option value="">Select a member first</option></select></label><label>Amount received (PKR)<input name="amount" type="number" min="0.01" step="0.01" required placeholder="Enter amount paid"></label><label>Method<select name="method"><option value="cash">Cash</option><option value="bank_transfer">Bank Transfer</option><option value="online_payment">Online Payment</option></select></label><p id="billingHint" class="sub" style="grid-column:1/-1"></p><button class="primary" type="submit">Record payment</button></form><div class="card"><h2>Recent payments</h2>'+rows(fees,x=>'<div class="item"><b>'+safe(x.email)+'</b> · PKR '+safe(x.amount)+' · '+safe(x.method)+'<p>Billing month: '+safe(x.billing_month||'Not recorded (legacy)')+' · '+safe(new Date(x.paid_at).toLocaleString())+' · Receipt ID '+safe(x.id)+'</p><button class="secondary" data-receipt="'+safe(x.id)+'">Print receipt</button> <button class="secondary" data-receipt="'+safe(x.id)+'" data-download-receipt>Download receipt</button></div>')+'</div>';const fm=$('#feeForm'),search=$('#feeMemberSearch'),results=$('#feeMemberResults');let billing=null,billingRequest=0;const matches=()=>{const q=search.value.trim().toLowerCase();const list=members.filter(x=>!q||[x.full_name,x.membership_no,x.phone,x.email].some(v=>String(v||'').toLowerCase().includes(q))).slice(0,30);results.innerHTML=list.length?list.map(x=>'<button type="button" class="secondary" data-fee-member="'+safe(x.id)+'" style="display:block;width:100%;text-align:left;margin:5px 0"><b>'+safe(x.full_name||x.email)+'</b> · #'+safe(x.membership_no||'—')+' · '+safe(x.phone||'No phone')+'</button>').join(''):'<p>No matching members found.</p>';results.querySelectorAll('[data-fee-member]').forEach(btn=>btn.onclick=()=>chooseMember(btn.dataset.feeMember))};const membershipField=fm.elements.membership_id,monthField=fm.elements.billing_month;
+if(view==='Members'&&['owner','reception'].includes(me.role)){const {members:m,plans:p,memberships:a}=memberData;const membersById=new Map(m.map(member=>[member.id,member]));const opts=(items,label)=>items.map(x=>'<option value="'+safe(x.id)+'">'+safe(label(x))+'</option>').join('');$('#memberAttention').insertAdjacentHTML('beforebegin','<section id="renewalSection" class="hidden"><h2 style="margin-top:30px">Renew / Change Plan</h2><p>New members receive their plan automatically at enrollment. Use this form only for renewals or plan changes.</p><form id="membershipForm" class="card form"><label>Find Member<input id="renewalMemberSearch" placeholder="Name or Member ID" autocomplete="off"></label><label>Member<select name="member_id" required><option value="">Select member</option>'+opts(m,x=>(x.membership_no?'#'+x.membership_no+' · ':'')+(x.full_name||x.email))+'</select></label><label>Plan<select name="plan_id" required><option value="">Select plan</option>'+opts(p,x=>x.name+' · '+x.months+' mo · '+x.price+' PKR')+'</select></label><label>Start Date<input name="starts_on" type="date" required></label><label>Fee (PKR)<input id="renewFee" readonly></label><label>Duration<input id="renewDuration" readonly></label><button class="primary" type="submit">Renew / Change Plan</button></form><div class="card">'+rows(a,x=>'<div class="item"><b>'+safe(x.full_name||x.email)+'</b> · #'+safe(x.membership_no||'—')+' · '+safe(x.plan)+'<p>'+safe(String(x.starts_on).slice(0,10))+' to '+safe(String(x.ends_on).slice(0,10))+' · Paid '+safe(x.paid)+' / '+safe(x.price)+'</p></div>')+'</div></section>');const fm=$('#membershipForm');const updatePlan=()=>{const p0=p.find(x=>x.id===fm.elements.plan_id.value);$('#renewFee').value=p0?p0.price:'';$('#renewDuration').value=p0?p0.months+' months':''};fm.elements.plan_id.addEventListener('change',updatePlan);let renewalRequest=0;
+fm.elements.member_id.addEventListener('change',async()=>{
+  const current=++renewalRequest;
+  const memberId=fm.elements.member_id.value;
+  const submit=fm.querySelector('[type="submit"]');
+  if(!memberId){fm.elements.starts_on.value='';submit.disabled=false;return}
+  submit.disabled=true;
+  try{
+    const memberships=await api('/memberships?'+new URLSearchParams({member_id:memberId}));
+    if(current!==renewalRequest||!fm.isConnected)return;
+    const latest=memberships.filter(term=>!term.cancelled_on).sort((left,right)=>right.ends_on.localeCompare(left.ends_on))[0];
+    const today=localDay();
+    fm.elements.starts_on.value=today;
+    if(latest){
+      fm.elements.plan_id.value=latest.plan_id;
+      const next=new Date(latest.ends_on+'T12:00:00Z');
+      next.setUTCDate(next.getUTCDate()+1);
+      fm.elements.starts_on.value=[next.toISOString().slice(0,10),today].sort().at(-1);
+    }
+    updatePlan();
+    submit.disabled=false;
+  }catch(error){if(!signal.aborted&&current===renewalRequest)notice(error.message,true)}
+});
+$('#renewalMemberSearch').addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase();for(const opt of fm.elements.member_id.options){if(!opt.value)continue;const x=membersById.get(opt.value);opt.hidden=!!q&&!((x?.full_name||'').toLowerCase().includes(q)||(x?.email||'').toLowerCase().includes(q)||String(x?.membership_no||'').includes(q))}});bind('membershipForm',async d=>api('/memberships','POST',d));window.openRenewalFor=id=>{const member=membersById.get(id);if(!member)return;$('#renewalSection').classList.remove('hidden');fm.elements.member_id.value=id;fm.elements.member_id.dispatchEvent(new Event('change'));$('#renewalSection').scrollIntoView({behavior:'smooth',block:'start'})};$('#memberAttention').querySelectorAll('[data-renew]').forEach(b=>b.onclick=()=>window.openRenewalFor(b.dataset.renew))}
+if(view==='Fees'){const [members,fees]=await Promise.all([api('/members'),api('/fees')]);el.innerHTML='<h1>'+safe(pageLabel(view))+'</h1><p>Find a member, choose the pending billing month and record the amount received.</p><form id="feeForm" class="card form"><div style="grid-column:1/-1"><label>Find member by name, membership number or phone<input id="feeMemberSearch" type="search" autocomplete="off" placeholder="Type name, member ID or phone number" aria-controls="feeMemberResults"></label><div id="feeMemberResults" class="card" style="max-height:250px;overflow-y:auto;margin-top:8px"></div><p id="feeSelectedMember" class="sub" aria-live="polite"></p></div><label>Membership<select name="membership_id" required disabled><option value="">Select a member first</option></select></label><label>Billing month<select name="billing_month" required disabled><option value="">Select a member first</option></select></label><label>Amount received (PKR)<input name="amount" type="number" min="0.01" step="0.01" required placeholder="Enter amount paid"></label><label>Method<select name="method"><option value="cash">Cash</option><option value="bank_transfer">Bank Transfer</option><option value="online_payment">Online Payment</option><option value="jazzcash">JazzCash</option><option value="easypaisa">Easypaisa</option></select></label><label>Payment reference (optional)<input name="reference" maxlength="120"></label><p id="billingHint" class="sub" style="grid-column:1/-1"></p><button class="primary" type="submit">Record payment</button></form><div class="card"><h2>Recent payments</h2>'+rows(fees,x=>'<div class="item"><b>'+safe(x.email)+'</b> · PKR '+safe(x.amount)+' · '+safe(x.method)+'<p>Billing month: '+safe(x.billing_month||'Not recorded (legacy)')+' · '+safe(new Date(x.paid_at).toLocaleString())+' · Receipt ID '+safe(x.id)+'</p><button class="secondary" data-receipt="'+safe(x.id)+'">Print receipt</button> <button class="secondary" data-receipt="'+safe(x.id)+'" data-download-receipt>Download receipt</button></div>')+'</div>';const fm=$('#feeForm'),search=$('#feeMemberSearch'),results=$('#feeMemberResults');let billing=null,billingRequest=0;const matches=()=>{const q=search.value.trim().toLowerCase();const list=members.filter(x=>!q||[x.full_name,x.membership_no,x.phone,x.email].some(v=>String(v||'').toLowerCase().includes(q))).slice(0,30);results.innerHTML=list.length?list.map(x=>'<button type="button" class="secondary" data-fee-member="'+safe(x.id)+'" style="display:block;width:100%;text-align:left;margin:5px 0"><b>'+safe(x.full_name||x.email)+'</b> · #'+safe(x.membership_no||'—')+' · '+safe(x.phone||'No phone')+'</button>').join(''):'<p>No matching members found.</p>';results.querySelectorAll('[data-fee-member]').forEach(btn=>btn.onclick=()=>chooseMember(btn.dataset.feeMember))};const membershipField=fm.elements.membership_id,monthField=fm.elements.billing_month;
 const clearBilling=label=>{
   billing=null;
   monthField.disabled=true;
@@ -1155,7 +1227,16 @@ function renderWeeklyAttendance(trend){
   </div>`;
 }
 
-function renderInsight(el,report,insights,trends,attendanceTrend){
+function monthlyChartPoints(trends,key){
+  const shortMonth=new Intl.DateTimeFormat(undefined,{month:'short',timeZone:'UTC'});
+  const fullMonth=new Intl.DateTimeFormat(undefined,{month:'long',year:'numeric',timeZone:'UTC'});
+  return trends.map(row=>{
+    const date=new Date(row.month+'-01T00:00:00Z');
+    return {label:shortMonth.format(date),detail:fullMonth.format(date),values:[Number(row[key])]};
+  });
+}
+
+function renderInsight(el,report,insights,attendanceTrend){
   const money=value=>(report.currency||'PKR')+' '+Number(value||0).toLocaleString('en-PK',{maximumFractionDigits:0});
   const eye='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>';
   const stat=(label,value,{key,target,link,metric}={})=>`<div class="insight-stat${target?' card':''}${key==='today'?' insight-featured':''}">
@@ -1171,12 +1252,6 @@ function renderInsight(el,report,insights,trends,attendanceTrend){
     detail:dateFormat.format(new Date(day.day)),
     values:[Number(day.revenue)]
   }));
-  const shortMonth=new Intl.DateTimeFormat(undefined,{month:'short',timeZone:'UTC'});
-  const fullMonth=new Intl.DateTimeFormat(undefined,{month:'long',year:'numeric',timeZone:'UTC'});
-  const monthlyPoints=key=>trends.map(row=>{
-    const date=new Date(row.month+'-01T00:00:00Z');
-    return {label:shortMonth.format(date),detail:fullMonth.format(date),values:[Number(row[key])]};
-  });
   const action=(target,value,label)=>`<button type="button" data-insight-view="${target}">
     <strong>${safe(value)}</strong><span>${label}</span><span aria-hidden="true">→</span></button>`;
   const attendanceRate=report.active?Math.round(report.attendance/report.active*100):0;
@@ -1197,11 +1272,12 @@ function renderInsight(el,report,insights,trends,attendanceTrend){
       <section class="insight-summary-region" aria-label="Key metrics">
         <p class="insight-summary-cue" aria-hidden="true">Swipe to see all metrics →</p>
         <div class="insight-summary">
-          ${stat('Total Revenue',report.revenue_total,{key:'total',target:'Financials',link:'View reports'})}
           ${stat('Collected today',report.revenue_today,{key:'today',target:'Financials',link:'View reports'})}
-          ${stat('Active Members',report.active,{target:'Members',link:'View members'})}
+          ${stat('Overdue fees','—',{target:'Alerts',link:'Review overdue fees',metric:'overdue-total'})}
+          ${stat('Renewals due soon','—',{target:'Alerts',link:'Review expiring memberships',metric:'expiry-total'})}
           ${stat('Today’s check-ins',report.attendance,{target:'Attendance',link:'Open check-in',metric:'today-check-ins'})}
         </div>
+        <div id="frontDeskDues"></div>
       </section>
       <div class="insight-attendance-stack">
       <aside class="card dashboard-attendance-rail" aria-labelledby="dashboardAttendanceHeading">
@@ -1219,35 +1295,16 @@ function renderInsight(el,report,insights,trends,attendanceTrend){
               <div id="weeklyAttendanceChart">${renderWeeklyAttendance(attendanceTrend)}</div>
             </div>
           </details>
-          <details class="card insight-disclosure attendance-trends-card" open>
-            <summary><div><span class="insight-disclosure-title">Monthly attendance</span><span class="insight-period">Last 6 months</span></div></summary>
-            <div class="insight-disclosure-body">
-              ${renderTrendChart('monthly-attendance','Check-ins for the last six months',monthlyPoints('visits'),[{color:'var(--chart-attendance)',format:chartVisitLabel}])}
-            </div>
-          </details>
       </div>
       <div class="insight-main">
-        <div class="insight-panels">
+        <div class="insight-panels dashboard-revenue">
             <section class="card">
               <div class="insight-panel-head"><h2>Revenue</h2><span class="insight-period">Last 7 days</span></div>
               ${renderTrendChart('weekly-revenue','Revenue for the last seven days',weeklyRevenue,[{color:'var(--chart-revenue)',format:money}],{minStep:.01})}
               <div class="insight-details">
                 ${stat('Collected this month',report.revenue_month,{key:'revenue'})}
                 ${stat('Collected in the past 30 days',insights.collected_30d,{key:'rolling'})}
-                ${stat('Pending fees',money(report.pending))}
-              </div>
-            </section>
-            <section class="card">
-              <div class="insight-panel-head"><h2>Membership growth</h2></div>
-              <div class="insight-details">
-                ${stat('Joined today',report.new_members)}
-                ${stat('Joined this month',insights.joined_month)}
-                ${stat('Eligible to check in',report.active)}
-              </div>
-              <div class="insight-months">
-                <h3>New members · 6 months</h3>
-                ${renderTrendChart('membership-growth','New members for the last six months',monthlyPoints('joined'),
-                  [{color:'var(--chart-membership)',format:count=>count+(count===1?' new member':' new members')}])}
+                ${stat('Total unpaid plan balances',money(report.pending),{target:'Alerts',link:'Open dues worklist'})}
               </div>
             </section>
         </div>
@@ -1273,20 +1330,7 @@ function renderInsight(el,report,insights,trends,attendanceTrend){
             </div>
           </section>
         <section class="card" id="dashboardAccount"><p class="insight-period">Loading gym settings…</p></section>
-        <details class="card insight-disclosure">
-          <summary>
-            <div><span class="insight-disclosure-title">Retention and churn</span><span class="insight-period">Last 6 months</span></div>
-          </summary>
-          <div class="insight-disclosure-body">
-            <p class="insight-retention-hint">Based on members whose memberships were in force at the start of each month.</p>
-            <table class="insight-table insight-retention">
-              <thead><tr><th scope="col">Month</th><th scope="col">Opening members</th><th scope="col">Retained</th><th scope="col">Churned</th></tr></thead>
-              <tbody>${trends.map(row=>`<tr><th scope="row">${safe(row.month)}</th><td>${row.opening}</td>
-                <td>${row.opening?Math.round(row.retained/row.opening*100)+'%':'—'}</td>
-                <td>${row.opening?row.opening-row.retained:'—'}</td></tr>`).join('')}</tbody>
-            </table>
-          </div>
-        </details>
+
       </div>
       </div>
     </div>`;
@@ -1297,7 +1341,7 @@ function renderInsight(el,report,insights,trends,attendanceTrend){
       return;
     }
     view=button.dataset.insightView;
-    render({enrollMember:button.hasAttribute('data-enroll-member')});
+    render({enrollMember:button.hasAttribute('data-enroll-member'),duesKind:button.closest('.insight-stat')?.querySelector('[data-expiry-total]')?'expiry':'overdue'});
   });
   const privacyKey='tx-money-hidden-'+me.id;
   let hiddenAmounts={};
@@ -1492,27 +1536,152 @@ function memberContactLink(member){
   return contact?`<a class="member-contact" href="${safe(contact)}" aria-label="Contact ${safe(member.full_name||member.email)}">Contact now</a>`:'';
 }
 
-function renderMemberPayments(panel,member,payments,billing){
-  const amount=value=>(member.currency||'PKR')+' '+Number(value).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
-  const fmt=new Intl.DateTimeFormat(undefined,{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
-  const date=value=>fmt.format(new Date(String(value).slice(0,10)+'T12:00:00Z'));
-  const periodEnd=month=>{
-    const [year,number]=month.split('-').map(Number);
-    const lastDay=new Date(Date.UTC(year,number,0)).toISOString().slice(0,10);
-    return date(lastDay<String(member.ends_on).slice(0,10)?lastDay:member.ends_on);
-  };
-  panel.innerHTML=`
-    <h3>Monthly fees</h3>
-    ${billing?.schedule.length?`<div class="member-record-table"><table class="analytics-table" aria-label="Monthly fees">
-      <thead><tr><th scope="col">Month</th><th scope="col">Period ends</th><th scope="col">Status</th><th scope="col">Balance</th></tr></thead>
-      <tbody>${billing.schedule.map(fee=>`<tr><th scope="row">${safe(fee.month)}</th><td>${safe(periodEnd(fee.month))}</td><td>${safe(fee.status)}</td><td>${safe(amount(fee.due))}</td></tr>`).join('')}</tbody>
-    </table></div>`:'<p>No monthly fees scheduled.</p>'}
-    <h3>Payment history</h3>
-    ${payments.length?`<div class="member-record-table"><table class="analytics-table" aria-label="Payment history">
-      <thead><tr><th scope="col">Paid on</th><th scope="col">Billing month</th><th scope="col">Method</th><th scope="col">Amount</th></tr></thead>
-      <tbody>${payments.map(payment=>`<tr><td>${safe(date(payment.paid_at))}</td><td>${safe(payment.billing_month?String(payment.billing_month).slice(0,7):'—')}</td><td>${safe(payment.method)}</td><td>${safe(amount(payment.amount))}</td></tr>`).join('')}</tbody>
-    </table></div>`:'<p>No payments recorded.</p>'}
-    <button type="button" class="secondary" data-member-action="payment">Record payment</button>`;
+const memberMoney=(member,value)=>(member.currency||'PKR')+' '+Number(value||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+const paymentMethods={cash:'Cash',bank_transfer:'Bank transfer',online_payment:'Online payment',jazzcash:'JazzCash',easypaisa:'Easypaisa'};
+
+function renderDuesWorklist(panel,alerts,{dashboard=false,initialKind='overdue'}={}){
+  const filters={overdue:'Overdue fees',fee_due:'Due soon',expiry:'Expiring memberships'};
+  const grouped=Object.fromEntries(Object.keys(filters).map(kind=>[kind,alerts.filter(alert=>alert.kind===kind)]));
+  const overdue=(grouped.overdue||[]).reduce((sum,alert)=>sum+Number(alert.amount),0);
+  const currency=alerts[0]?.currency;
+  panel.innerHTML=`<section class="card dues-worklist">
+    <div class="row"><h2>Dues &amp; renewals</h2>${dashboard?'<button type="button" class="secondary" data-full-dues>View full worklist</button>':''}</div>
+    <p>Overdue fees${currency?' · '+safe(memberMoney({currency},overdue)):''} from previous billing months. Due soon covers the next 3 days. Renewals cover the next 7 days.</p>
+    <div class="row" role="group" aria-label="Filter member alerts">${Object.entries(filters).map(([kind,label])=>
+      `<button type="button" class="secondary" data-dues-kind="${kind}">${label} · ${grouped[kind]?.length||0}</button>`).join('')}</div>
+    <div data-dues-rows></div></section>`;
+  const container=panel.querySelector('[data-dues-rows]');
+  function show(kind){
+    const items=grouped[kind]||[];
+    panel.querySelectorAll('[data-dues-kind]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.duesKind===kind)));
+    container.innerHTML=items.length?items.slice(0,dashboard?5:items.length).map((item,index)=>`<div class="item dues-row">
+      <div><strong>${safe(item.full_name||item.email)}</strong><p>${item.amount==null?'Expires':safe(memberMoney(item,item.amount))+' · '+(kind==='overdue'?'Through':'Due')} ${safe(kind==='overdue'?item.due_on.slice(0,7):item.due_on)}</p></div>
+      <button type="button" class="secondary" data-dues-item="${index}">${kind==='expiry'?'Open membership':'Open member payments'}</button></div>`).join(''):'<p>No matching members.</p>';
+    container.onclick=event=>{
+      const button=event.target.closest('[data-dues-item]');
+      if(!button)return;
+      view='Members';
+      void render({reminderTarget:items[Number(button.dataset.duesItem)]});
+    };
+  }
+  panel.querySelectorAll('[data-dues-kind]').forEach(button=>button.onclick=()=>show(button.dataset.duesKind));
+  const full=panel.querySelector('[data-full-dues]');
+  if(full)full.onclick=()=>{view='Alerts';void render()};
+  show(initialKind);
+}
+
+async function renderMemberPayments(panel,member,api,signal,{savedReceipts=[]}={}){
+  const memberId=encodeURIComponent(member.id);
+  const [history,terms]=await Promise.all([
+    api('/members/'+memberId+'/history'),api('/memberships?member_id='+memberId)
+  ]);
+  if(!panel.isConnected)return;
+  const unpaid=terms.filter(term=>Number(term.price)>Number(term.paid));
+  const balance=unpaid.reduce((sum,term)=>sum+Number(term.price)-Number(term.paid),0);
+  const amount=value=>memberMoney(member,value);
+  const summary=panel.closest('[data-card-member]').querySelector('[data-member-balance]');
+  member.balance_due=balance;
+  summary.textContent=amount(balance);
+  const phone=member.whatsapp_phone;
+  const whatsApp=text=>/^\+[1-9]\d{7,14}$/.test(phone||'')?`<a class="member-contact" target="_blank" rel="noopener" href="https://wa.me/${phone.slice(1)}?text=${encodeURIComponent(text)}">Review in WhatsApp</a>`:'';
+  const paymentRows=history.payments.map(payment=>`<div class="item dues-row">
+    <span><strong>${safe(amount(payment.amount))}</strong> · ${safe(paymentMethods[payment.method]||payment.method)} · ${safe(payment.billing_month?.slice(0,7)||'Legacy payment')}${payment.reference?' · '+safe(payment.reference):''}</span>
+    <button type="button" class="secondary" data-share-member-receipt="${safe(payment.id)}">Share receipt</button></div>`).join('');
+  panel.innerHTML=`<p><strong>Total unpaid plan balance · ${safe(amount(balance))}</strong></p>
+    ${savedReceipts.length?'<p role="status"><strong>Payment recorded.</strong> Share the receipt below.</p>':''}
+    <div class="row">${balance>0?'<button type="button" class="secondary" data-draft-reminder>Draft payment reminder</button>':''}</div>
+    <div data-member-message></div>
+    ${unpaid.length?`<form class="form member-payment-form" id="memberPayment-${safe(member.id)}">
+      <label>Membership<select name="membership_id" required>${unpaid.map(term=>option(term.id,term.plan+' · '+term.starts_on+' – '+term.ends_on)).join('')}</select></label>
+      <label>Billing month<select name="billing_month" required></select></label>
+      <label>Amount received (${safe(member.currency||'PKR')})<input name="amount" type="number" min="0.01" step="0.01" required></label>
+      <label>Method<select name="method">${Object.entries(paymentMethods).map(([id,label])=>option(id,label)).join('')}</select></label>
+      <label>Payment reference (optional)<input name="reference" maxlength="120"></label>
+      <p data-payment-hint></p><button class="primary" type="submit" disabled>Record payment</button>
+    </form><details><summary>Billing schedule for selected membership</summary><div class="member-record-table" data-member-schedule></div></details>` : ''}
+    <h3>Payment history</h3>${paymentRows||'<p>No payments recorded.</p>'}`;
+  const message=panel.querySelector('[data-member-message]');
+  function showMessage(label,text){
+    message.innerHTML=`<label>${label}<textarea rows="4">${safe(text)}</textarea></label>
+      <div class="row"><button type="button" class="secondary" data-copy-member-message>Copy message</button><span data-copy-status role="status"></span></div>`;
+    const field=message.querySelector('textarea');
+    const actions=message.querySelector('.row');
+    const syncLink=()=>{actions.querySelector('a')?.remove();actions.insertAdjacentHTML('beforeend',whatsApp(field.value))};
+    field.oninput=syncLink;
+    syncLink();
+    message.querySelector('[data-copy-member-message]').onclick=async()=>{
+      try{await navigator.clipboard.writeText(field.value);message.querySelector('[data-copy-status]').textContent='Copied'}
+      catch{field.focus();field.select();message.querySelector('[data-copy-status]').textContent='Copy the selected text'}
+    };
+    field.focus();
+  }
+  const draft=panel.querySelector('[data-draft-reminder]');
+  if(draft)draft.onclick=()=>showMessage('Payment reminder',
+    `Hi ${member.full_name||'there'}, your remaining membership plan balance is ${amount(balance)}. Please contact the gym if you have questions or have already paid. Thank you.`);
+  async function shareReceipts(ids){
+    const receipts=await Promise.all(ids.map(id=>api('/fees/'+encodeURIComponent(id)+'/receipt')));
+    if(!message.isConnected)return;
+    showMessage('Payment receipt',receipts.map(receipt=>
+      `${receipt.gym} payment receipt
+Member: ${member.full_name||receipt.member}
+${receipt.currency} ${receipt.amount} · ${paymentMethods[receipt.method]||receipt.method}
+Billing month: ${receipt.billing_month||'—'}
+Paid on: ${new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeZone:me.timezone}).format(new Date(receipt.paid_at))}
+Receipt ID: ${receipt.id}`).join('\n\n'));
+  }
+  panel.querySelectorAll('[data-share-member-receipt]').forEach(button=>button.onclick=async()=>{
+    try{await shareReceipts([button.dataset.shareMemberReceipt])}
+    catch(error){if(!signal.aborted)notice(error.message,true)}
+  });
+  if(savedReceipts.length)void shareReceipts(savedReceipts.map(receipt=>receipt.id)).catch(error=>{if(!signal.aborted)notice(error.message,true)});
+  const form=panel.querySelector('form');
+  if(!form)return;
+  const {membership_id,billing_month,amount:received}=form.elements;
+  const submit=form.querySelector('[type="submit"]');
+  const hint=form.querySelector('[data-payment-hint]');
+  const target=panel.parentElement.dataset;
+  if(unpaid.some(term=>term.id===target.targetMembership))membership_id.value=target.targetMembership;
+  let periods=[],request=0;
+  function updateAmount(){
+    const index=periods.findIndex(period=>period.month===billing_month.value);
+    const term=unpaid.find(term=>term.id===membership_id.value);
+    const period=periods[index];
+    if(!period){submit.disabled=true;return}
+    const maximum=Math.min(Number(term.price)-Number(term.paid),periods.slice(index).reduce((sum,item)=>sum+item.due,0));
+    received.max=maximum.toFixed(2);
+    received.value=Math.min(maximum,period.due).toFixed(2);
+    hint.textContent='Selected month balance '+amount(period.due)+' · Available from this month '+amount(maximum);
+    submit.disabled=false;
+  }
+  async function loadSchedule(preferredMonth){
+    const current=++request;
+    submit.disabled=true;
+    billing_month.disabled=true;
+    received.value='';
+    hint.textContent='Loading billing months…';
+    try{
+      const billing=await api('/fees/billing?'+new URLSearchParams({membership_id:membership_id.value}));
+      if(current!==request||!form.isConnected)return;
+      panel.querySelector('[data-member-schedule]').innerHTML=`<table class="analytics-table" aria-label="Billing schedule">
+        <thead><tr><th scope="col">Month</th><th scope="col">Status</th><th scope="col">Scheduled balance</th></tr></thead>
+        <tbody>${billing.schedule.map(period=>`<tr><th scope="row">${safe(period.month)}</th><td>${safe(period.status)}</td><td>${safe(amount(period.due))}</td></tr>`).join('')}</tbody>
+      </table>`;
+      periods=billing.schedule.filter(period=>period.due>0);
+      billing_month.innerHTML=periods.map(period=>option(period.month,period.month+' · '+amount(period.due),preferredMonth)).join('');
+      billing_month.disabled=!periods.length;
+      hint.textContent=periods.length?'':'No unpaid billing months.';
+      updateAmount();
+    }catch(error){if(current===request&&!signal.aborted)hint.textContent=error.message}
+  }
+  membership_id.onchange=()=>void loadSchedule();
+  billing_month.onchange=updateAmount;
+  bindForm(form,data=>api('/fees','POST',{...data,amount:Number(data.amount)}),{financial:true,onSaved:async result=>{
+    form.remove();
+    try{await renderMemberPayments(panel,member,api,signal,{savedReceipts:result.receipts})}
+    catch(error){if(!signal.aborted)notice('Payment recorded. Reopen the member to refresh the balance and share the receipt.',true)}
+    void refreshOwnerNotifications();
+  }});
+  await loadSchedule(target.targetMonth);
 }
 
 async function renderMemberAccess(panel,member,api,signal,updateList){
@@ -1566,7 +1735,7 @@ async function renderMemberAccess(panel,member,api,signal,updateList){
   }
 }
 function bind(id,handler,options){bindForm($('#'+id),handler,options)}
-function bindForm(node,handler,{financial=false}={}){
+function bindForm(node,handler,{financial=false,onSaved}={}){
   const controller=renderController;
   let pending=false;
   const inMemory=new Map();
@@ -1591,12 +1760,13 @@ function bindForm(node,handler,{financial=false}={}){
         inMemory.set(storageKey,data.request_id);
         try{sessionStorage.setItem(storageKey,data.request_id)}catch{}
       }
-      await handler(data);
+      const result=await handler(data);
       if(storageKey){
         inMemory.delete(storageKey);
         try{sessionStorage.removeItem(storageKey)}catch{}
       }
       if(controller.signal.aborted)return;
+      if(onSaved){await onSaved(result);return}
       const rendering=render();
       const updatedView=renderController;
       await rendering;
@@ -1612,7 +1782,7 @@ $('#content').addEventListener('click',async e=>{const button=e.target.closest('
   const id=button.dataset.receipt,asFile=button.hasAttribute('data-download-receipt');
   const popup=asFile?null:window.open('','_blank');
   if(!asFile&&!popup){notice('Allow pop-ups to print receipts',true);return}
-  try{const x=await api('/fees/'+encodeURIComponent(id)+'/receipt');const fields=[['Gym',x.gym],['Receipt ID',x.id],['Member',x.member],['Plan',x.plan],['Amount',x.currency+' '+x.amount],['Method',x.method],['Billing month',x.billing_month||'Not recorded'],['Paid at',new Date(x.paid_at).toLocaleString()]];const receipt=('<!doctype html><html><head><title>TrainerX Receipt</title><meta charset="utf-8"><style>@font-face{font-family:Inter;src:url('+safe(location.origin)+'/fonts/inter-latin.woff2) format("woff2");font-weight:100 900;font-display:swap}body{font:16px Inter,system-ui,sans-serif;max-width:540px;margin:60px auto;padding:20px}h1{border-bottom:2px solid #222;padding-bottom:16px}p{padding:8px;border-bottom:1px solid #ddd}</style></head><body><h1>Payment Receipt</h1>'+fields.map(([k,v])=>'<p><b>'+safe(k)+':</b> '+safe(v)+'</p>').join('')+'<p>Payment recorded by gym staff. Not proof of bank settlement.</p></body></html>');if(asFile){download('trainerx-receipt-'+x.id+'.html','text/html;charset=utf-8',receipt);return}
+  try{const x=await api('/fees/'+encodeURIComponent(id)+'/receipt');const fields=[['Gym',x.gym],['Receipt ID',x.id],['Member',x.member],['Plan',x.plan],['Amount',x.currency+' '+x.amount],['Method',x.method],...(x.reference?[['Reference',x.reference]]:[]),['Billing month',x.billing_month||'Not recorded'],['Paid at',new Date(x.paid_at).toLocaleString()]];const receipt=('<!doctype html><html><head><title>TrainerX Receipt</title><meta charset="utf-8"><style>@font-face{font-family:Inter;src:url('+safe(location.origin)+'/fonts/inter-latin.woff2) format("woff2");font-weight:100 900;font-display:swap}body{font:16px Inter,system-ui,sans-serif;max-width:540px;margin:60px auto;padding:20px}h1{border-bottom:2px solid #222;padding-bottom:16px}p{padding:8px;border-bottom:1px solid #ddd}</style></head><body><h1>Payment Receipt</h1>'+fields.map(([k,v])=>'<p><b>'+safe(k)+':</b> '+safe(v)+'</p>').join('')+'<p>Payment recorded by gym staff. Not proof of bank settlement.</p></body></html>');if(asFile){download('trainerx-receipt-'+x.id+'.html','text/html;charset=utf-8',receipt);return}
   popup.document.write(receipt);popup.document.close();popup.focus();popup.print()
   }catch(err){popup?.close();notice(err.message,true)}
 });
@@ -1683,7 +1853,7 @@ function showNotificationPanel(){
     const amount=item.amount==null?'':new Intl.NumberFormat(undefined,{style:'currency',currency:item.currency})
       .format(Number(item.amount))+' · ';
     const unread=item.status==='unread';
-    const action=item.kind==='expiry'?'Open membership':'Open payment form';
+    const action=item.kind==='expiry'?'Open membership':'Open member payments';
     return `<li data-reminder-index="${index}">
       <button type="button" class="sidebar-reminder-link" data-open-reminder ${unread?'data-unread':''}>
         <strong>${safe(item.member)}</strong><small>${safe(reminderLabels[item.kind]+' · '+amount+date)}</small>
@@ -1832,7 +2002,7 @@ sidebarBody.addEventListener('click',async event=>{
     if(!item)return;
     if(target.hasAttribute('data-open-reminder')){
       sidebarPanel.close();
-      view=item.kind==='expiry'?'Members':'Fees';
+      view='Members';
       void render({reminderTarget:item});
       if(item.status==='unread')void saveReminderStatus(item,'read').catch(()=>{});
       return;

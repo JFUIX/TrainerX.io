@@ -160,8 +160,13 @@ export function registerGymOperations(app,db,auth) {
   });
 
   app.get('/alerts',auth,staff,privateData,async (req,res) => {
-    const {rows} = await db.query(`SELECT a.member_id,a.kind,a.due_on::text,a.amount,a.email,a.full_name,g.currency
-      FROM gym_member_alerts a JOIN gyms g ON g.id=a.gym_id WHERE a.gym_id=$1 ORDER BY a.kind,a.due_on,a.email`,[req.user.gym_id]);
+    const {rows} = await db.query(`WITH alerts AS (
+      SELECT gym_id,membership_id,member_id,kind,due_on,amount,email,full_name FROM gym_member_alerts WHERE gym_id=$1
+      UNION ALL
+      SELECT gym_id,membership_id,member_id,kind,due_on,amount,email,full_name FROM gym_whatsapp_alerts WHERE gym_id=$1 AND kind='fee_due'
+    )
+    SELECT a.membership_id,a.member_id,a.kind,a.due_on::text,a.amount,a.email,a.full_name,g.currency
+      FROM alerts a JOIN gyms g ON g.id=a.gym_id ORDER BY a.due_on,a.email,a.membership_id`,[req.user.gym_id]);
     res.json(rows);
   });
 

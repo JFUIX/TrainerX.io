@@ -14,7 +14,7 @@ ALTER TABLE memberships ADD COLUMN IF NOT EXISTS total_price numeric(12,2) CHECK
 -- Track the billing month separately from payment timestamp; preserve historical payment records.
 ALTER TABLE fee_payments ADD COLUMN IF NOT EXISTS billing_month date;
 ALTER TABLE fee_payments DROP CONSTRAINT IF EXISTS fee_payments_method_check;
-ALTER TABLE fee_payments ADD CONSTRAINT fee_payments_method_check CHECK (method IN ('cash','bank_transfer','online_payment','upi','other'));
+ALTER TABLE fee_payments ADD CONSTRAINT fee_payments_method_check CHECK (method IN ('cash','bank_transfer','online_payment','upi','other','jazzcash','easypaisa'));
 CREATE INDEX IF NOT EXISTS fee_payments_billing_month_idx ON fee_payments(gym_id,membership_id,billing_month);
 
 ALTER TABLE member_profiles ADD COLUMN IF NOT EXISTS attendance_code char(4);
