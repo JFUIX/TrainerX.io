@@ -469,11 +469,16 @@ button.secondary{border:1px solid var(--tx-line)}
 
 /* Workspace hierarchy */
 .shell:has(#workspace:not(.hidden)){max-width:1680px}
-.workspace-search{display:flex;align-items:center;gap:9px;min-height:39px;border:1px solid var(--tx-line);border-radius:10px;background:var(--tx-control);color:var(--tx-muted);font-weight:600;text-align:left}
+.workspace-search{position:relative;width:min(100%,205px)}
+.workspace-search>svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--tx-muted)}
 .workspace-search svg,.insight-stat-icon svg,.insight-shortcuts svg{width:17px;height:17px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.workspace-search:hover{color:var(--tx-text);border-color:var(--tx-line-hover)}
-#sidebarPanel[data-panel="member-search"]{width:min(600px,calc(100% - 24px))}
-#sidebarPanel[data-panel="member-search"] .front-desk-lookup{padding:0;margin:0}
+.insight-shortcuts button,.workspace-search input{height:40px;border-radius:999px}
+.workspace-search input{padding-left:36px;font-size:13px;font-weight:600}
+.workspace-search-results{position:absolute;z-index:5;top:calc(100% + 6px);left:0;width:min(390px,calc(100vw - 48px));max-height:min(380px,55vh);overflow:auto;padding:8px 10px;background:var(--tx-raised);border:1px solid var(--tx-line);border-radius:12px;box-shadow:0 12px 30px #17182433}
+.workspace-search:not(:focus-within) .workspace-search-results,.workspace-search-results:empty{display:none}
+.workspace-search-results .dues-row{padding:6px 0;border-top:1px solid var(--tx-line)}
+.workspace-search-results .dues-row button{min-height:36px}
+.workspace-search-results>p{margin:4px 0}
 #nav .nav-link{border-radius:9px}
 .nav-group{display:grid;gap:3px}
 .nav-group+.nav-group{margin-top:10px}
@@ -746,6 +751,24 @@ if(view==='Insight'){
   ]);
   signal.throwIfAborted();
   renderInsight(el,report,insights);
+  const lookup=el.querySelector('#quickMemberSearch');
+  const field=lookup.querySelector('input');
+  const results=lookup.querySelector('[data-lookup-results]');
+  bindFrontDeskLookup(lookup,api,signal);
+  const showResults=()=>{results.hidden=!field.value.trim()};
+  field.addEventListener('input',showResults);
+  field.addEventListener('focus',showResults);
+  lookup.addEventListener('keydown',event=>{
+    if(event.key==='Escape'){
+      field.focus();
+      results.hidden=true;
+    }
+    if(event.key==='ArrowDown'&&event.target===field){
+      showResults();
+      const first=results.querySelector('button');
+      if(first){event.preventDefault();first.focus()}
+    }
+  });
   void duesRequest.then(alerts=>{
     if(signal.aborted)return;
     const worklist=el.querySelector('#frontDeskDues');
@@ -1348,9 +1371,11 @@ function renderInsight(el,report,insights,attendanceTrend){
           <h1>Dashboard</h1>
         </div>
         <div class="insight-shortcuts">
-          <button type="button" class="workspace-search" id="quickMemberSearch" aria-haspopup="dialog">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 4 4"/></svg>Find a member
-          </button>
+          <div class="workspace-search" id="quickMemberSearch">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 4 4"/></svg>
+            <input id="workspaceMemberSearch" type="search" aria-label="Find a member" aria-controls="workspaceMemberResults" placeholder="Find a member" autocomplete="off">
+            <div id="workspaceMemberResults" class="workspace-search-results" data-lookup-results hidden></div>
+          </div>
           <button type="button" class="primary" data-insight-view="Attendance">${navIcon('Attendance')}Check in member</button>
           <button type="button" class="secondary" data-insight-view="Members" data-enroll-member>Add member</button>
         </div>
@@ -1424,7 +1449,6 @@ function renderInsight(el,report,insights,attendanceTrend){
       </div>
     </div>`;
 
-  el.querySelector('#quickMemberSearch').onclick=()=>openSidebarPanel('Find a member');
   el.querySelectorAll('[data-insight-view]').forEach(button=>button.onclick=()=>{
     if(button.dataset.insightView==='Attendance'){
       $('#dashboardCheckInCode')?.focus();
@@ -1635,7 +1659,7 @@ function matchesMemberQuery(member,query){
   return /^[+\d ()-]+$/.test(text)&&text.replace(/\D/g,'').length>=3&&String(member.phone??'').replace(/\D/g,'').includes(text.replace(/\D/g,''));
 }
 
-function bindFrontDeskLookup(panel,api,signal,{beforeOpen}={}){
+function bindFrontDeskLookup(panel,api,signal){
   const search=panel.querySelector('input');
   const results=panel.querySelector('[data-lookup-results]');
   let roster,currentSearch=0;
@@ -1654,7 +1678,6 @@ function bindFrontDeskLookup(panel,api,signal,{beforeOpen}={}){
           <div class="dues-value"><strong>${safe(memberMoney(member,member.balance_due))}</strong><span class="sub">${member.ends_on?'Ends '+safe(member.ends_on):'No membership end date'}</span></div>
           <button class="secondary" type="button" data-lookup-item="${index}">Open member</button></div>`).join('');
       results.querySelectorAll('[data-lookup-item]').forEach(button=>button.onclick=()=>{
-        beforeOpen?.();
         view='Members';
         void render({reminderTarget:{member_id:matches[Number(button.dataset.lookupItem)].id,kind:'lookup'}});
       });
@@ -2046,14 +2069,6 @@ async function loadReminderPreferences(form){
 function openSidebarPanel(name){
   panelType=name;
   $('#sidebarPanelTitle').textContent=name;
-  sidebarPanel.dataset.panel=name==='Find a member'?'member-search':'';
-  if(name==='Find a member'){
-    sidebarBody.innerHTML='<div class="front-desk-lookup"><label for="workspaceMemberSearch">Name, phone, or member number</label><input id="workspaceMemberSearch" type="search" autocomplete="off" autofocus><div data-lookup-results></div></div>';
-    const controller=new AbortController();
-    sidebarPanel.addEventListener('close',()=>controller.abort(),{once:true});
-    bindFrontDeskLookup(sidebarBody.querySelector('.front-desk-lookup'),
-      url=>api(url,'GET',undefined,controller.signal),controller.signal,{beforeOpen:()=>sidebarPanel.close()});
-  }
   if(name==='Notifications'){showingDone=false;showNotificationPanel();void refreshOwnerNotifications()}
   if(name==='Help'){
     const topics=me.role==='owner'?[
