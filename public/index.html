@@ -426,6 +426,48 @@ button.secondary{border:1px solid var(--tx-line)}
 .dues-worklist h2,.dues-row p{margin:0}
 .dues-worklist [aria-pressed="true"]{background:var(--tx-accent);color:var(--tx-accent-ink)}
 .member-payment-form{margin:10px 0}
+
+.front-desk-header{margin:0 0 12px}
+.front-desk-header h1{margin:0}
+.front-desk-lookup{display:grid;gap:8px;padding:14px;margin:0 0 12px}
+.front-desk-lookup label,.member-search-field label{font-weight:700;color:var(--tx-text)}
+.front-desk-lookup input,.member-search-field input{min-height:42px}
+.front-desk-lookup [data-lookup-results]:empty{display:none}
+.member-search-field{display:grid;gap:4px;flex:1;min-width:min(100%,230px)}
+.member-toolbar{align-items:end}
+.member-toolbar select,.member-toolbar button{min-height:42px}
+.member-card-summary{justify-content:flex-start;gap:6px 18px}
+.member-card-summary span{display:flex;gap:6px;align-items:baseline}
+.member-card-summary [data-balance-due] strong{color:var(--tx-accent-soft)}
+.dues-worklist{padding:clamp(12px,2vw,20px);margin-top:10px}
+.dues-worklist-header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.dues-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:12px 0 8px}
+.dues-filters button.secondary{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:2px 8px;min-height:44px;text-align:left;border-radius:10px}
+.dues-filters button[aria-pressed="true"]{border-color:var(--tx-accent)}
+.dues-filter-count{font-variant-numeric:tabular-nums;font-size:12px;color:inherit}
+.dues-context{padding:8px 0;color:var(--tx-muted);font-size:12px}
+.dues-worklist p.dues-context{margin:0}
+.dues-worklist .dues-row,.front-desk-lookup .dues-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(95px,auto) auto;gap:6px 14px;border-top:1px solid var(--tx-line);border-bottom:0;padding:9px 0}
+.dues-row strong,.dues-row button{overflow-wrap:anywhere}
+.dues-row button{min-height:42px}
+.dues-value{font-variant-numeric:tabular-nums}
+.dues-row .sub{display:block;font-size:12px}
+.member-payment-summary{display:flex;gap:8px 14px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin:10px 0;padding:10px 12px;border-radius:10px;background:var(--tx-control);border:1px solid var(--tx-line)}
+.member-payment-summary p{margin:0}
+.member-payment-summary strong{display:block;font-size:20px;color:var(--tx-text);font-variant-numeric:tabular-nums}
+.member-payment-form{background:var(--tx-control);border:1px solid var(--tx-line);border-radius:12px;padding:12px}
+.member-payment-form button{min-height:44px}
+.member-payment-form [data-payment-hint]{grid-column:1/-1;margin:0;min-height:1.5em}
+.member-payment-title{grid-column:1/-1;margin:0;font-size:16px}
+.member-payment-saved{padding:8px 10px;border-left:3px solid var(--tx-accent);background:var(--tx-accent-tint);border-radius:4px}
+[data-member-message]:not(:empty){display:grid;gap:8px;padding:10px;border:1px solid var(--tx-line);border-radius:10px;margin:10px 0}
+@media(max-width:520px){
+  .dues-filters button.secondary{font-size:12px;padding:6px}
+  .dues-worklist .dues-row,.front-desk-lookup .dues-row{grid-template-columns:minmax(0,1fr) auto}
+  .dues-row .dues-value{justify-self:end;text-align:right}
+  .dues-worklist .dues-row button,.front-desk-lookup .dues-row button{grid-column:1/-1;justify-self:start}
+  .member-toolbar .member-search-field{width:100%;flex-basis:100%}
+}
 </style></head><body>
 <div class="shell"><header>
   <div class="header-brand" translate="no">
@@ -543,7 +585,8 @@ async function render({enrollMember=false,replaceURL=false,openGymSettings=false
   const el=$('#content');el.innerHTML='<p>Loading…</p>';try{
 if(view==='Alerts'){
   const alerts=await api('/alerts');
-  el.innerHTML='<h1>Front desk</h1><div id="frontDeskDues"></div>';
+  el.innerHTML='<div class="front-desk-header"><h1>Front desk</h1></div><section class="card front-desk-lookup" aria-label="Member lookup"><label for="frontDeskSearch">Find a member</label><input id="frontDeskSearch" type="search" autocomplete="off" placeholder="Name, phone, or member number"><div data-lookup-results></div></section><div id="frontDeskDues"></div>';
+  bindFrontDeskLookup(el.querySelector('.front-desk-lookup'),api,signal);
   renderDuesWorklist($('#frontDeskDues'),alerts,{initialKind:duesKind});
 }
 if(view==='Financials'){
@@ -738,7 +781,7 @@ const [m,trainers,plans,memberships]=await Promise.all([
 ]);
 memberData={members:m,plans,memberships};
 const enrollmentPlans=plans;
-const today=localDay();const status=x=>!x.active?'Inactive':x.cancelled_on?'Cancelled':!x.ends_on?'No Plan':String(x.starts_on).slice(0,10)>today?'Upcoming':String(x.ends_on).slice(0,10)<today?'Expired':x.frozen?'Frozen':'Active';const active=m.filter(x=>status(x)==='Active').length,expired=m.filter(x=>status(x)==='Expired').length;const urgent=m.filter(x=>x.active&&!x.cancelled_on&&x.ends_on&&String(x.ends_on).slice(0,10)<=new Date(Date.now()+7*86400000).toISOString().slice(0,10));el.innerHTML='<div class="row" style="justify-content:space-between"><div><h1>'+safe(pageLabel(view))+'</h1><p>Manage members, memberships and renewals.</p></div>'+(canCreate?'<button id="addMember" class="primary" aria-expanded="false" aria-controls="enrollWrap">+ Add Member</button>':'')+'</div><div class="member-mini"><div class="card"><span class="sub">Total</span><strong>'+m.length+'</strong></div><div class="card"><span class="sub">Active</span><strong id="memberActiveTotal">'+active+'</strong></div><div class="card"><span class="sub">Expired</span><strong>'+expired+'</strong></div></div>'+(canCreate?'<div class="member-form-wrap" id="enrollWrap"><form id="memberForm" class="card form"><label>Member ID<input value="Automatically generated" disabled></label><label>Join Date<input name="joined_on" type="date" required></label><label>Full Name<input name="full_name" maxlength="150" required></label><label>Phone<input name="phone" type="tel" maxlength="40" required></label><label>Age<input name="age" type="number" min="1" max="120" required></label><label>Email<input name="email" type="email" required></label><label>Address<input name="residential_address" maxlength="500" required></label><label>Plan<select name="plan_id" required><option value="">Select plan</option>'+enrollmentPlans.map(p=>'<option value="'+safe(p.id)+'">'+safe(p.name)+' · '+safe(p.months)+' mo · '+safe(p.price)+' PKR</option>').join('')+'</select></label><label>Fee (PKR)<input name="amount" type="number" readonly required></label><label>Duration (months)<input name="membership_months" type="number" min="1" max="120" step="1" required placeholder="Enter months"></label><label>Trainer<select name="trainer_id"><option value="">Unassigned / General Training</option>'+trainers.map(t=>'<option value="'+safe(t.id)+'">'+safe(t.email)+'</option>').join('')+'</select></label><button class="primary" type="submit" >Enroll Member</button></form></div>':'')+'<div class="member-toolbar"><input id="memberSearch" placeholder="Search name, ID, phone or email"><select id="memberFilter"><option value="All">All statuses</option><option>Active</option><option>Expired</option><option>Inactive</option><option>Cancelled</option><option>Frozen</option><option>Upcoming</option><option>No Plan</option></select><button class="secondary" id="exportMembers">Export CSV</button></div><div id="memberList"></div>'+'<section class="card" id="memberAttention"><h2>Needs attention · '+urgent.length+'</h2>'+(urgent.length?urgent.map(x=>'<div class="item row" style="justify-content:space-between"><div><b>'+safe(x.full_name||x.email)+'</b><p>Membership ends '+safe(String(x.ends_on).slice(0,10))+'</p></div>'+(canCreate?'<button class="secondary" data-renew="'+safe(x.id)+'">Renew</button>':'')+'</div>').join(''):'<p>No memberships expiring within 7 days.</p>')+'</section>';const termDate=value=>value?String(value).slice(0,10):'—';
+const today=localDay();const status=x=>!x.active?'Inactive':x.cancelled_on?'Cancelled':!x.ends_on?'No Plan':String(x.starts_on).slice(0,10)>today?'Upcoming':String(x.ends_on).slice(0,10)<today?'Expired':x.frozen?'Frozen':'Active';const active=m.filter(x=>status(x)==='Active').length,expired=m.filter(x=>status(x)==='Expired').length;const urgent=m.filter(x=>x.active&&!x.cancelled_on&&x.ends_on&&String(x.ends_on).slice(0,10)<=new Date(Date.now()+7*86400000).toISOString().slice(0,10));el.innerHTML='<div class="row" style="justify-content:space-between"><div><h1>'+safe(pageLabel(view))+'</h1><p>Manage members, memberships and renewals.</p></div>'+(canCreate?'<button id="addMember" class="primary" aria-expanded="false" aria-controls="enrollWrap">+ Add Member</button>':'')+'</div><div class="member-mini"><div class="card"><span class="sub">Total</span><strong>'+m.length+'</strong></div><div class="card"><span class="sub">Active</span><strong id="memberActiveTotal">'+active+'</strong></div><div class="card"><span class="sub">Expired</span><strong>'+expired+'</strong></div></div>'+(canCreate?'<div class="member-form-wrap" id="enrollWrap"><form id="memberForm" class="card form"><label>Member ID<input value="Automatically generated" disabled></label><label>Join Date<input name="joined_on" type="date" required></label><label>Full Name<input name="full_name" maxlength="150" required></label><label>Phone<input name="phone" type="tel" maxlength="40" required></label><label>Age<input name="age" type="number" min="1" max="120" required></label><label>Email<input name="email" type="email" required></label><label>Address<input name="residential_address" maxlength="500" required></label><label>Plan<select name="plan_id" required><option value="">Select plan</option>'+enrollmentPlans.map(p=>'<option value="'+safe(p.id)+'">'+safe(p.name)+' · '+safe(p.months)+' mo · '+safe(p.price)+' PKR</option>').join('')+'</select></label><label>Fee (PKR)<input name="amount" type="number" readonly required></label><label>Duration (months)<input name="membership_months" type="number" min="1" max="120" step="1" required placeholder="Enter months"></label><label>Trainer<select name="trainer_id"><option value="">Unassigned / General Training</option>'+trainers.map(t=>'<option value="'+safe(t.id)+'">'+safe(t.email)+'</option>').join('')+'</select></label><button class="primary" type="submit" >Enroll Member</button></form></div>':'')+'<div class="member-toolbar"><div class="member-search-field"><label for="memberSearch">Find a member</label><input id="memberSearch" type="search" autocomplete="off" placeholder="Name, phone, member number, or email"></div><select id="memberFilter" aria-label="Membership status"><option value="All">All statuses</option><option>Active</option><option>Expired</option><option>Inactive</option><option>Cancelled</option><option>Frozen</option><option>Upcoming</option><option>No Plan</option></select><button class="secondary" id="exportMembers">Export CSV</button></div><div id="memberList"></div>'+'<section class="card" id="memberAttention"><h2>Needs attention · '+urgent.length+'</h2>'+(urgent.length?urgent.map(x=>'<div class="item row" style="justify-content:space-between"><div><b>'+safe(x.full_name||x.email)+'</b><p>Membership ends '+safe(String(x.ends_on).slice(0,10))+'</p></div>'+(canCreate?'<button class="secondary" data-renew="'+safe(x.id)+'">Renew</button>':'')+'</div>').join(''):'<p>No memberships expiring within 7 days.</p>')+'</section>';const termDate=value=>value?String(value).slice(0,10):'—';
 const hasCurrentTerm=member=>member.membership_id&&!member.cancelled_on&&termDate(member.ends_on)>=today;
 const expandedMembers=new Set();
 const memberCard=member=>{
@@ -780,7 +823,7 @@ const memberCard=member=>{
       </div>
     </div>
     <div class="member-card-summary"><span>Ends <strong>${safe(termDate(member.ends_on))}</strong></span>
-      <span>Balance <strong data-member-balance>${safe(memberMoney(member,member.balance_due))}</strong></span></div>
+      <span${Number(member.balance_due)>0?' data-balance-due':''}>Balance <strong data-member-balance>${safe(memberMoney(member,member.balance_due))}</strong></span></div>
     <div class="member-card-body" id="${safe(bodyId)}" ${expanded?'':'hidden'}>
     <dl class="member-card-attendance" aria-label="Attendance for the last 30 calendar days">
       <div><dt>Days attended</dt><dd>${safe(member.attended)}</dd></div>
@@ -804,7 +847,7 @@ let selectedMemberId;
 const matchesMemberStatus=(member,filter)=>filter==='All'||status(member)===filter||(filter==='Inactive'&&status(member)==='Frozen');
 const list=()=>{
   const q=$('#memberSearch').value.toLowerCase().trim(),filter=$('#memberFilter').value;
-  const shown=m.filter(x=>matchesMemberStatus(x,filter)&&[x.full_name,x.email,x.phone,x.membership_no].some(v=>String(v||'').toLowerCase().includes(q)));
+  const shown=m.filter(x=>matchesMemberStatus(x,filter)&&matchesMemberQuery(x,q));
   memberList.innerHTML=rows(shown,memberCard);
   if(selectedMemberId){
     const selected=memberList.querySelector('[data-card-member="'+CSS.escape(selectedMemberId)+'"]');
@@ -913,7 +956,7 @@ if(reminderTarget){
     if(toggle?.getAttribute('aria-expanded')==='false')toggle.click();
     if(reminderTarget.kind!=='expiry'){
       const records=card.querySelector('.member-card-records');
-      records.dataset.targetMembership=reminderTarget.membership_id;
+      if(reminderTarget.membership_id)records.dataset.targetMembership=reminderTarget.membership_id;
       if(reminderTarget.kind==='fee_due')records.dataset.targetMonth=reminderTarget.due_on.slice(0,7);
       records.open=true;
       const summary=records.querySelector('summary');
@@ -1539,24 +1582,65 @@ function memberContactLink(member){
 const memberMoney=(member,value)=>(member.currency||'PKR')+' '+Number(value||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
 const paymentMethods={cash:'Cash',bank_transfer:'Bank transfer',online_payment:'Online payment',jazzcash:'JazzCash',easypaisa:'Easypaisa'};
 
+function matchesMemberQuery(member,query){
+  const text=query.trim().toLowerCase();
+  if([member.full_name,member.email,member.phone,member.membership_no].some(value=>String(value??'').toLowerCase().includes(text)))return true;
+  return /^[+\d ()-]+$/.test(text)&&text.replace(/\D/g,'').length>=3&&String(member.phone??'').replace(/\D/g,'').includes(text.replace(/\D/g,''));
+}
+
+function bindFrontDeskLookup(panel,api,signal){
+  const search=panel.querySelector('input');
+  const results=panel.querySelector('[data-lookup-results]');
+  let roster,currentSearch=0;
+  search.oninput=async()=>{
+    const request=++currentSearch;
+    const query=search.value.trim();
+    if(!query){results.replaceChildren();return}
+    results.innerHTML='<p role="status">Searching members…</p>';
+    try{
+      roster??=api('/members');
+      const matches=(await roster).filter(member=>matchesMemberQuery(member,query));
+      if(signal.aborted||request!==currentSearch)return;
+      results.innerHTML=`<p class="sub" role="status">${matches.length?('Showing '+Math.min(matches.length,8)+' of '+matches.length+' matching members'):'No members match your search.'}</p>`+
+        matches.slice(0,8).map((member,index)=>`<div class="dues-row"><div><strong>${safe(member.full_name||member.email)}</strong>
+          <span class="sub">${safe(member.phone||member.email)}</span></div>
+          <div class="dues-value"><strong>${safe(memberMoney(member,member.balance_due))}</strong><span class="sub">${member.ends_on?'Ends '+safe(member.ends_on):'No membership end date'}</span></div>
+          <button class="secondary" type="button" data-lookup-item="${index}">Open member</button></div>`).join('');
+      results.querySelectorAll('[data-lookup-item]').forEach(button=>button.onclick=()=>{
+        view='Members';
+        void render({reminderTarget:{member_id:matches[Number(button.dataset.lookupItem)].id,kind:'lookup'}});
+      });
+    }catch(error){
+      roster=null;
+      if(!signal.aborted&&request===currentSearch)results.innerHTML='<p class="error" role="status">Could not load members. Edit the search to retry.</p>';
+    }
+  };
+}
+
 function renderDuesWorklist(panel,alerts,{dashboard=false,initialKind='overdue'}={}){
   const filters={overdue:'Overdue fees',fee_due:'Due soon',expiry:'Expiring memberships'};
   const grouped=Object.fromEntries(Object.keys(filters).map(kind=>[kind,alerts.filter(alert=>alert.kind===kind)]));
-  const overdue=(grouped.overdue||[]).reduce((sum,alert)=>sum+Number(alert.amount),0);
+  const overdue=grouped.overdue.reduce((sum,alert)=>sum+Number(alert.amount),0);
   const currency=alerts[0]?.currency;
+  const emptyStates={overdue:'No overdue fees to review.',fee_due:'No fees due in the next 3 days.',expiry:'No memberships expiring in the next 7 days.'};
+  const contexts={overdue:'Unpaid fees from previous billing months.',fee_due:'Fees due in the next 3 days.',expiry:'Memberships ending in the next 7 days.'};
   panel.innerHTML=`<section class="card dues-worklist">
-    <div class="row"><h2>Dues &amp; renewals</h2>${dashboard?'<button type="button" class="secondary" data-full-dues>View full worklist</button>':''}</div>
-    <p>Overdue fees${currency?' · '+safe(memberMoney({currency},overdue)):''} from previous billing months. Due soon covers the next 3 days. Renewals cover the next 7 days.</p>
-    <div class="row" role="group" aria-label="Filter member alerts">${Object.entries(filters).map(([kind,label])=>
-      `<button type="button" class="secondary" data-dues-kind="${kind}">${label} · ${grouped[kind]?.length||0}</button>`).join('')}</div>
+    <div class="dues-worklist-header"><h2>Dues &amp; renewals</h2>${dashboard?'<button type="button" class="secondary" data-full-dues>View full worklist</button>':''}</div>
+    <div class="dues-filters" role="group" aria-label="Filter member alerts">${Object.entries(filters).map(([kind,label])=>
+      `<button type="button" class="secondary" data-dues-kind="${kind}"><span>${label}</span><span class="dues-filter-count">${grouped[kind].length}</span></button>`).join('')}</div>
+    <p class="dues-context" data-dues-context role="status"></p>
     <div data-dues-rows></div></section>`;
   const container=panel.querySelector('[data-dues-rows]');
   function show(kind){
     const items=grouped[kind]||[];
+    panel.querySelector('[data-dues-context]').textContent=
+      (kind==='overdue'&&currency?memberMoney({currency},overdue)+' overdue. ':'')+contexts[kind]+
+      (dashboard&&items.length>5?' Showing 5 of '+items.length+'.':'');
     panel.querySelectorAll('[data-dues-kind]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.duesKind===kind)));
     container.innerHTML=items.length?items.slice(0,dashboard?5:items.length).map((item,index)=>`<div class="item dues-row">
-      <div><strong>${safe(item.full_name||item.email)}</strong><p>${item.amount==null?'Expires':safe(memberMoney(item,item.amount))+' · '+(kind==='overdue'?'Through':'Due')} ${safe(kind==='overdue'?item.due_on.slice(0,7):item.due_on)}</p></div>
-      <button type="button" class="secondary" data-dues-item="${index}">${kind==='expiry'?'Open membership':'Open member payments'}</button></div>`).join(''):'<p>No matching members.</p>';
+      <div><strong>${safe(item.full_name||item.email)}</strong><span class="sub">${kind==='overdue'?'Through':kind==='expiry'?'Expires':'Due'} ${safe(kind==='overdue'?item.due_on.slice(0,7):item.due_on)}</span></div>
+      <strong class="dues-value">${item.amount==null?'':safe(memberMoney(item,item.amount))}</strong>
+      <button type="button" class="secondary" data-dues-item="${index}">${kind==='expiry'?'Open membership':'Open member payments'}</button></div>`).join(''):'<p>'+emptyStates[kind]+'</p>';
     container.onclick=event=>{
       const button=event.target.closest('[data-dues-item]');
       if(!button)return;
@@ -1566,7 +1650,7 @@ function renderDuesWorklist(panel,alerts,{dashboard=false,initialKind='overdue'}
   }
   panel.querySelectorAll('[data-dues-kind]').forEach(button=>button.onclick=()=>show(button.dataset.duesKind));
   const full=panel.querySelector('[data-full-dues]');
-  if(full)full.onclick=()=>{view='Alerts';void render()};
+  if(full)full.onclick=()=>{view='Alerts';void render({duesKind:panel.querySelector('[aria-pressed=true]').dataset.duesKind})};
   show(initialKind);
 }
 
@@ -1582,16 +1666,18 @@ async function renderMemberPayments(panel,member,api,signal,{savedReceipts=[]}={
   const summary=panel.closest('[data-card-member]').querySelector('[data-member-balance]');
   member.balance_due=balance;
   summary.textContent=amount(balance);
+  summary.parentElement.toggleAttribute('data-balance-due',balance>0);
   const phone=member.whatsapp_phone;
   const whatsApp=text=>/^\+[1-9]\d{7,14}$/.test(phone||'')?`<a class="member-contact" target="_blank" rel="noopener" href="https://wa.me/${phone.slice(1)}?text=${encodeURIComponent(text)}">Review in WhatsApp</a>`:'';
   const paymentRows=history.payments.map(payment=>`<div class="item dues-row">
     <span><strong>${safe(amount(payment.amount))}</strong> · ${safe(paymentMethods[payment.method]||payment.method)} · ${safe(payment.billing_month?.slice(0,7)||'Legacy payment')}${payment.reference?' · '+safe(payment.reference):''}</span>
     <button type="button" class="secondary" data-share-member-receipt="${safe(payment.id)}">Share receipt</button></div>`).join('');
-  panel.innerHTML=`<p><strong>Total unpaid plan balance · ${safe(amount(balance))}</strong></p>
-    ${savedReceipts.length?'<p role="status"><strong>Payment recorded.</strong> Share the receipt below.</p>':''}
-    <div class="row">${balance>0?'<button type="button" class="secondary" data-draft-reminder>Draft payment reminder</button>':''}</div>
+  panel.innerHTML=`<div class="member-payment-summary"><p>Total unpaid plan balance<strong>${safe(amount(balance))}</strong></p>
+    ${balance>0?'<button type="button" class="secondary" data-draft-reminder>Draft payment reminder</button>':''}</div>
+    ${savedReceipts.length?'<p class="member-payment-saved" role="status"><strong>Payment recorded.</strong> Share the receipt below.</p>':''}
     <div data-member-message></div>
     ${unpaid.length?`<form class="form member-payment-form" id="memberPayment-${safe(member.id)}">
+      <h3 class="member-payment-title">Record a payment</h3>
       <label>Membership<select name="membership_id" required>${unpaid.map(term=>option(term.id,term.plan+' · '+term.starts_on+' – '+term.ends_on)).join('')}</select></label>
       <label>Billing month<select name="billing_month" required></select></label>
       <label>Amount received (${safe(member.currency||'PKR')})<input name="amount" type="number" min="0.01" step="0.01" required></label>
