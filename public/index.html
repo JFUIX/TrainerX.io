@@ -514,6 +514,12 @@ button.secondary{border:1px solid var(--tx-line)}
   .insight-shortcuts .workspace-search{width:100%}
   .insight-shortcuts [data-insight-view]{flex:1;justify-content:center}
 }
+
+.reminder-toast{position:fixed;z-index:4;left:max(14px,env(safe-area-inset-left));bottom:max(14px,env(safe-area-inset-bottom));width:min(330px,calc(100% - 28px));padding:12px;background:var(--tx-raised);color:var(--tx-text);border:1px solid var(--tx-line);border-left:3px solid var(--tx-accent);border-radius:12px;box-shadow:0 8px 28px #17182438}
+.reminder-toast p{margin:0 34px 8px 0;font-weight:700;color:inherit}
+.reminder-toast .row{gap:6px}
+.reminder-toast-close{position:absolute;top:6px;right:6px;background:transparent;color:inherit;font-size:20px}
+.reminder-toast [data-toast-error]:empty{display:none}
 </style></head><body>
 <div class="shell"><header>
   <div class="header-brand" translate="no">
@@ -526,6 +532,15 @@ button.secondary{border:1px solid var(--tx-line)}
 <section id="setup" class="card hidden" style="max-width:500px;margin:16px auto"><h1>Set up TrainerX</h1><p>Create the first platform administrator. Enter the BOOTSTRAP_TOKEN from your Railway service variables, along with your administrator credentials.</p><form id="setupForm" class="form"><label>Admin email<input name="email" type="email" required autocomplete="email"></label><label>Admin password (12+ characters)<input name="password" type="password" minlength="12" required autocomplete="new-password"></label><label>Setup token<input name="token" type="password" required autocomplete="off"></label><button class="primary" type="submit">Create administrator</button></form><p id="setupNotice" role="status"></p></section><section id="login" class="card"><div class="sub" style="letter-spacing:.08em;color:var(--tx-accent)">TRAINERX ACCESS PORTAL</div><h1 id="portalTitle">Welcome to TrainerX.</h1><p id="portalDescription">Sign in to access your gym management dashboard.</p><form id="loginForm" class="form"><label>Email<input name="email" type="email" required autocomplete="username"></label><label>Password<input name="password" type="password" required autocomplete="current-password"></label><button class="primary" type="submit">Sign in</button><p id="loginNotice" role="status" style="grid-column:1/-1"></p></form><div style="margin-top:24px;display:flex;flex-direction:column;align-items:flex-start;gap:12px"><a id="adminAccess" href="/admin" style="font-size:13px;color:var(--tx-muted);text-decoration:underline;text-underline-offset:4px">Super Admin access</a><a id="backToGym" href="/gym" class="hidden" style="font-size:13px;color:var(--tx-muted);text-decoration:underline;text-underline-offset:4px">Back to gym owner sign in</a><button id="recoverToggle" type="button" style="font-size:12px;font-weight:400;background:transparent;color:var(--tx-muted);padding:0;text-decoration:underline;text-underline-offset:3px" class="hidden">Forgot Super Admin password?</button></div><form id="recoverForm" class="form hidden" style="margin-top:18px"><label>Super Admin email<input name="email" type="email" required></label><label>New password (12+ characters)<input name="password" type="password" minlength="12" required autocomplete="new-password"></label><label>Railway BOOTSTRAP_TOKEN<input name="token" type="password" required autocomplete="off"></label><button class="primary" type="submit">Reset Super Admin password</button></form><p id="recoverNotice" role="status"></p></section>
 <footer id="loginFooter" style="text-align:center;margin:14px auto 8px;font-size:12px;color:var(--tx-muted);line-height:1.9"><div>Designed &amp; Developed by <strong style="color:var(--tx-accent-soft);font-weight:600">JFUIX</strong></div><div>© 2026 ARTIOSIS – Digital Solutions. All rights reserved.</div></footer>
 <div id="workspace" class="grid hidden"><a class="skip-link" href="#mainContent">Skip to content</a><nav id="nav" aria-label="Main navigation"></nav>
+<aside class="reminder-toast hidden" id="reminderToast" aria-label="Sign-in reminders">
+  <p data-toast-summary role="status"></p>
+  <button type="button" class="reminder-toast-close" aria-label="Dismiss reminder notification">×</button>
+  <div class="row">
+    <button type="button" class="primary" data-review-reminders>Review reminders</button>
+    <button type="button" class="secondary" data-silence-reminder-popups>Silence login pop-ups</button>
+  </div>
+  <span class="error" data-toast-error role="status"></span>
+</aside>
 <dialog id="sidebarPanel" aria-labelledby="sidebarPanelTitle">
   <div class="sidebar-panel-header"><h2 id="sidebarPanelTitle"></h2>
     <form method="dialog"><button class="sidebar-panel-close" aria-label="Close panel" autofocus>×</button></form>
@@ -1975,6 +1990,7 @@ function updateNotificationBadge(){
   button.setAttribute('aria-label',count?`Notifications, ${count} unread reminders`:'Notifications');
 }
 function stopOwnerNotifications(){
+  reminderToast.classList.add('hidden');
   notificationController?.abort();
   notificationController=null;
   clearInterval(notificationTimer);
@@ -1985,6 +2001,7 @@ function stopOwnerNotifications(){
   panelRequest++;
 }
 const reminderPopupSessionKey='tx-reminder-popup-shown';
+const reminderToast=$('#reminderToast');
 let reminderPopupShown=false;
 function maybeShowReminderPopup(){
   if(reminderPopupShown||!notificationController||!notificationData?.total||
@@ -1992,8 +2009,35 @@ function maybeShowReminderPopup(){
     (sidebarPanel.open&&panelType!=='Notifications'))return;
   reminderPopupShown=true;
   try{sessionStorage.setItem(reminderPopupSessionKey,'1')}catch{}
-  if(!sidebarPanel.open)openSidebarPanel('Notifications');
+  if(!sidebarPanel.open){
+    updateReminderToast();
+    reminderToast.querySelector('[data-toast-error]').textContent='';
+    reminderToast.classList.remove('hidden');
+  }
 }
+function updateReminderToast(){
+  const count=notificationData?.total??0;
+  if(!count||notificationData.popup_silenced)reminderToast.classList.add('hidden');
+  reminderToast.querySelector('[data-toast-summary]').textContent=count===1?'1 active reminder':count+' active reminders';
+}
+async function silenceReminderPopups(){
+  const controller=notificationController;
+  await api('/owner-notifications/preferences','PUT',{popup_silenced:true});
+  await notificationRequest;
+  if(!controller||controller!==notificationController)return false;
+  if(notificationData)notificationData.popup_silenced=true;
+  updateReminderToast();
+  return true;
+}
+reminderToast.querySelector('.reminder-toast-close').onclick=()=>reminderToast.classList.add('hidden');
+reminderToast.querySelector('[data-review-reminders]').onclick=()=>openSidebarPanel('Notifications');
+reminderToast.querySelector('[data-silence-reminder-popups]').onclick=async event=>{
+  const button=event.currentTarget;
+  button.disabled=true;
+  try{await silenceReminderPopups()}
+  catch(error){reminderToast.querySelector('[data-toast-error]').textContent=error.message}
+  finally{button.disabled=false}
+};
 sidebarPanel.addEventListener('close',maybeShowReminderPopup);
 function startOwnerNotifications(){
   stopOwnerNotifications();
@@ -2013,6 +2057,7 @@ function refreshOwnerNotifications(){
     if(signal.aborted)return;
     const changed=JSON.stringify(notificationData)!==JSON.stringify(data);
     notificationData=data;
+    updateReminderToast();
     updateNotificationBadge();
     if(changed&&sidebarPanel.open&&panelType==='Notifications'&&!showingDone)showNotificationPanel();
     maybeShowReminderPopup();
@@ -2084,7 +2129,7 @@ async function loadReminderPreferences(form){
 function openSidebarPanel(name){
   panelType=name;
   $('#sidebarPanelTitle').textContent=name;
-  if(name==='Notifications'){showingDone=false;showNotificationPanel();void refreshOwnerNotifications()}
+  if(name==='Notifications'){reminderToast.classList.add('hidden');showingDone=false;showNotificationPanel();void refreshOwnerNotifications()}
   if(name==='Help'){
     const topics=me.role==='owner'?[
       ['Members','Open a member profile to manage memberships and review attendance.'],
@@ -2172,12 +2217,7 @@ sidebarBody.addEventListener('click',async event=>{
   if(target.hasAttribute('data-silence-reminder-popups')){
     target.disabled=true;
     try{
-      const controller=notificationController;
-      await api('/owner-notifications/preferences','PUT',{popup_silenced:true});
-      await notificationRequest;
-      if(controller!==notificationController)return;
-      notificationData.popup_silenced=true;
-      if(sidebarPanel.open&&panelType==='Notifications')sidebarPanel.close();
+      if(await silenceReminderPopups()&&sidebarPanel.open&&panelType==='Notifications')sidebarPanel.close();
     }catch(error){
       if(target.isConnected)sidebarBody.querySelector('[data-reminder-message]').textContent=error.message;
     }finally{target.disabled=false}
