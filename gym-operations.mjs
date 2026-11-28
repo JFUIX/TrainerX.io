@@ -178,8 +178,8 @@ export function registerGymOperations(app,db,auth) {
     FROM gym_whatsapp_alerts WHERE gym_id=$1 AND kind='fee_due'`;
 
   app.get('/owner-notifications',auth,owner,privateData,async (req,res) => {
-    const {rows:[{disabled_owner_reminders:disabled}]}=await db.query(
-      'SELECT disabled_owner_reminders FROM users WHERE gym_id=$1 AND id=$2',[req.user.gym_id,req.user.id]);
+    const {rows:[{disabled_owner_reminders:disabled,reminder_popups_silenced:popup_silenced}]}=await db.query(
+      'SELECT disabled_owner_reminders,reminder_popups_silenced FROM users WHERE gym_id=$1 AND id=$2',[req.user.gym_id,req.user.id]);
     const {rows}=await db.query(`WITH reminders AS (${reminderQuery}), matched AS (
       SELECT r.membership_id,r.member_id,r.kind,r.due_on::text,r.amount,
         COALESCE(NULLIF(r.full_name,''),'Member '||COALESCE(p.membership_no::text,'(no profile)')) AS member,
@@ -195,18 +195,22 @@ export function registerGymOperations(app,db,auth) {
     FROM matched WHERE CASE WHEN $4::boolean THEN status='done' ELSE status<>'done' END
     ORDER BY (status='unread') DESC,CASE kind WHEN 'overdue' THEN 1 WHEN 'fee_due' THEN 2 ELSE 3 END,
       due_on,membership_id LIMIT 60`,[req.user.gym_id,req.user.id,disabled,req.query.done==='true']);
-    res.json({total:rows[0]?.reminder_count??0,unread:rows[0]?.unread_count??0,disabled,
+    res.json({total:rows[0]?.reminder_count??0,unread:rows[0]?.unread_count??0,disabled,popup_silenced,
       items:rows.map(({reminder_count,unread_count,...item})=>item)});
   });
 
   app.put('/owner-notifications/preferences',auth,owner,privateData,async (req,res) => {
-    const {disabled}=req.body||{};
-    if(!Array.isArray(disabled)||disabled.length>reminderKinds.length||
-      new Set(disabled).size!==disabled.length||disabled.some(kind=>!reminderKinds.includes(kind)))
+    const {disabled,popup_silenced}=req.body||{};
+    if((disabled===undefined&&popup_silenced===undefined)||
+      (popup_silenced!==undefined&&typeof popup_silenced!=='boolean')||
+      (disabled!==undefined&&(!Array.isArray(disabled)||disabled.length>reminderKinds.length||
+        new Set(disabled).size!==disabled.length||disabled.some(kind=>!reminderKinds.includes(kind)))))
       return res.status(400).json({error:'Invalid reminder preferences'});
-    await db.query('UPDATE users SET disabled_owner_reminders=$3 WHERE gym_id=$1 AND id=$2',
-      [req.user.gym_id,req.user.id,disabled]);
-    res.json({disabled});
+    const {rows:[preferences]}=await db.query(`UPDATE users SET disabled_owner_reminders=COALESCE($3,disabled_owner_reminders),
+      reminder_popups_silenced=COALESCE($4,reminder_popups_silenced)
+      WHERE gym_id=$1 AND id=$2 RETURNING disabled_owner_reminders AS disabled,reminder_popups_silenced AS popup_silenced`,
+      [req.user.gym_id,req.user.id,disabled,popup_silenced]);
+    res.json(preferences);
   });
 
   app.put('/owner-notifications/status',auth,owner,privateData,async (req,res) => {

@@ -1984,9 +1984,21 @@ function stopOwnerNotifications(){
   completedReminders=null;
   panelRequest++;
 }
+const reminderPopupSessionKey='tx-reminder-popup-shown';
+let reminderPopupShown=false;
+function maybeShowReminderPopup(){
+  if(reminderPopupShown||!notificationController||!notificationData?.total||
+    notificationData.popup_silenced||document.visibilityState!=='visible'||
+    (sidebarPanel.open&&panelType!=='Notifications'))return;
+  reminderPopupShown=true;
+  try{sessionStorage.setItem(reminderPopupSessionKey,'1')}catch{}
+  if(!sidebarPanel.open)openSidebarPanel('Notifications');
+}
+sidebarPanel.addEventListener('close',maybeShowReminderPopup);
 function startOwnerNotifications(){
   stopOwnerNotifications();
   if(me.role!=='owner')return;
+  try{reminderPopupShown=sessionStorage.getItem(reminderPopupSessionKey)==='1'}catch{}
   notificationController=new AbortController();
   void refreshOwnerNotifications();
   notificationTimer=setInterval(()=>{
@@ -2003,6 +2015,7 @@ function refreshOwnerNotifications(){
     notificationData=data;
     updateNotificationBadge();
     if(changed&&sidebarPanel.open&&panelType==='Notifications'&&!showingDone)showNotificationPanel();
+    maybeShowReminderPopup();
   }).catch(()=>{
     if(!signal.aborted&&sidebarPanel.open&&panelType==='Notifications'&&!notificationData)
       sidebarBody.innerHTML='<p role="status">Unable to load reminders. Close and reopen Notifications to try again.</p>';
@@ -2032,6 +2045,7 @@ function showNotificationPanel(){
   sidebarBody.innerHTML=`<div class="sidebar-panel-actions" aria-label="Reminder list">
     <button type="button" class="secondary" data-reminder-list="active" aria-pressed="${!showingDone}">Active</button>
     <button type="button" class="secondary" data-reminder-list="done" aria-pressed="${showingDone}">Done</button>
+    ${!showingDone&&data?.total&&!data.popup_silenced?'<button type="button" class="secondary" data-silence-reminder-popups>Silence login pop-ups</button>':''}
     </div><p data-reminder-message role="status">${!data?'Loading reminders…':data.total?
     `${data.total} ${showingDone?'completed':'active'} · Showing ${data.items.length}`:
     showingDone?'No completed reminders for current memberships or fees.':'No active reminders.'}</p>
@@ -2060,7 +2074,8 @@ async function loadReminderPreferences(form){
     await refreshOwnerNotifications();
     if(!form.isConnected)return;
     if(!notificationData)throw Error('Unable to load reminder preferences. Reopen Settings to retry.');
-    for(const input of form.querySelectorAll('input'))input.checked=!notificationData.disabled.includes(input.value);
+    for(const input of form.querySelectorAll('input[data-reminder-kind]'))input.checked=!notificationData.disabled.includes(input.value);
+    form.elements.login_popups.checked=!notificationData.popup_silenced;
     form.querySelector('fieldset').disabled=false;
   }catch(error){
     if(form.isConnected)form.querySelector('[role="status"]').textContent=error.message;
@@ -2099,9 +2114,10 @@ function openSidebarPanel(name){
     if(me.role==='owner'){
       sidebarBody.insertAdjacentHTML('beforeend',`<form id="sidebarReminderPreferences">
         <fieldset class="sidebar-preferences" disabled><legend>Owner notifications</legend>
-          <label><input type="checkbox" value="expiry"> Memberships expiring within 7 days</label>
-          <label><input type="checkbox" value="fee_due"> Fees due within 3 days</label>
-          <label><input type="checkbox" value="overdue"> Overdue balances</label>
+          <label><input type="checkbox" name="login_popups"> Show reminders when signing in</label>
+          <label><input type="checkbox" data-reminder-kind value="expiry"> Memberships expiring within 7 days</label>
+          <label><input type="checkbox" data-reminder-kind value="fee_due"> Fees due within 3 days</label>
+          <label><input type="checkbox" data-reminder-kind value="overdue"> Overdue balances</label>
           <button class="secondary" type="submit">Save notification preferences</button>
         </fieldset><p role="status"></p>
       </form>`);
@@ -2110,11 +2126,11 @@ function openSidebarPanel(name){
       form.onsubmit=async event=>{
         event.preventDefault();
         const fieldset=form.querySelector('fieldset'), message=form.querySelector('[role="status"]');
-        const disabled=[...form.querySelectorAll('input:not(:checked)')].map(input=>input.value);
+        const disabled=[...form.querySelectorAll('input[data-reminder-kind]:not(:checked)')].map(input=>input.value);
         fieldset.disabled=true;
         message.textContent='Saving…';
         try{
-          await api('/owner-notifications/preferences','PUT',{disabled});
+          await api('/owner-notifications/preferences','PUT',{disabled,popup_silenced:!form.elements.login_popups.checked});
           await notificationRequest;
           await refreshOwnerNotifications();
           message.textContent='Notification preferences saved.';
@@ -2153,6 +2169,20 @@ function openSidebarPanel(name){
 sidebarBody.addEventListener('click',async event=>{
   const target=event.target.closest('button');
   if(!target)return;
+  if(target.hasAttribute('data-silence-reminder-popups')){
+    target.disabled=true;
+    try{
+      const controller=notificationController;
+      await api('/owner-notifications/preferences','PUT',{popup_silenced:true});
+      await notificationRequest;
+      if(controller!==notificationController)return;
+      notificationData.popup_silenced=true;
+      if(sidebarPanel.open&&panelType==='Notifications')sidebarPanel.close();
+    }catch(error){
+      if(target.isConnected)sidebarBody.querySelector('[data-reminder-message]').textContent=error.message;
+    }finally{target.disabled=false}
+    return;
+  }
   if(target.dataset.reminderList){
     showingDone=target.dataset.reminderList==='done';
     showNotificationPanel();
@@ -2247,7 +2277,7 @@ loginEmail.addEventListener('input',()=>localStorage.setItem('tx-login-email',lo
 recoveryEmail.addEventListener('input',()=>localStorage.setItem('tx-login-email',recoveryEmail.value));
 $('#recoverToggle').onclick=e=>{e.preventDefault();const opening=$('#recoverForm').classList.contains('hidden');if(opening){recoveryEmail.value=loginEmail.value||sessionStorage.getItem('tx-login-email')||'';$('#loginForm').classList.add('hidden');$('#recoverToggle').textContent='Back to sign in';$('#recoverForm').classList.remove('hidden')}else{loginEmail.value=recoveryEmail.value||loginEmail.value;$('#recoverForm').classList.add('hidden');$('#loginForm').classList.remove('hidden');$('#recoverToggle').textContent='Forgot Super Admin password?'}};
 $('#recoverForm').onsubmit=async e=>{e.preventDefault();try{await api('/recover-superadmin','POST',formData(e.target));loginEmail.value=recoveryEmail.value;e.target.reset();$('#recoverForm').classList.add('hidden');$('#loginForm').classList.remove('hidden');$('#recoverToggle').textContent='Forgot Super Admin password?';$('#recoverNotice').className='success';$('#recoverNotice').textContent='Password reset. Sign in with your new password.'}catch(err){$('#recoverNotice').className='error';$('#recoverNotice').textContent=err.message}};
-$('#loginForm').addEventListener('submit',async e=>{e.preventDefault();const submit=e.currentTarget.querySelector('button[type="submit"]');const msg=$('#loginNotice');submit.disabled=true;msg.className='sub';msg.textContent='Checking credentials…';try{const r=await api('/login','POST',formData(e.currentTarget));if((adminPortal&&r.role!=='superadmin')||(!adminPortal&&r.role==='superadmin'))throw Error(portal==='admin'?'This is a gym account. Use the Gym Owner / Staff portal.':'This is a Super Admin account. Use the Platform Super Admin portal.');token=r.token;sessionStorage.setItem('tx-token',token);me=r.user||await api('/me');msg.textContent='';submit.disabled=false;showShell()}catch(err){msg.className='error';msg.textContent=err.message==='Request failed (401)'?'Email or password incorrect. Use password recovery if needed.':err.message==='Request failed (400)'?'Enter a valid email and a password of at least 12 characters.':err.message;submit.disabled=false}});
+$('#loginForm').addEventListener('submit',async e=>{e.preventDefault();const submit=e.currentTarget.querySelector('button[type="submit"]');const msg=$('#loginNotice');submit.disabled=true;msg.className='sub';msg.textContent='Checking credentials…';try{const r=await api('/login','POST',formData(e.currentTarget));if((adminPortal&&r.role!=='superadmin')||(!adminPortal&&r.role==='superadmin'))throw Error(portal==='admin'?'This is a gym account. Use the Gym Owner / Staff portal.':'This is a Super Admin account. Use the Platform Super Admin portal.');token=r.token;sessionStorage.setItem('tx-token',token);sessionStorage.removeItem(reminderPopupSessionKey);me=r.user||await api('/me');msg.textContent='';submit.disabled=false;showShell()}catch(err){msg.className='error';msg.textContent=err.message==='Request failed (401)'?'Email or password incorrect. Use password recovery if needed.':err.message==='Request failed (400)'?'Enter a valid email and a password of at least 12 characters.':err.message;submit.disabled=false}});
 $('#logout').onclick=async()=>{try{await api('/logout','POST')}catch{}token='';me=null;sessionStorage.removeItem('tx-token');showShell()};
 (async()=>{if(token){try{me=await api('/me')}catch{token='';sessionStorage.removeItem('tx-token')}}showShell();if(!me){try{const status=await api('/setup-status');if(status.setupRequired){$('#login').classList.add('hidden');$('#setup').classList.remove('hidden')}}catch{}}})();
 </script></body></html>
